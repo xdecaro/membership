@@ -1,0 +1,59 @@
+<?php
+namespace Xdecaro\Component\Decaromembership\Administrator\Config;
+defined('_JEXEC') or die;
+final class OperationsEntities
+{
+    public static function definitions(): array
+    {
+        return [
+            'transfers'=>['table'=>'#__decaromembership_transfers','label'=>'COM_DECAROMEMBERSHIP_TRANSFERS','singular'=>'COM_DECAROMEMBERSHIP_TRANSFER','title_field'=>'reference','search'=>['reference','status','notes'],'list'=>['reference','member_id','from_location_id','to_location_id','requested_at','status','source_confirmed','destination_confirmed','completed_at'],'fields'=>[
+                'reference'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_REFERENCE','type'=>'text','required'=>true,'unique'=>true],
+                'member_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_MEMBER','type'=>'relation','relation'=>'members','required'=>true],
+                'from_location_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_FROM_LOCATION','type'=>'relation','relation'=>'locations'],
+                'to_location_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_TO_LOCATION','type'=>'relation','relation'=>'locations','required'=>true],
+                'requested_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_REQUESTED_AT','type'=>'date'],
+                'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STATUS','type'=>'select','options'=>['requested'=>'COM_DECAROMEMBERSHIP_TRANSFER_REQUESTED','waiting_source'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_SOURCE','waiting_destination'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_DESTINATION','waiting_documents'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_DOCUMENTS','waiting_arrears'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_ARREARS','completed'=>'COM_DECAROMEMBERSHIP_TRANSFER_COMPLETED','cancelled'=>'COM_DECAROMEMBERSHIP_TRANSFER_CANCELLED']],
+                'delegation_status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_DELEGATION_STATUS','type'=>'text'],
+                'card_position'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CARD_POSITION','type'=>'text'],
+                'arrears_amount'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_ARREARS','type'=>'money'],
+                'source_confirmed'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_SOURCE_CONFIRMED','type'=>'boolean'],
+                'destination_confirmed'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_DESTINATION_CONFIRMED','type'=>'boolean'],
+                'completed_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_COMPLETED_AT','type'=>'date'],
+                'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
+                'published'=>['label'=>'JSTATUS','type'=>'published'],
+            ]],
+            'documents'=>['table'=>'#__decaromembership_documents','label'=>'COM_DECAROMEMBERSHIP_DOCUMENTS','singular'=>'COM_DECAROMEMBERSHIP_DOCUMENT','title_field'=>'title','search'=>['title','document_type','status'],'list'=>['title','member_id','case_id','document_type','status','issued_at','expires_at','external_document_id'],'fields'=>[
+                'title'=>['label'=>'JGLOBAL_TITLE','type'=>'text','required'=>true],
+                'member_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_MEMBER','type'=>'relation','relation'=>'members'],
+                'case_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CASE','type'=>'relation','relation'=>'cases'],
+                'document_type'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_DOCUMENT_TYPE','type'=>'text','required'=>true],
+                'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STATUS','type'=>'select','options'=>['valid'=>'COM_DECAROMEMBERSHIP_DOCUMENT_VALID','missing'=>'COM_DECAROMEMBERSHIP_DOCUMENT_MISSING','to_verify'=>'COM_DECAROMEMBERSHIP_DOCUMENT_TO_VERIFY','expired'=>'COM_DECAROMEMBERSHIP_DOCUMENT_EXPIRED','not_required'=>'COM_DECAROMEMBERSHIP_DOCUMENT_NOT_REQUIRED']],
+                'issued_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_ISSUED_AT','type'=>'date'],
+                'expires_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_EXPIRY_DATE','type'=>'date'],
+                'external_component'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_SOURCE_COMPONENT','type'=>'text','default'=>'com_decarodocuments'],
+                'external_document_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_EXTERNAL_DOCUMENT_ID','type'=>'number'],
+                'fallback_path'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_FALLBACK_PATH','type'=>'text'],
+                'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
+                'published'=>['label'=>'JSTATUS','type'=>'published'],
+            ]],
+            'checklist_templates'=>['table'=>'#__decaromembership_checklist_templates','label'=>'COM_DECAROMEMBERSHIP_CHECKLISTS','singular'=>'COM_DECAROMEMBERSHIP_CHECKLIST','title_field'=>'name','search'=>['name','case_type'],'list'=>['name','case_type','language','ordering','published'],'fields'=>[
+                'name'=>['label'=>'JGLOBAL_TITLE','type'=>'text','required'=>true],
+                'case_type'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CASE_TYPE','type'=>'text','required'=>true],
+                'language'=>['label'=>'JFIELD_LANGUAGE_LABEL','type'=>'text','default'=>'*'],
+                'ordering'=>['label'=>'JFIELD_ORDERING_LABEL','type'=>'number'],
+                'published'=>['label'=>'JSTATUS','type'=>'published'],
+            ]],
+            'notifications'=>['table'=>'#__decaromembership_notifications','label'=>'COM_DECAROMEMBERSHIP_NOTIFICATIONS','singular'=>'COM_DECAROMEMBERSHIP_NOTIFICATION','title_field'=>'subject','search'=>['subject','type','status'],'list'=>['subject','member_id','type','channel','status','scheduled_at','sent_at'],'fields'=>[
+                'member_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_MEMBER','type'=>'relation','relation'=>'members'],
+                'type'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_TYPE','type'=>'text','required'=>true],
+                'channel'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CHANNEL','type'=>'select','options'=>['joomla'=>'COM_DECAROMEMBERSHIP_CHANNEL_JOOMLA','email'=>'COM_DECAROMEMBERSHIP_CHANNEL_EMAIL']],
+                'subject'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_SUBJECT','type'=>'text','required'=>true],
+                'body'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_BODY','type'=>'textarea'],
+                'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STATUS','type'=>'select','options'=>['pending'=>'COM_DECAROMEMBERSHIP_STATUS_PENDING','sent'=>'COM_DECAROMEMBERSHIP_NOTIFICATION_SENT','failed'=>'COM_DECAROMEMBERSHIP_NOTIFICATION_FAILED','cancelled'=>'COM_DECAROMEMBERSHIP_NOTIFICATION_CANCELLED']],
+                'scheduled_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_SCHEDULED_AT','type'=>'date'],
+                'sent_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_SENT_AT','type'=>'date'],
+                'published'=>['label'=>'JSTATUS','type'=>'published'],
+            ]],
+        ];
+    }
+}
