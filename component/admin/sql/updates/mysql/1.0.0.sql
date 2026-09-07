@@ -1,0 +1,1 @@
+-- Membership 1.0.0 baseline schema is installed by install.mysql.utf8mb4.sql.
