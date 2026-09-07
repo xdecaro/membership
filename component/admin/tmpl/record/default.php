@@ -1,0 +1,14 @@
+<?php
+defined('_JEXEC') or die;
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
+$esc=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
+?>
+<form action="<?= Route::_('index.php?option=com_decaromembership&entity='.$this->entity.'&id='.(int)($this->item->id??0)) ?>" method="post" name="adminForm" id="adminForm" class="dm-page">
+<div class="dm-form-grid">
+<?php foreach($this->config['fields'] as $name=>$field): $value=$this->item->$name??($field['default']??''); $required=($field['required']??false)?' required':''; ?>
+<div class="dm-field <?= $field['type']==='textarea'?'dm-field-wide':'' ?>"><label for="jform_<?= $esc($name) ?>"><?= Text::_($field['label']) ?><?= ($field['required']??false)?' *':'' ?></label>
+<?php switch($field['type']): case 'textarea': ?><textarea id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" rows="4"<?= $required ?>><?= $esc($value) ?></textarea><?php break; case 'select': ?><select id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]"<?= $required ?>><option value="">-</option><?php foreach($field['options'] as $k=>$label): ?><option value="<?= $esc($k) ?>"<?= (string)$value===(string)$k?' selected':'' ?>><?= Text::_($label) ?></option><?php endforeach; ?></select><?php break; case 'relation': ?><select id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]"<?= $required ?>><option value="">-</option><?php foreach($this->relations[$name]??[] as $opt): ?><option value="<?= (int)$opt->id ?>"<?= (int)$value===(int)$opt->id?' selected':'' ?>><?= $esc($opt->title) ?></option><?php endforeach; ?></select><?php break; case 'boolean': case 'published': ?><select id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]"><option value="1"<?= (int)$value===1?' selected':'' ?>><?= Text::_('JYES') ?></option><option value="0"<?= (int)$value===0?' selected':'' ?>><?= Text::_('JNO') ?></option></select><?php break; case 'date': ?><input type="date" id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" value="<?= $esc($value) ?>"<?= $required ?>><?php break; case 'number': case 'money': ?><input type="number" step="<?= $field['type']==='money'?'0.01':'1' ?>" id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" value="<?= $esc($value) ?>"<?= $required ?>><?php break; case 'email': ?><input type="email" id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" value="<?= $esc($value) ?>"<?= $required ?>><?php break; default: ?><input type="text" id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" value="<?= $esc($value) ?>"<?= $required ?>><?php endswitch; ?></div>
+<?php endforeach; ?>
+</div><input type="hidden" name="id" value="<?= (int)($this->item->id??0) ?>"><input type="hidden" name="entity" value="<?= $esc($this->entity) ?>"><input type="hidden" name="task" value=""><?= HTMLHelper::_('form.token') ?></form>
