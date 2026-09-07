@@ -1,0 +1,1 @@
+document.addEventListener('DOMContentLoaded',()=>{document.querySelectorAll('.dm-table-wrap tbody tr').forEach(row=>{row.addEventListener('dblclick',()=>{const link=row.querySelector('a[href*="view=record"]');if(link)window.location.href=link.href;});});});

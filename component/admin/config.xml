@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+  <fieldset name="general" label="COM_DECAROMEMBERSHIP_CONFIG_GENERAL">
+    <field name="association_year_start" type="calendar" format="%Y-%m-%d" label="COM_DECAROMEMBERSHIP_CONFIG_ASSOCIATION_YEAR_START" />
+    <field name="member_number_prefix" type="text" filter="string" label="COM_DECAROMEMBERSHIP_CONFIG_MEMBER_PREFIX" />
+    <field name="enable_frontend_portal" type="radio" default="1" class="btn-group btn-group-yesno" label="COM_DECAROMEMBERSHIP_CONFIG_FRONTEND_PORTAL"><option value="1">JYES</option><option value="0">JNO</option></field>
+    <field name="audit_retention_days" type="number" min="0" default="3650" label="COM_DECAROMEMBERSHIP_CONFIG_AUDIT_RETENTION" />
+  </fieldset>
+  <fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL"><field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" validate="rules" filter="rules" component="com_decaromembership" section="component" /></fieldset>
+</config>

@@ -1,0 +1,5 @@
+{
+  "$schema":"https://developer.joomla.org/schemas/json-schema/web_assets.json",
+  "name":"com_decaromembership","version":"1.0.0","description":"Membership by xdecaro assets","license":"GPL-2.0-or-later",
+  "assets":[{"name":"com_decaromembership.admin","type":"style","uri":"com_decaromembership/css/admin.css"},{"name":"com_decaromembership.admin","type":"script","uri":"com_decaromembership/js/admin.js","dependencies":["core"]}]
+}
