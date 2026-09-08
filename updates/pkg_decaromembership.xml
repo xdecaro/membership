@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <updates>
   <update>
     <name>Membership by xdecaro</name>
@@ -11,8 +11,10 @@
       <downloadurl type="full" format="zip">https://github.com/xdecaro/membership/releases/download/v1.2.0/pkg_decaromembership_1.2.0.zip</downloadurl>
     </downloads>
     <changelogurl>https://raw.githubusercontent.com/xdecaro/membership/main/updates/changelog.xml</changelogurl>
-    <tags><tag>stable</tag></tags>
-    <sha256>0000000000000000000000000000000000000000000000000000000000000000</sha256>
+    <tags>
+      <tag>stable</tag>
+    </tags>
+    <sha256>ab2eabfa6d248b7d5f03a786d0d1fd62ba7f71802b5fa646a1c080a23decfa7f</sha256>
     <maintainer>Luca De Caro</maintainer>
     <maintainerurl>https://github.com/xdecaro/membership</maintainerurl>
     <targetplatform name="joomla" version="6\.[0-9]+" />
