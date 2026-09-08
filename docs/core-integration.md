@@ -9,6 +9,19 @@ Use:
 - `Xdecaro\Core\Integration\EntityReference` for `component/entity/id` references;
 - `Xdecaro\Core\Integration\RelationReference` for typed links between references.
 
+## Optional runtime adapter
+
+Membership registers `Xdecaro\Component\Decaromembership\Administrator\Service\CoreIntegrationService` in the Joomla DI container.
+
+The adapter intentionally keeps Core optional during this transition:
+
+- `isAvailable()` reports whether the Core public reference classes can be resolved;
+- `createEntityReference()` creates a Membership-owned Core entity reference;
+- `createRelationReference()` creates a typed relation from a Membership entity to another product's published entity;
+- when Core is unavailable, Core-dependent calls throw a controlled `RuntimeException` rather than causing an opaque class-not-found fatal error.
+
+Do not bypass this boundary by probing Core internals.
+
 Membership remains the owner of members, categories, applications, renewals, cards, fees, payments, transfers, family relationships and membership workflow state.
 
 Typical integrations include:
