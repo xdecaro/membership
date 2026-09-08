@@ -6,12 +6,10 @@
   <copyright>Copyright (C) 2026 Luca De Caro. All rights reserved.</copyright>
   <license>GNU General Public License version 2 or later</license>
   <authorUrl>https://github.com/xdecaro/membership</authorUrl>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>COM_DECAROMEMBERSHIP_XML_DESCRIPTION</description>
   <targetplatform name="joomla" version="6.*" />
   <namespace path="src">Xdecaro\Component\Decaromembership</namespace>
-  <files folder="site"><folder>language</folder><folder>src</folder><folder>tmpl</folder></files>
-  <languages folder="site/language"><language tag="en-GB">en-GB/com_decaromembership.ini</language><language tag="fr-FR">fr-FR/com_decaromembership.ini</language><language tag="it-IT">it-IT/com_decaromembership.ini</language></languages>
   <administration>
     <menu>COM_DECAROMEMBERSHIP</menu>
     <submenu>
@@ -24,12 +22,29 @@
       <menu link="view=records&amp;entity=transfers">COM_DECAROMEMBERSHIP_TRANSFERS</menu>
       <menu view="information">COM_DECAROMEMBERSHIP_INFORMATION</menu>
     </submenu>
-    <files folder="admin"><filename>access.xml</filename><filename>config.xml</filename><folder>services</folder><folder>sql</folder><folder>src</folder><folder>tmpl</folder></files>
-    <languages folder="admin/language"><language tag="en-GB">en-GB/com_decaromembership.ini</language><language tag="en-GB">en-GB/com_decaromembership.sys.ini</language><language tag="fr-FR">fr-FR/com_decaromembership.ini</language><language tag="fr-FR">fr-FR/com_decaromembership.sys.ini</language><language tag="it-IT">it-IT/com_decaromembership.ini</language><language tag="it-IT">it-IT/com_decaromembership.sys.ini</language></languages>
+    <files folder="admin">
+      <filename>access.xml</filename>
+      <filename>config.xml</filename>
+      <folder>services</folder>
+      <folder>sql</folder>
+      <folder>src</folder>
+      <folder>tmpl</folder>
+    </files>
+    <languages folder="admin/language">
+      <language tag="en-GB">en-GB/com_decaromembership.ini</language>
+      <language tag="en-GB">en-GB/com_decaromembership.sys.ini</language>
+      <language tag="fr-FR">fr-FR/com_decaromembership.ini</language>
+      <language tag="fr-FR">fr-FR/com_decaromembership.sys.ini</language>
+      <language tag="it-IT">it-IT/com_decaromembership.ini</language>
+      <language tag="it-IT">it-IT/com_decaromembership.sys.ini</language>
+    </languages>
   </administration>
-  <media destination="com_decaromembership" folder="media"><filename>joomla.asset.json</filename><folder>css</folder><folder>js</folder></media>
+  <media destination="com_decaromembership" folder="media">
+    <filename>joomla.asset.json</filename>
+    <folder>css</folder>
+    <folder>js</folder>
+  </media>
   <install><sql><file driver="mysql" charset="utf8mb4">sql/install.mysql.utf8mb4.sql</file></sql></install>
   <uninstall><sql><file driver="mysql" charset="utf8mb4">sql/uninstall.mysql.utf8mb4.sql</file></sql></uninstall>
   <update><schemas><schemapath type="mysql">sql/updates/mysql</schemapath></schemas></update>
-  <updateservers><server type="extension" priority="1" name="Membership by xdecaro">https://raw.githubusercontent.com/xdecaro/membership/main/updates/com_decaromembership.xml</server></updateservers>
 </extension>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="package" method="upgrade">
+  <name>Membership by xdecaro</name>
+  <packagename>decaromembership</packagename>
+  <version>1.1.0</version>
+  <creationDate>2026-09</creationDate>
+  <author>Luca De Caro</author>
+  <authorUrl>https://github.com/xdecaro/membership</authorUrl>
+  <copyright>Copyright (C) 2026 Luca De Caro. All rights reserved.</copyright>
+  <license>GNU General Public License version 2 or later</license>
+  <description>Membership management for Joomla.</description>
+  <targetplatform name="joomla" version="6.*" />
+  <files>
+    <file type="component" id="com_decaromembership">com_decaromembership.zip</file>
+  </files>
+  <updateservers>
+    <server type="extension" priority="1" name="Membership by xdecaro">https://raw.githubusercontent.com/xdecaro/membership/main/updates/pkg_decaromembership.xml</server>
+  </updateservers>
+  <changelogurl>https://raw.githubusercontent.com/xdecaro/membership/main/updates/changelog.xml</changelogurl>
+</extension>

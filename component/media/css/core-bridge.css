@@ -1,0 +1,15 @@
+/* Membership 1.1.0: bridge local tokens to Core by xdecaro only inside the opt-in scope. */
+.membership-core-scope {
+  --dm-bg: var(--xdecaro-color-background);
+  --dm-card: var(--xdecaro-color-surface);
+  --dm-border: var(--xdecaro-color-border);
+  --dm-text: var(--xdecaro-color-text);
+  --dm-muted: var(--xdecaro-color-muted);
+  --dm-radius: var(--xdecaro-radius-lg);
+  --dm-shadow: var(--xdecaro-shadow-sm);
+}
+.membership-core-scope .dm-card { background:var(--xdecaro-color-surface); border-color:var(--xdecaro-color-border); box-shadow:var(--xdecaro-shadow-sm); }
+.membership-core-scope .dm-row { border-color:var(--xdecaro-color-border); }
+.membership-core-scope .dm-badge.is-ok { background:var(--xdecaro-color-success-soft); color:var(--xdecaro-color-success); }
+.membership-core-scope .dm-badge.is-bad { background:var(--xdecaro-color-danger-soft); color:var(--xdecaro-color-danger); }
+.membership-core-scope .dm-badge.is-muted { background:var(--xdecaro-color-surface-subtle); color:var(--xdecaro-color-muted); }

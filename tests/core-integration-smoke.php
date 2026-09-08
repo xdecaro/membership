@@ -1,27 +1,23 @@
 <?php
-
+// Make the Joomla guard pass in the isolated CLI test.
 define('_JEXEC', 1);
-
 require_once __DIR__ . '/../component/admin/src/Service/CoreIntegrationService.php';
 
-use Xdecaro\Component\Decaromembership\Administrator\Service\CoreIntegrationService;
-
-$service = new CoreIntegrationService();
-
+$service = new \Xdecaro\Component\Decaromembership\Administrator\Service\CoreIntegrationService();
 if ($service->isAvailable()) {
-    throw new \RuntimeException('Core should not be available in the isolated Membership smoke test.');
+    fwrite(STDERR, "Core unexpectedly available in isolated smoke test.\n");
+    exit(1);
 }
-
-$controlledFailure = false;
 
 try {
     $service->createEntityReference('member', 1);
-} catch (\RuntimeException $exception) {
-    $controlledFailure = str_contains($exception->getMessage(), 'Xdecaro Core integration is unavailable');
+    fwrite(STDERR, "Expected controlled RuntimeException.\n");
+    exit(1);
+} catch (RuntimeException $e) {
+    if (!str_contains($e->getMessage(), 'Core by xdecaro')) {
+        fwrite(STDERR, "Unexpected RuntimeException message.\n");
+        exit(1);
+    }
 }
 
-if (!$controlledFailure) {
-    throw new \RuntimeException('Membership must fail gracefully when optional Core is unavailable.');
-}
-
-echo "Membership optional Core integration smoke test passed.\n";
+echo "Membership optional Core smoke test OK\n";

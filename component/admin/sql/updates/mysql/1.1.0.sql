@@ -1,0 +1,2 @@
+-- Membership 1.1.0
+-- No schema changes. Core UI integration and packaging metadata only.

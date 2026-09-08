@@ -11,20 +11,25 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
           coverage: none
-
       - name: PHP syntax
-        run: |
-          find component tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-
+        run: find component tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: XML and metadata
+        run: python3 build/validate.py
       - name: Optional Core integration smoke test
         run: php tests/core-integration-smoke.php
+      - name: Deterministic build A
+        run: |
+          python3 build/build.py
+          cp dist/SHA256SUMS.txt /tmp/membership-sums-a.txt
+          python3 build/validate.py --dist
+      - name: Deterministic build B
+        run: |
+          python3 build/build.py
+          diff -u /tmp/membership-sums-a.txt dist/SHA256SUMS.txt
+          python3 build/validate.py --dist

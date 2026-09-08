@@ -6,39 +6,36 @@ Membership è il componente Joomla 6 per la gestione centrale dell'identità ass
 
 - Componente: `com_decaromembership`
 - Pacchetto: `pkg_decaromembership`
-- Versione iniziale: `1.0.0`
+- Versione corrente: **1.1.0**
 - Joomla: `6.*`
 - Namespace: `Xdecaro\\Component\\Decaromembership`
 
-## Principi
-
-- Joomla MVC moderno e servizi namespaced.
-- ACL e controlli lato server.
-- CSRF/token Joomla sulle operazioni mutative.
-- Query bindate e input filtrati.
-- Lingue native Joomla: it-IT, en-GB, fr-FR.
-- Integrazioni opzionali e senza dipendenze rigide.
-- Aggiornamenti con SQL incrementali senza perdita dati.
-- UI responsive, accessibile e compatibile con light/dark mode.
-
-## Integrazioni previste
-
-Forms, Documents, Courses, Competitions e futuri componenti xdecaro tramite relazioni universali componente/entità/ID/tipo relazione.
-
 ## Xdecaro Core
 
-Membership integra in modo facoltativo il contratto pubblico di Xdecaro Core `1.0.0` tramite `CoreIntegrationService`, registrato nel contenitore Joomla. Il componente continua a funzionare senza Core; soltanto le funzioni che richiedono riferimenti tra prodotti restituiscono un errore controllato.
+Membership mantiene Core opzionale per la logica applicativa. `CoreIntegrationService` usa il contratto pubblico `EntityReference` / `RelationReference` quando sono disponibili.
 
-Core fornisce esclusivamente `EntityReference` e `RelationReference`. Soci, pratiche, rinnovi, tessere, quote, pagamenti e trasferimenti restano interamente di proprietà di Membership.
+Dalla 1.1.0 la pagina **Informazioni/Diagnostica** usa inoltre, in modo opt-in, `Xdecaro\\Core\\Asset\\AssetService` di **Core by xdecaro 1.1+**. Se Core manca, è incompatibile o gli asset non sono disponibili, Membership mantiene automaticamente il layout/CSS locale esistente.
 
-Vedi `docs/core-integration.md` per il contratto e i confini dell'integrazione.
+Core non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti, trasferimenti o altre regole Membership.
+
+## Distribuzione
+
+La release pubblica comprende:
+
+- `com_decaromembership_<versione>.zip`;
+- `pkg_decaromembership_<versione>.zip` — pacchetto consigliato per Joomla;
+- `SHA256SUMS.txt`.
+
+Il package registra l'update server Joomla `updates/pkg_decaromembership.xml`.
 
 ## Struttura repository
 
-- `component/` sorgenti installabili del componente.
-- `package/` manifest del pacchetto.
-- `updates/` update server Joomla.
-- `tools/` strumenti di build.
-- `releases/` ZIP generati dalle release.
+- `component/` — sorgenti installabili del componente;
+- `package/` — manifest package;
+- `updates/` — update server Joomla;
+- `build/` — validazione e build deterministico;
+- `tests/` — smoke test;
+- `docs/` — contratti e architettura;
+- `dist/` — output locale generato, non versionato.
 
 Copyright (C) 2026 Luca De Caro. GNU GPL v2 o successiva.

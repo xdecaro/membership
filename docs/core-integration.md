@@ -1,39 +1,40 @@
-# Xdecaro Core integration
+# Core by xdecaro integration
 
-Membership uses the Xdecaro Core cross-product reference contract when linking members and membership workflows to other Xdecaro products.
+Membership usa il contratto pubblico di Core by xdecaro per i riferimenti cross-product e, dalla versione 1.1.0, può usare anche il design system condiviso nella sola pagina Informazioni/Diagnostica.
 
-Current Joomla component element: `com_decaromembership`.
+Identità Joomla stabile di Membership: `com_decaromembership`.
 
-Use:
+## Contratto riferimenti
 
-- `Xdecaro\Core\Integration\EntityReference` for `component/entity/id` references;
-- `Xdecaro\Core\Integration\RelationReference` for typed links between references.
+`CoreIntegrationService` rimane un adapter di proprietà Membership registrato nel container Joomla.
 
-## Optional runtime adapter
+Usa:
 
-Membership registers `Xdecaro\Component\Decaromembership\Administrator\Service\CoreIntegrationService` in the Joomla DI container.
+- `Xdecaro\Core\Integration\EntityReference` per riferimenti `component/entity/id`;
+- `Xdecaro\Core\Integration\RelationReference` per relazioni tipizzate.
 
-The adapter intentionally keeps Core optional during this transition:
+Core resta opzionale: `isAvailable()` verifica le classi pubbliche e le operazioni dipendenti da Core falliscono con una `RuntimeException` controllata quando non sono disponibili.
 
-- `isAvailable()` reports whether the Core public reference classes can be resolved;
-- `createEntityReference()` creates a Membership-owned Core entity reference;
-- `createRelationReference()` creates a typed relation from a Membership entity to another product's published entity;
-- when Core is unavailable, Core-dependent calls throw a controlled `RuntimeException` rather than causing an opaque class-not-found fatal error.
+## UI condivisa
 
-Do not bypass this boundary by probing Core internals.
+Membership 1.1.0 usa `Xdecaro\Core\Asset\AssetService` soltanto nella vista amministrativa Informazioni.
 
-Membership remains the owner of members, categories, applications, renewals, cards, fees, payments, transfers, family relationships and membership workflow state.
+- Core 1.1+ presente e registry asset disponibile: vengono caricati `xdecaro.components`, `.xdecaro-scope` e il piccolo bridge token Membership -> Core.
+- Core assente/incompatibile: la vista usa il layout locale precedente e `com_decaromembership.admin`.
+- Nessun asset Core viene caricato globalmente da Membership.
+- Nessuna regola di dominio Membership viene spostata in Core.
 
-Typical integrations include:
+## Identificatori consumer
 
-- Membership application/renewal -> Forms submission with relation type `source_submission`;
-- Membership member -> Courses enrollment with relation type such as `participant`;
-- Membership member -> Competitions player/participation, using Competitions component element `com_decarodcl`;
-- Membership member/application -> Documents managed document through the Documents public API;
-- Membership member -> Events registration/participant when Events publishes its stable entity API.
+Le integrazioni devono usare gli identificatori Joomla pubblicati reali, tra cui:
 
-Membership decides why another entity is related to a member or membership process. The other product remains responsible for its own domain and authorization.
+- Forms: `com_decaroforms`;
+- Documents: `com_decarodocuments`;
+- Courses: `com_decarocourses`;
+- Competitions: `com_decarodcl`.
 
-Do not read or write another product's private tables as the integration API. Optional integrations must fail gracefully when unavailable.
+Non usare il nome del repository come sostituto dell'element Joomla.
 
-Entity type and relation type names become stable public contracts once published; evolve them through backward-compatible changes whenever possible.
+## Confini
+
+Soci, categorie, pratiche, rinnovi, tessere, quote, pagamenti, trasferimenti, relazioni familiari, audit e stato dei workflow restano interamente di Membership. Non leggere o scrivere tabelle private di altri prodotti come protocollo d'integrazione.
