@@ -2,7 +2,7 @@
 <extension type="package" method="upgrade">
   <name>Membership by xdecaro</name>
   <packagename>decaromembership</packagename>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
   <creationDate>2026-09</creationDate>
   <author>Luca De Caro</author>
   <authorUrl>https://github.com/xdecaro/membership</authorUrl>

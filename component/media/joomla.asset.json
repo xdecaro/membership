@@ -1,12 +1,12 @@
 {
   "$schema":"https://developer.joomla.org/schemas/json-schema/web_assets.json",
   "name":"com_decaromembership",
-  "version":"1.1.0",
+  "version":"1.2.0",
   "description":"Membership by xdecaro assets",
   "license":"GPL-2.0-or-later",
   "assets":[
-    {"name":"com_decaromembership.admin","type":"style","uri":"com_decaromembership/css/admin.css","version":"1.1.0"},
-    {"name":"com_decaromembership.core-bridge","type":"style","uri":"com_decaromembership/css/core-bridge.css","version":"1.1.0","dependencies":["com_decaromembership.admin"]},
-    {"name":"com_decaromembership.admin","type":"script","uri":"com_decaromembership/js/admin.js","version":"1.1.0","dependencies":["core"]}
+    {"name":"com_decaromembership.admin","type":"style","uri":"com_decaromembership/css/admin.css","version":"1.2.0"},
+    {"name":"com_decaromembership.core-bridge","type":"style","uri":"com_decaromembership/css/core-bridge.css","version":"1.2.0","dependencies":["com_decaromembership.admin"]},
+    {"name":"com_decaromembership.admin","type":"script","uri":"com_decaromembership/js/admin.js","version":"1.2.0","dependencies":["core"]}
   ]
 }

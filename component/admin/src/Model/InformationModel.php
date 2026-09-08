@@ -15,16 +15,20 @@ final class InformationModel extends BaseDatabaseModel
         $componentVersion = $this->getExtensionVersion('component', 'com_decaromembership');
         $packageVersion = $this->getExtensionVersion('package', 'pkg_decaromembership');
         $coreVersion = $this->getExtensionVersion('package', 'pkg_xdecarocore');
-        $coreApiAvailable = class_exists(\Xdecaro\Core\Integration\EntityReference::class)
-            && class_exists(\Xdecaro\Core\Integration\RelationReference::class);
-        $coreUiAvailable = class_exists(\Xdecaro\Core\Asset\AssetService::class);
+        $coreApiAvailable = class_exists(\xdecaro\Core\Version::class)
+            && version_compare((string) \xdecaro\Core\Version::VERSION, '1.3.0', '>=')
+            && class_exists(\xdecaro\Core\Integration\EntityReference::class)
+            && class_exists(\xdecaro\Core\Integration\RelationReference::class);
+        $coreUiAvailable = class_exists(\xdecaro\Core\Version::class)
+            && version_compare((string) \xdecaro\Core\Version::VERSION, '1.3.0', '>=')
+            && class_exists(\xdecaro\Core\Asset\AssetService::class);
 
         return [
             'environment' => MembershipHelper::environment(),
             'integrations' => MembershipHelper::integrations(),
             'diagnostics' => MembershipHelper::diagnostics(),
             'extensions' => [
-                ['name' => 'Membership by xdecaro', 'element' => 'com_decaromembership', 'version' => $componentVersion ?: '1.1.0'],
+                ['name' => 'Membership by xdecaro', 'element' => 'com_decaromembership', 'version' => $componentVersion ?: '1.2.0'],
                 ['name' => 'Membership Package', 'element' => 'pkg_decaromembership', 'version' => $packageVersion],
             ],
             'core' => [
@@ -34,7 +38,7 @@ final class InformationModel extends BaseDatabaseModel
                 'version' => $coreVersion,
                 'api_available' => $coreApiAvailable,
                 'ui_available' => $coreUiAvailable,
-                'minimum_ui_version' => '1.1.0',
+                'minimum_ui_version' => '1.3.0',
                 'required' => false,
             ],
             'updates' => [

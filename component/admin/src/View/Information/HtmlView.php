@@ -11,6 +11,8 @@ use Throwable;
 
 final class HtmlView extends BaseHtmlView
 {
+    private const MINIMUM_CORE_UI_VERSION = '1.3.0';
+
     public array $info = [];
     public bool $coreUi = false;
 
@@ -20,9 +22,11 @@ final class HtmlView extends BaseHtmlView
         $webAssets = Factory::getApplication()->getDocument()->getWebAssetManager();
         $webAssets->useStyle('com_decaromembership.admin');
 
-        if (class_exists(\Xdecaro\Core\Asset\AssetService::class)) {
+        if (class_exists(\xdecaro\Core\Version::class)
+            && version_compare((string) \xdecaro\Core\Version::VERSION, self::MINIMUM_CORE_UI_VERSION, '>=')
+            && class_exists(\xdecaro\Core\Asset\AssetService::class)) {
             try {
-                $this->coreUi = (new \Xdecaro\Core\Asset\AssetService())->useComponents($webAssets);
+                $this->coreUi = (new \xdecaro\Core\Asset\AssetService())->useComponents($webAssets);
             } catch (Throwable) {
                 $this->coreUi = false;
             }

@@ -1,0 +1,2 @@
+-- Membership 1.2.0
+-- No database schema changes. Joomla schema-version marker only.

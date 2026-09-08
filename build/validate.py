@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import zipfile
 from pathlib import Path
 import xml.etree.ElementTree as ET
@@ -21,7 +22,7 @@ def version(path: Path) -> str:
 
 
 def validate() -> None:
-    if VERSION != '1.1.0':
+    if VERSION != '1.2.0':
         fail(f'unexpected VERSION {VERSION!r}')
 
     component = ROOT / 'component/decaromembership.xml'
@@ -31,7 +32,7 @@ def validate() -> None:
 
     component_root = ET.parse(component).getroot()
     if component_root.find('./files') is not None:
-        fail('administrator-only 1.1.0 must not reference a missing site source folder')
+        fail('administrator-only Membership must not reference a missing site source folder')
 
     for lang in component_root.findall('./administration/languages/language'):
         folder = component_root.find('./administration/languages').get('folder')
@@ -46,7 +47,7 @@ def validate() -> None:
         fail('Core bridge asset is not registered')
 
     html_view = (ROOT / 'component/admin/src/View/Information/HtmlView.php').read_text(encoding='utf-8')
-    for marker in ('Xdecaro\\Core\\Asset\\AssetService', "setLayout('core')", "useStyle('com_decaromembership.core-bridge')"):
+    for marker in ('xdecaro\\Core\\Asset\\AssetService', 'xdecaro\\Core\\Version', "MINIMUM_CORE_UI_VERSION = '1.3.0'", "setLayout('core')", "useStyle('com_decaromembership.core-bridge')"):
         if marker not in html_view:
             fail(f'Information Core UI integration missing {marker}')
 
@@ -60,9 +61,18 @@ def validate() -> None:
         fail('Competitions must use its stable Joomla identifier com_decarodcl')
 
     model = (ROOT / 'component/admin/src/Model/InformationModel.php').read_text(encoding='utf-8')
-    for marker in ('pkg_xdecarocore', 'api_available', 'ui_available', '1.1.0'):
+    for marker in ('pkg_xdecarocore', 'xdecaro\\Core\\Version', 'api_available', 'ui_available', "'1.3.0'"):
         if marker not in model:
             fail(f'InformationModel missing {marker}')
+
+    adapter = (ROOT / 'component/admin/src/Service/CoreIntegrationService.php').read_text(encoding='utf-8')
+    for marker in ("COMPONENT = 'com_decaromembership'", "MINIMUM_CORE_VERSION = '1.3.0'", 'xdecaro\\Core\\Integration\\EntityReference', 'xdecaro\\Core\\Integration\\RelationReference'):
+        if marker not in adapter:
+            fail(f'Core adapter missing {marker}')
+
+    for text, label in ((html_view, 'Information HtmlView'), (model, 'InformationModel'), (adapter, 'CoreIntegrationService')):
+        if re.search(r'Xdecaro\\+Core', text):
+            fail(f'legacy Core namespace remains in {label}')
 
     feed = ET.parse(ROOT / 'updates/pkg_decaromembership.xml').getroot().find('update')
     if feed is None or (feed.findtext('version') or '').strip() != VERSION:

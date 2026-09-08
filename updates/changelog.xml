@@ -3,6 +3,12 @@
   <changelog>
     <element>pkg_decaromembership</element>
     <type>package</type>
+    <version>1.2.0</version>
+    <note>Core integration migrata al namespace canonico xdecaro\Core con Core 1.3.0+ richiesto soltanto per le funzioni Core; fallback locale invariato.</note>
+  </changelog>
+  <changelog>
+    <element>pkg_decaromembership</element>
+    <type>package</type>
     <version>1.1.0</version>
     <note>Package release con integrazione UI opzionale Core by xdecaro 1.1+, fallback locale e infrastruttura di aggiornamento.</note>
   </changelog>
