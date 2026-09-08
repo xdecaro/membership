@@ -25,6 +25,14 @@ Membership è il componente Joomla 6 per la gestione centrale dell'identità ass
 
 Forms, Documents, Courses, Competitions e futuri componenti xdecaro tramite relazioni universali componente/entità/ID/tipo relazione.
 
+## Xdecaro Core
+
+Membership integra in modo facoltativo il contratto pubblico di Xdecaro Core `1.0.0` tramite `CoreIntegrationService`, registrato nel contenitore Joomla. Il componente continua a funzionare senza Core; soltanto le funzioni che richiedono riferimenti tra prodotti restituiscono un errore controllato.
+
+Core fornisce esclusivamente `EntityReference` e `RelationReference`. Soci, pratiche, rinnovi, tessere, quote, pagamenti e trasferimenti restano interamente di proprietà di Membership.
+
+Vedi `docs/core-integration.md` per il contratto e i confini dell'integrazione.
+
 ## Struttura repository
 
 - `component/` sorgenti installabili del componente.
