@@ -43,11 +43,16 @@ jobs:
           mkdir joomla && unzip -q /tmp/j.zip -d joomla
           cd joomla && php installation/joomla.php install --site-name='Membership CI' --admin-user='Admin' --admin-username=admin --admin-password="Membership-${GITHUB_RUN_ID}!" --admin-email=admin@example.invalid --db-type=mysqli --db-host=127.0.0.1 --db-user=root --db-pass='' --db-name=joomla --db-prefix=mem_ --db-encryption=0 --no-interaction
       - name: Install package and verify
+        shell: bash
         run: |
-          VERSION=$(cat VERSION); cd joomla; php cli/joomla.php extension:install --path="$GITHUB_WORKSPACE/dist/pkg_decaromembership_${VERSION}.zip" -vvv
-          MYSQL='mysql --protocol=TCP -h127.0.0.1 -uroot --batch --skip-column-names joomla -e'
-          test "$(eval $MYSQL \"SELECT COUNT(*) FROM mem_extensions WHERE type='package' AND element='pkg_decaromembership';\")" = 1
-          test "$(eval $MYSQL \"SELECT COUNT(*) FROM mem_extensions WHERE type='plugin' AND folder='xdecaroanalytics' AND element='decaromembership' AND enabled=1;\")" = 1
-          test "$(eval $MYSQL \"SELECT COUNT(*) FROM mem_extensions WHERE type='plugin' AND folder='task' AND element='decaromembership' AND enabled=1;\")" = 1
-          test "$(eval $MYSQL \"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='joomla' AND table_name='mem_decaromembership_members';\")" = 1
-          schema=$(eval $MYSQL \"SELECT s.version_id FROM mem_schemas s JOIN mem_extensions e ON e.extension_id=s.extension_id WHERE e.type='component' AND e.element='com_decaromembership' LIMIT 1;\"); test "$schema" = '1.3.0'
+          set -euo pipefail
+          VERSION="$(cat VERSION)"
+          cd joomla
+          php cli/joomla.php extension:install --path="$GITHUB_WORKSPACE/dist/pkg_decaromembership_${VERSION}.zip" -vvv
+          MYSQL=(mysql --protocol=TCP -h127.0.0.1 -uroot --batch --skip-column-names joomla)
+          test "$("${MYSQL[@]}" -e "SELECT COUNT(*) FROM mem_extensions WHERE type='package' AND element='pkg_decaromembership';")" = '1'
+          test "$("${MYSQL[@]}" -e "SELECT COUNT(*) FROM mem_extensions WHERE type='plugin' AND folder='xdecaroanalytics' AND element='decaromembership' AND enabled=1;")" = '1'
+          test "$("${MYSQL[@]}" -e "SELECT COUNT(*) FROM mem_extensions WHERE type='plugin' AND folder='task' AND element='decaromembership' AND enabled=1;")" = '1'
+          test "$("${MYSQL[@]}" -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='joomla' AND table_name='mem_decaromembership_members';")" = '1'
+          schema="$("${MYSQL[@]}" -e "SELECT s.version_id FROM mem_schemas s JOIN mem_extensions e ON e.extension_id=s.extension_id WHERE e.type='component' AND e.element='com_decaromembership' LIMIT 1;")"
+          test "$schema" = '1.3.0'
