@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
-  <fieldset name="general" label="COM_DECAROMEMBERSHIP_CONFIG_GENERAL">
-    <field name="association_year_start" type="calendar" format="%Y-%m-%d" label="COM_DECAROMEMBERSHIP_CONFIG_ASSOCIATION_YEAR_START" />
-    <field name="member_number_prefix" type="text" filter="string" label="COM_DECAROMEMBERSHIP_CONFIG_MEMBER_PREFIX" />
-    <field name="enable_frontend_portal" type="radio" default="1" class="btn-group btn-group-yesno" label="COM_DECAROMEMBERSHIP_CONFIG_FRONTEND_PORTAL"><option value="1">JYES</option><option value="0">JNO</option></field>
-    <field name="audit_retention_days" type="number" min="0" default="3650" label="COM_DECAROMEMBERSHIP_CONFIG_AUDIT_RETENTION" />
-  </fieldset>
+  <fieldset name="general" label="COM_DECAROMEMBERSHIP_CONFIG_GENERAL"><field name="association_year_start" type="calendar" format="%Y-%m-%d" label="COM_DECAROMEMBERSHIP_CONFIG_ASSOCIATION_YEAR_START" /><field name="member_number_prefix" type="text" filter="string" label="COM_DECAROMEMBERSHIP_CONFIG_MEMBER_PREFIX" /><field name="enable_frontend_portal" type="radio" default="1" class="btn-group btn-group-yesno" label="COM_DECAROMEMBERSHIP_CONFIG_FRONTEND_PORTAL"><option value="1">JYES</option><option value="0">JNO</option></field><field name="audit_retention_days" type="number" min="0" default="3650" label="COM_DECAROMEMBERSHIP_CONFIG_AUDIT_RETENTION" /></fieldset>
+  <fieldset name="integrations" label="Integrations"><field name="integration_reminder_days" type="number" min="1" max="365" default="30" label="Reminder window (days)"/><field name="integration_manager_user_id" type="user" label="Manager for generated tasks"/><field name="integration_notify_members" type="radio" default="1" class="btn-group btn-group-yesno" label="Send shared notifications to linked Joomla users"><option value="1">JYES</option><option value="0">JNO</option></field><field name="integration_create_tasks" type="radio" default="1" class="btn-group btn-group-yesno" label="Create shared Tasks for the manager"><option value="1">JYES</option><option value="0">JNO</option></field></fieldset>
   <fieldset name="permissions" label="JCONFIG_PERMISSIONS_LABEL"><field name="rules" type="rules" label="JCONFIG_PERMISSIONS_LABEL" validate="rules" filter="rules" component="com_decaromembership" section="component" /></fieldset>
 </config>

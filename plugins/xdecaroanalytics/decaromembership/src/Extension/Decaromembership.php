@@ -1,0 +1,5 @@
+<?php
+namespace Xdecaro\Plugin\Xdecaroanalytics\Decaromembership\Extension;
+defined('_JEXEC') or die;
+use Joomla\CMS\Factory; use Joomla\CMS\Plugin\CMSPlugin; use Joomla\Event\SubscriberInterface; use Throwable; use xdecaro\Component\Analytics\Administrator\Event\RegisterProvidersEvent; use Xdecaro\Component\Decaromembership\Administrator\Extension\MembershipComponent; use Xdecaro\Plugin\Xdecaroanalytics\Decaromembership\Provider\MembershipProvider;
+final class Decaromembership extends CMSPlugin implements SubscriberInterface { public static function getSubscribedEvents(): array { return [RegisterProvidersEvent::NAME=>'registerProvider']; } public function registerProvider(RegisterProvidersEvent $event): void { try { $component=Factory::getApplication()->bootComponent('com_decaromembership'); if ($component instanceof MembershipComponent) { $event->getRegistry()->register(new MembershipProvider($component->getAnalyticsSourceService())); } } catch (Throwable $e) { \Joomla\CMS\Log\Log::add('Membership Analytics provider: '.$e->getMessage(), \Joomla\CMS\Log\Log::WARNING, 'plg_xdecaroanalytics_decaromembership'); } } }

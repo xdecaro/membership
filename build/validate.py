@@ -1,134 +1,65 @@
 #!/usr/bin/env python3
 from __future__ import annotations
-
-import argparse
-import json
-import re
-import zipfile
+import argparse,json,re,zipfile
 from pathlib import Path
 import xml.etree.ElementTree as ET
-
-ROOT = Path(__file__).resolve().parents[1]
-VERSION = (ROOT / 'VERSION').read_text(encoding='utf-8').strip()
-
-
-def fail(message: str) -> None:
-    raise SystemExit('ERROR: ' + message)
-
-
-def version(path: Path) -> str:
-    root = ET.parse(path).getroot()
-    return (root.findtext('version') or '').strip()
-
-
-def validate() -> None:
-    if VERSION != '1.2.0':
-        fail(f'unexpected VERSION {VERSION!r}')
-
-    component = ROOT / 'component/decaromembership.xml'
-    package = ROOT / 'package/pkg_decaromembership.xml'
-    if version(component) != VERSION or version(package) != VERSION:
-        fail('manifest versions are not aligned with VERSION')
-
-    component_root = ET.parse(component).getroot()
-    if component_root.find('./files') is not None:
-        fail('administrator-only Membership must not reference a missing site source folder')
-
-    for lang in component_root.findall('./administration/languages/language'):
-        folder = component_root.find('./administration/languages').get('folder')
-        path = ROOT / 'component' / folder / (lang.text or '')
-        if not path.is_file():
-            fail(f'missing declared language file {path.relative_to(ROOT)}')
-
-    assets = json.loads((ROOT / 'component/media/joomla.asset.json').read_text(encoding='utf-8'))
-    if assets.get('version') != VERSION:
-        fail('Web Asset registry version mismatch')
-    if not any(a.get('name') == 'com_decaromembership.core-bridge' and a.get('type') == 'style' for a in assets.get('assets', [])):
-        fail('Core bridge asset is not registered')
-
-    html_view = (ROOT / 'component/admin/src/View/Information/HtmlView.php').read_text(encoding='utf-8')
-    for marker in ('xdecaro\\Core\\Asset\\AssetService', 'xdecaro\\Core\\Version', "MINIMUM_CORE_UI_VERSION = '1.3.0'", "setLayout('core')", "useStyle('com_decaromembership.core-bridge')"):
-        if marker not in html_view:
-            fail(f'Information Core UI integration missing {marker}')
-
-    core_template = (ROOT / 'component/admin/tmpl/information/core.php').read_text(encoding='utf-8')
-    for marker in ('xdecaro-scope membership-core-scope', 'Core by xdecaro', 'pkg_xdecarocore', 'xdecaro-card', 'xdecaro-badge'):
-        if marker not in core_template:
-            fail(f'Core information layout missing {marker}')
-
-    helper = (ROOT / 'component/admin/src/Helper/MembershipHelper.php').read_text(encoding='utf-8')
-    if 'com_decarodcl' not in helper or 'com_decarocompetitions' in helper:
-        fail('Competitions must use its stable Joomla identifier com_decarodcl')
-
-    model = (ROOT / 'component/admin/src/Model/InformationModel.php').read_text(encoding='utf-8')
-    for marker in ('pkg_xdecarocore', 'xdecaro\\Core\\Version', 'api_available', 'ui_available', "'1.3.0'"):
-        if marker not in model:
-            fail(f'InformationModel missing {marker}')
-
-    adapter = (ROOT / 'component/admin/src/Service/CoreIntegrationService.php').read_text(encoding='utf-8')
-    for marker in ("COMPONENT = 'com_decaromembership'", "MINIMUM_CORE_VERSION = '1.3.0'", 'xdecaro\\Core\\Integration\\EntityReference', 'xdecaro\\Core\\Integration\\RelationReference'):
-        if marker not in adapter:
-            fail(f'Core adapter missing {marker}')
-
-    for text, label in ((html_view, 'Information HtmlView'), (model, 'InformationModel'), (adapter, 'CoreIntegrationService')):
-        if re.search(r'Xdecaro\\+Core', text):
-            fail(f'legacy Core namespace remains in {label}')
-
-    feed = ET.parse(ROOT / 'updates/pkg_decaromembership.xml').getroot().find('update')
-    if feed is None or (feed.findtext('version') or '').strip() != VERSION:
-        fail('package update feed version mismatch')
-    expected = f'https://github.com/xdecaro/membership/releases/download/v{VERSION}/pkg_decaromembership_{VERSION}.zip'
-    if (feed.findtext('./downloads/downloadurl') or '').strip() != expected:
-        fail('package update URL mismatch')
-
-    sql_update = ROOT / f'component/admin/sql/updates/mysql/{VERSION}.sql'
-    if not sql_update.is_file():
-        fail('missing non-destructive schema marker')
-
-
-def validate_dist() -> None:
-    component_zip = ROOT / f'dist/com_decaromembership_{VERSION}.zip'
-    package_zip = ROOT / f'dist/pkg_decaromembership_{VERSION}.zip'
-    for path in (component_zip, package_zip):
-        if not path.is_file():
-            fail(f'missing {path.relative_to(ROOT)}')
-        with zipfile.ZipFile(path) as archive:
-            if archive.testzip() is not None:
-                fail(f'corrupt ZIP {path.name}')
-
-    with zipfile.ZipFile(component_zip) as archive:
-        names = set(archive.namelist())
-        required = {
-            'decaromembership.xml',
-            'admin/services/provider.php',
-            'admin/src/Service/CoreIntegrationService.php',
-            'admin/src/View/Information/HtmlView.php',
-            'admin/tmpl/information/default.php',
-            'admin/tmpl/information/core.php',
-            'admin/language/it-IT/com_decaromembership.ini',
-            'media/css/admin.css',
-            'media/css/core-bridge.css',
-            'media/joomla.asset.json',
-        }
-        missing = required - names
-        if missing:
-            fail('component ZIP missing: ' + ', '.join(sorted(missing)))
-
-    with zipfile.ZipFile(package_zip) as archive:
-        names = set(archive.namelist())
-        if names != {'pkg_decaromembership.xml', 'com_decaromembership.zip'}:
-            fail(f'unexpected package contents: {sorted(names)}')
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--dist', action='store_true')
-    args = parser.parse_args()
-    validate()
-    if args.dist:
-        validate_dist()
-    print(f'Membership {VERSION} validation OK')
-
-
-if __name__ == '__main__':
-    main()
+ROOT=Path(__file__).resolve().parents[1]; VERSION=(ROOT/'VERSION').read_text(encoding='utf-8').strip()
+def fail(msg): raise SystemExit('ERROR: '+msg)
+def version(path): return (ET.parse(path).getroot().findtext('version') or '').strip()
+def require(path,*markers):
+ text=(ROOT/path).read_text(encoding='utf-8')
+ for marker in markers:
+  if marker not in text: fail(f'{path} missing {marker}')
+ return text
+def validate():
+ if VERSION!='1.3.0': fail(f'unexpected VERSION {VERSION!r}')
+ manifests=[ROOT/'component/decaromembership.xml',ROOT/'package/pkg_decaromembership.xml',ROOT/'plugins/xdecaroanalytics/decaromembership/decaromembership.xml',ROOT/'plugins/task/decaromembership/decaromembership.xml']
+ for path in manifests:
+  ET.parse(path)
+  if version(path)!=VERSION: fail(f'{path.relative_to(ROOT)} version mismatch')
+ root=ET.parse(manifests[0]).getroot()
+ if root.find('./files') is not None: fail('Membership remains administrator-only')
+ for sql in root.findall('./install/sql/file')+root.findall('./uninstall/sql/file'):
+  if (sql.get('driver') or '')!='mysql' or (sql.get('charset') or '')!='utf8': fail('Joomla SQL manifest entries must use mysql/utf8')
+ assets=json.loads((ROOT/'component/media/joomla.asset.json').read_text());
+ if assets.get('version')!=VERSION: fail('asset version mismatch')
+ package_root=ET.parse(manifests[1]).getroot(); children={(n.get('type',''),n.get('id',''),n.get('group',''),(n.text or '').strip()) for n in package_root.findall('./files/file')}
+ expected={('component','com_decaromembership','','com_decaromembership.zip'),('plugin','decaromembership','xdecaroanalytics','plg_xdecaroanalytics_decaromembership.zip'),('plugin','decaromembership','task','plg_task_decaromembership.zip')}
+ if children!=expected: fail(f'package children mismatch: {children}')
+ require('component/admin/src/Service/CoreIntegrationService.php',"COMPONENT='com_decaromembership'",'CapabilityRegistry','membership.analytics.provider','membership.notifications.bridge','membership.tasks.bridge','membership.reminders.process')
+ bridge=require('component/admin/src/Service/CrossProductIntegrationService.php','com_xdecaronotifications','getNotificationService','com_xdecarotasks','getTaskService','source_component')
+ if '#__xdecaronotifications_' in bridge or '#__xdecarotasks_' in bridge: fail('cross-product bridge accesses private tables')
+ require('component/admin/src/Service/AnalyticsSourceService.php','assertAuthorised','#__decaromembership_members','membership.members.total','membership.expiring')
+ require('component/admin/src/Service/ReminderService.php','#__decaromembership_renewals','#__decaromembership_cards','#__decaromembership_documents','#__decaromembership_dues','external_key','integration_manager_user_id')
+ require('plugins/xdecaroanalytics/decaromembership/src/Extension/Decaromembership.php','RegisterProvidersEvent::NAME','getAnalyticsSourceService')
+ provider=require('plugins/xdecaroanalytics/decaromembership/src/Provider/MembershipProvider.php','implements AnalyticsProviderInterface',"return 'membership'")
+ if '#__decaromembership_' in provider: fail('Analytics adapter must delegate to Membership source service')
+ require('plugins/task/decaromembership/src/Extension/Decaromembership.php','TaskPluginTrait','decaromembership.reminders','getReminderService')
+ require('component/admin/services/provider.php','MembershipComponent','AnalyticsSourceService::class','ReminderService::class','setReminderService')
+ installer=require('package/script.php',"['install', 'discover_install']","'xdecaroanalytics'","'task'",'decaromembership','ParameterType::INTEGER')
+ if "['update'" in installer or "$type === 'update'" in installer: fail('package installer must not force-enable plugins during updates')
+ if not (ROOT/f'component/admin/sql/updates/mysql/{VERSION}.sql').is_file(): fail('schema marker missing')
+ install=(ROOT/'component/admin/sql/install.mysql.utf8mb4.sql').read_text()
+ if '#__decaromembership_notifications' not in install: fail('legacy Membership notifications table unexpectedly removed')
+ for sql in (ROOT/'component/admin/sql').rglob('*.sql'):
+  if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE)\b',sql.read_text(),re.I) and 'uninstall' not in sql.name: fail(f'destructive update SQL: {sql}')
+ feed=ET.parse(ROOT/'updates/pkg_decaromembership.xml').getroot().find('update')
+ if feed is None or (feed.findtext('version') or '').strip()!=VERSION: fail('update feed mismatch')
+ expected_url=f'https://github.com/xdecaro/membership/releases/download/v{VERSION}/pkg_decaromembership_{VERSION}.zip'
+ if (feed.findtext('./downloads/downloadurl') or '').strip()!=expected_url: fail('update download mismatch')
+ print(f'Membership {VERSION} source validation OK')
+def validate_dist():
+ dist=ROOT/'dist'; files=[dist/f'com_decaromembership_{VERSION}.zip',dist/f'plg_xdecaroanalytics_decaromembership_{VERSION}.zip',dist/f'plg_task_decaromembership_{VERSION}.zip',dist/f'pkg_decaromembership_{VERSION}.zip',dist/'SHA256SUMS.txt']
+ for p in files:
+  if not p.is_file(): fail(f'missing {p.name}')
+ with zipfile.ZipFile(files[3]) as z:
+  expected={'pkg_decaromembership.xml','script.php','com_decaromembership.zip','plg_xdecaroanalytics_decaromembership.zip','plg_task_decaromembership.zip'}
+  if set(z.namelist())!=expected: fail('unexpected package contents')
+ for p in files[:4]:
+  with zipfile.ZipFile(p) as z:
+   if z.testzip() is not None: fail(f'corrupt {p.name}')
+ print(f'Membership {VERSION} dist validation OK')
+def main():
+ parser=argparse.ArgumentParser();parser.add_argument('--dist',action='store_true');args=parser.parse_args();validate();
+ if args.dist: validate_dist()
+if __name__=='__main__':main()
