@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.4.0 - 2026-09-09
+- Added optional Finance 1.3.0 synchronization through the public `com_decarofinance` component service only.
+- Membership dues are upserted as Finance obligations and paid Membership payments are upserted as Finance payments without direct access to Finance tables or implementation classes.
+- Due and payment changes made before allocation are propagated to the existing Finance records in place.
+- Paid-payment allocation is replay-safe: repeating an unchanged synchronization does not duplicate the allocation.
+- Conflicting due or payment changes after allocation are rejected so financial history is not silently rewritten.
+- Added Finance integration boundary tests and a Joomla 6.1.3 runtime contract test pinned to the released Finance 1.3.0 package SHA-256.
+- Added the non-destructive 1.4.0 SQL schema marker and updated release/build validation.
+
 ## 1.3.0 - 2026-09-09
 - Added shared Notifications and Tasks bridges without cross-product table access.
 - Added Membership Analytics provider with ACL-protected metrics and datasets.
