@@ -8,6 +8,17 @@ if ($joomlaRoot === '' || !is_file($joomlaRoot . '/includes/defines.php')) {
     exit(1);
 }
 
+// Membership's MVCFactory can resolve Joomla's router even from a CLI probe.
+// Give that web application dependency a deterministic, valid request URI
+// instead of PHP's absolute CLI SCRIPT_NAME (which would become http:///...).
+$_SERVER['HTTP_HOST'] = 'localhost';
+$_SERVER['SERVER_NAME'] = 'localhost';
+$_SERVER['SERVER_PORT'] = '80';
+$_SERVER['REQUEST_URI'] = '/index.php';
+$_SERVER['SCRIPT_NAME'] = '/index.php';
+$_SERVER['PHP_SELF'] = '/index.php';
+$_SERVER['HTTPS'] = 'off';
+
 define('_JEXEC', 1);
 define('JPATH_BASE', $joomlaRoot);
 require JPATH_BASE . '/includes/defines.php';
