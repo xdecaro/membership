@@ -9,8 +9,8 @@ if ($joomlaRoot === '' || !is_file($joomlaRoot . '/includes/defines.php')) {
 }
 
 // Membership's MVCFactory can resolve Joomla's router even from a CLI probe.
-// Give that web application dependency a deterministic, valid request URI
-// instead of PHP's absolute CLI SCRIPT_NAME (which would become http:///...).
+// Give that dependency a deterministic valid URI instead of PHP's absolute
+// CLI SCRIPT_NAME, which Joomla would otherwise parse as http:///....
 $_SERVER['HTTP_HOST'] = 'localhost';
 $_SERVER['SERVER_NAME'] = 'localhost';
 $_SERVER['SERVER_PORT'] = '80';
@@ -53,7 +53,17 @@ if (!is_object($financeComponent) || !method_exists($financeComponent, 'getFinan
 $finance = $financeComponent->getFinanceService();
 $db = $container->get(\Joomla\Database\DatabaseInterface::class);
 
-$db->insertObject('#__decaromembership_members', (object) [
+$insertRow = static function (string $table, array $data) use ($db): int {
+    $row = (object) $data;
+    $db->insertObject($table, $row);
+    return (int) $db->insertid();
+};
+$updateRow = static function (string $table, array $data, string $key = 'id') use ($db): void {
+    $row = (object) $data;
+    $db->updateObject($table, $row, $key);
+};
+
+$memberId = $insertRow('#__decaromembership_members', [
     'first_name' => 'CI',
     'last_name' => 'Finance Bridge',
     'status' => 'active',
@@ -61,13 +71,12 @@ $db->insertObject('#__decaromembership_members', (object) [
     'created' => '2026-09-09 12:00:00',
     'created_by' => 1,
 ]);
-$memberId = (int) $db->insertid();
 if ($memberId < 1) {
     fwrite(STDERR, "Cannot create Membership CI member.\n");
     exit(1);
 }
 
-$db->insertObject('#__decaromembership_dues', (object) [
+$dueId = $insertRow('#__decaromembership_dues', [
     'member_id' => $memberId,
     'association_year' => '2026',
     'amount' => '80.00',
@@ -78,9 +87,8 @@ $db->insertObject('#__decaromembership_dues', (object) [
     'created' => '2026-09-09 12:00:00',
     'created_by' => 1,
 ]);
-$dueId = (int) $db->insertid();
 
-$db->insertObject('#__decaromembership_payments', (object) [
+$paymentId = $insertRow('#__decaromembership_payments', [
     'member_id' => $memberId,
     'due_id' => $dueId,
     'amount' => '80.00',
@@ -92,7 +100,6 @@ $db->insertObject('#__decaromembership_payments', (object) [
     'created' => '2026-09-09 12:00:00',
     'created_by' => 1,
 ]);
-$paymentId = (int) $db->insertid();
 if ($dueId < 1 || $paymentId < 1) {
     fwrite(STDERR, "Cannot create Membership CI due/payment.\n");
     exit(1);
@@ -104,7 +111,7 @@ if (!is_int($obligationId1) || $obligationId1 < 1) {
     fwrite(STDERR, "Initial Membership due synchronization failed.\n");
     exit(1);
 }
-$db->updateObject('#__decaromembership_dues', (object) ['id' => $dueId, 'amount' => '90.00'], 'id');
+$updateRow('#__decaromembership_dues', ['id' => $dueId, 'amount' => '90.00']);
 $obligationId2 = $bridge->syncDueToFinance($dueId, 'EUR', 1);
 $obligation = $finance->getObligation((int) $obligationId2);
 if ($obligationId1 !== $obligationId2 || !is_array($obligation) || abs((float) ($obligation['amount'] ?? 0) - 90.0) > 0.0001) {
@@ -118,7 +125,7 @@ if (!is_int($financePaymentId1) || $financePaymentId1 < 1) {
     fwrite(STDERR, "Initial Membership payment synchronization failed.\n");
     exit(1);
 }
-$db->updateObject('#__decaromembership_payments', (object) ['id' => $paymentId, 'amount' => '90.00'], 'id');
+$updateRow('#__decaromembership_payments', ['id' => $paymentId, 'amount' => '90.00']);
 $financePaymentId2 = $bridge->syncPaymentToFinance($paymentId, 'EUR', 1);
 $financePayment = $finance->getPayment((int) $financePaymentId2);
 if ($financePaymentId1 !== $financePaymentId2 || !is_array($financePayment) || abs((float) ($financePayment['amount'] ?? 0) - 90.0) > 0.0001) {
@@ -148,7 +155,7 @@ if (!is_array($allocatedObligation) || abs((float) ($allocatedObligation['alloca
 }
 
 // Once allocated, changed financial history must be rejected rather than rewritten.
-$db->updateObject('#__decaromembership_dues', (object) ['id' => $dueId, 'amount' => '95.00'], 'id');
+$updateRow('#__decaromembership_dues', ['id' => $dueId, 'amount' => '95.00']);
 $changedDueRejected = false;
 try {
     $bridge->syncDueToFinance($dueId, 'EUR', 1);
@@ -159,9 +166,9 @@ if (!$changedDueRejected) {
     fwrite(STDERR, "Allocated Membership due accepted a conflicting change.\n");
     exit(1);
 }
-$db->updateObject('#__decaromembership_dues', (object) ['id' => $dueId, 'amount' => '90.00'], 'id');
+$updateRow('#__decaromembership_dues', ['id' => $dueId, 'amount' => '90.00']);
 
-$db->updateObject('#__decaromembership_payments', (object) ['id' => $paymentId, 'amount' => '95.00'], 'id');
+$updateRow('#__decaromembership_payments', ['id' => $paymentId, 'amount' => '95.00']);
 $changedPaymentRejected = false;
 try {
     $bridge->syncPaymentToFinance($paymentId, 'EUR', 1);
@@ -172,7 +179,7 @@ if (!$changedPaymentRejected) {
     fwrite(STDERR, "Allocated Membership payment accepted a conflicting change.\n");
     exit(1);
 }
-$db->updateObject('#__decaromembership_payments', (object) ['id' => $paymentId, 'amount' => '90.00'], 'id');
+$updateRow('#__decaromembership_payments', ['id' => $paymentId, 'amount' => '90.00']);
 
 $allocation3 = $bridge->syncPaidPaymentAllocation($paymentId, 'EUR', 1);
 if ($allocation3 !== $allocation1) {
