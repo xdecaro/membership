@@ -1,0 +1,1 @@
+-- Membership 1.4.0 Finance integration release. No schema changes; Membership data remains authoritative and no Finance tables are touched.

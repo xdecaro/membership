@@ -3,6 +3,18 @@
   <changelog>
     <element>pkg_decaromembership</element>
     <type>package</type>
+    <version>1.4.0</version>
+    <note>Integrazione opzionale con Finance 1.3.0 tramite servizio pubblico: aggiornamenti prima dell'allocazione, replay idempotente e rifiuto delle modifiche conflittuali dopo l'allocazione.</note>
+  </changelog>
+  <changelog>
+    <element>pkg_decaromembership</element>
+    <type>package</type>
+    <version>1.3.0</version>
+    <note>Integrazione condivisa con Notifications, Tasks e Analytics, reminder pianificati e conservazione dei dati Membership esistenti.</note>
+  </changelog>
+  <changelog>
+    <element>pkg_decaromembership</element>
+    <type>package</type>
     <version>1.2.0</version>
     <note>Core integration migrata al namespace canonico xdecaro\Core con Core 1.3.0+ richiesto soltanto per le funzioni Core; fallback locale invariato.</note>
   </changelog>
