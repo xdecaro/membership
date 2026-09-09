@@ -1,0 +1,1 @@
+-- Membership 1.3.0 integration release. No schema changes; legacy local notification data is preserved.
