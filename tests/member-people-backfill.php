@@ -35,11 +35,18 @@ foreach ([
     'MemberPeopleBackfillService',
     'getPeopleIntegrationService()',
     'people_backfill',
+    'getIdentity()',
+    'People backfill deferred',
 ] as $marker) {
     if (!str_contains($script, $marker)) {
         fwrite(STDERR, "Membership package backfill hook missing: {$marker}\n");
         exit(1);
     }
+}
+
+if (str_contains($script, 'getIdentity()->id')) {
+    fwrite(STDERR, "Membership installer must not dereference a missing CLI identity.\n");
+    exit(1);
 }
 
 echo "Membership member-People backfill contract OK\n";
