@@ -39,9 +39,13 @@ foreach ([
     }
 }
 
-foreach ([$view, $recordsView] as $assetView) {
-    if (!str_contains($assetView, "getRegistry()->addExtensionRegistryFile('com_decaromembership')")) {
-        fwrite(STDERR, "Membership admin view must explicitly register its Joomla 6 WebAsset registry.\n");
+foreach (['Record' => $view, 'Records' => $recordsView] as $viewName => $assetView) {
+    if (!str_contains($assetView, "registerAndUseStyle('com_decaromembership.admin', 'com_decaromembership/css/admin.css'")) {
+        fwrite(STDERR, "{$viewName} must directly register the Membership admin stylesheet on Joomla 6.\n");
+        exit(1);
+    }
+    if (!str_contains($assetView, "registerAndUseScript('com_decaromembership.admin', 'com_decaromembership/js/admin.js'")) {
+        fwrite(STDERR, "{$viewName} must directly register the Membership admin script on Joomla 6.\n");
         exit(1);
     }
 }
