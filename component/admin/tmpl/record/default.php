@@ -3,6 +3,17 @@ defined('_JEXEC') or die;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
+$wa=$this->getDocument()->getWebAssetManager();
+if(!$wa->assetExists('style','com_decaromembership.admin')){
+    $wa->registerAndUseStyle('com_decaromembership.admin','com_decaromembership/css/admin.css',['version'=>'auto']);
+}else{
+    $wa->useStyle('com_decaromembership.admin');
+}
+if(!$wa->assetExists('script','com_decaromembership.admin')){
+    $wa->registerAndUseScript('com_decaromembership.admin','com_decaromembership/js/admin.js',['version'=>'auto'],['defer'=>true],['core']);
+}else{
+    $wa->useScript('com_decaromembership.admin');
+}
 $esc=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
 $peopleOwnedFields=['person_uuid','first_name','last_name','birth_date','birth_place','tax_code','address','city','province','postal_code','country','email','phone','user_id'];
 $renderField=function(string $name,array $field,mixed $value) use($esc){
