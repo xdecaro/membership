@@ -26,8 +26,18 @@ final class HtmlView extends BaseHtmlView
             $this->peopleMap = $this->getModel()->resolvePeopleForItems($this->items);
         }
         $wa = $this->getDocument()->getWebAssetManager();
-        $wa->getRegistry()->addExtensionRegistryFile('com_decaromembership');
-        $wa->useStyle('com_decaromembership.admin')->useScript('com_decaromembership.admin');
+        $wa->registerAndUseStyle(
+            'com_decaromembership.admin',
+            'com_decaromembership/css/admin.css',
+            ['version' => 'auto']
+        );
+        $wa->registerAndUseScript(
+            'com_decaromembership.admin',
+            'com_decaromembership/js/admin.js',
+            ['version' => 'auto'],
+            ['defer' => true],
+            ['core']
+        );
         ToolbarHelper::title(Text::_($this->config['label']), 'users');
         $user = Factory::getApplication()->getIdentity();
         if ($user->authorise('core.create', 'com_decaromembership')) ToolbarHelper::addNew('record.add');
