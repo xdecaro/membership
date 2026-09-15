@@ -30,7 +30,7 @@ final class MemberCoreEntities
                 'location_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_LOCATION','type'=>'relation','relation'=>'locations'],
                 'category_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CATEGORY','type'=>'relation','relation'=>'categories'],
                 'user_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_JOOMLA_USER','type'=>'number'],
-                'published'=>['label'=>'JSTATUS','type'=>'published'],
+                'published'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PUBLISHED','type'=>'published'],
             ]],
             'categories'=>['table'=>'#__decaromembership_categories','label'=>'COM_DECAROMEMBERSHIP_CATEGORIES','singular'=>'COM_DECAROMEMBERSHIP_CATEGORY','title_field'=>'name','search'=>['name','description'],'list'=>['name','fee','duration_months','language','published'],'fields'=>[
                 'name'=>['label'=>'JGLOBAL_TITLE','type'=>'text','required'=>true,'unique'=>true],
