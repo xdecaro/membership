@@ -7,8 +7,9 @@ final class MemberCoreEntities
     {
         return [
             'members'=>['table'=>'#__decaromembership_members','label'=>'COM_DECAROMEMBERSHIP_MEMBERS','singular'=>'COM_DECAROMEMBERSHIP_MEMBER','title_field'=>'last_name','search'=>['first_name','last_name','tax_code','member_number','card_number','email'],'list'=>['member_number','last_name','first_name','category_id','location_id','status','card_number','email'],'fields'=>[
-                'first_name'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_FIRST_NAME','type'=>'text','required'=>true],
-                'last_name'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_LAST_NAME','type'=>'text','required'=>true],
+                'person_uuid'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PERSON','type'=>'people'],
+                'first_name'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_FIRST_NAME','type'=>'text'],
+                'last_name'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_LAST_NAME','type'=>'text'],
                 'birth_date'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_BIRTH_DATE','type'=>'date'],
                 'birth_place'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_BIRTH_PLACE','type'=>'text'],
                 'tax_code'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_TAX_CODE','type'=>'text','unique'=>true],
