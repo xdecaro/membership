@@ -21,6 +21,9 @@ foreach ([
     'requires the explicit relink action',
     "'first_name','last_name','birth_date','birth_place','tax_code','address','city'",
     "'province','postal_code','country','email','phone','user_id'",
+    'function stripPeopleOwnedFields(array $data): array',
+    'if ($memberId > 0 && $old !== null && $submittedUuid === \'\')',
+    'return $this->stripPeopleOwnedFields($data);',
 ] as $marker) {
     if (!str_contains($link, $marker)) {
         fwrite(STDERR, "Member People link contract missing: {$marker}\n");
