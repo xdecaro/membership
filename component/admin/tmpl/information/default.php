@@ -1,6 +1,12 @@
 <?php
 defined('_JEXEC') or die;
 use Joomla\CMS\Language\Text;
+$wa=$this->getDocument()->getWebAssetManager();
+if(!$wa->assetExists('style','com_decaromembership.admin')){
+    $wa->registerAndUseStyle('com_decaromembership.admin','com_decaromembership/css/admin.css',['version'=>'auto']);
+}else{
+    $wa->useStyle('com_decaromembership.admin');
+}
 $escape = static fn (mixed $value): string => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 $dependencyBadge = static fn(array $dependency): string => ($dependency['available'] ?? false) ? 'is-ok' : 'is-bad';
 ?>
