@@ -49,19 +49,39 @@ $expect(str_contains($italian, 'COM_DECAROMEMBERSHIP_EXPORT="Esporta"'), 'Italia
 $expect(str_contains($italian, 'COM_DECAROMEMBERSHIP_NEW="Nuovo"'), 'Italian New label is missing.');
 
 $recordsTemplate = (string) file_get_contents($root . '/component/admin/tmpl/records/default.php');
-$recordView = (string) file_get_contents($root . '/component/admin/src/View/Record/HtmlView.php');
-$recordsView = (string) file_get_contents($root . '/component/admin/src/View/Records/HtmlView.php');
-$expect(str_contains($recordsView, "ToolbarHelper::addNew('record.add')"), 'Records view must expose New through the Joomla toolbar.');
 $expect(!str_contains($recordsTemplate, "COM_DECAROMEMBERSHIP_NEW"), 'Records template must not duplicate the Joomla toolbar New action.');
 $expect(!str_contains($recordsTemplate, "Text::_('JNEW')"), 'Records view must not expose the untranslated JNEW key.');
-foreach (['Record' => $recordView, 'Records' => $recordsView] as $viewName => $viewSource) {
+
+$viewFiles = [
+    'Dashboard' => $root . '/component/admin/src/View/Dashboard/HtmlView.php',
+    'Information' => $root . '/component/admin/src/View/Information/HtmlView.php',
+    'Record' => $root . '/component/admin/src/View/Record/HtmlView.php',
+    'Records' => $root . '/component/admin/src/View/Records/HtmlView.php',
+];
+
+foreach ($viewFiles as $viewName => $viewPath) {
+    $viewSource = (string) file_get_contents($viewPath);
     $expect(
         str_contains($viewSource, '$this->getDocument()->getWebAssetManager()'),
-        "{$viewName} view must register assets on the document injected into the Joomla 6 view."
+        "{$viewName} view must use the document injected into the Joomla 6 view."
+    );
+    $expect(
+        str_contains($viewSource, "registerAndUseStyle('com_decaromembership.admin', 'com_decaromembership/css/admin.css'"),
+        "{$viewName} view must directly register and use the Membership admin stylesheet."
     );
     $expect(
         !str_contains($viewSource, 'getApplication()->getDocument()->getWebAssetManager()'),
         "{$viewName} view must not register assets through the application-global document."
+    );
+}
+
+$recordView = (string) file_get_contents($viewFiles['Record']);
+$recordsView = (string) file_get_contents($viewFiles['Records']);
+$expect(str_contains($recordsView, "ToolbarHelper::addNew('record.add')"), 'Records view must expose New through the Joomla toolbar.');
+foreach (['Record' => $recordView, 'Records' => $recordsView] as $viewName => $viewSource) {
+    $expect(
+        str_contains($viewSource, "registerAndUseScript('com_decaromembership.admin', 'com_decaromembership/js/admin.js'"),
+        "{$viewName} view must directly register and use the Membership admin script."
     );
 }
 
