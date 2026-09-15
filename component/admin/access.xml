@@ -13,5 +13,6 @@
     <action name="membership.transfers" title="COM_DECAROMEMBERSHIP_ACTION_TRANSFERS" />
     <action name="membership.export" title="COM_DECAROMEMBERSHIP_ACTION_EXPORT" />
     <action name="membership.audit" title="COM_DECAROMEMBERSHIP_ACTION_AUDIT" />
+    <action name="membership.relink_person" title="COM_DECAROMEMBERSHIP_ACTION_RELINK_PERSON" />
   </section>
 </access>
