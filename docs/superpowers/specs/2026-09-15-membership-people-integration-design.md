@@ -6,7 +6,7 @@ Membership deve smettere di essere la fonte autorevole dei dati anagrafici gener
 
 La regola approvata è **1 persona People = al massimo 1 socio Membership**. Lo stesso socio Membership resta stabile negli anni e accumula rinnovi, categorie, tessere, quote, pagamenti, trasferimenti, pratiche e storico senza creare nuovi record anagrafici.
 
-Questa integrazione è prevista per Membership 1.5.0 e richiede Core 2.0.1+ e People 1.2.14+.
+Questa integrazione è prevista per Membership 1.5.0 e richiede Core 2.0.1+ e People 1.2.15+.
 
 ## Confini di responsabilità
 
@@ -135,7 +135,7 @@ Il metodo deve:
 - restituire risultati associabili deterministicamente per UUID;
 - non esporre campi sensibili quando `$sensitive === false`.
 
-Questo contratto entra nella versione minima People 1.2.14 richiesta da Membership 1.5.0.
+Questo contratto entra in People 1.2.15, che è quindi la versione minima richiesta da Membership 1.5.0. People 1.2.14 resta immutata come release già pubblicata.
 
 Per il backfill tramite Joomla user ID si usa il provider pubblico People e si accetta una corrispondenza solo quando una ricerca limitata a due risultati restituisce esattamente una persona. Non si assume che il primo risultato sia automaticamente univoco.
 
@@ -244,13 +244,13 @@ Membership 1.5.0 richiede:
 - Joomla 6;
 - PHP 8.3+;
 - Core by xdecaro 2.0.1+;
-- People by xdecaro 1.2.14+.
+- People by xdecaro 1.2.15+.
 
 ### Installazione pulita e upgrade
 
 Il preflight deve verificare Core e People **prima** di applicare modifiche schema Membership 1.5.0. Se una dipendenza manca o è troppo vecchia, installazione/upgrade si interrompono con un messaggio Joomla chiaro e senza migrazioni parziali.
 
-Per aggiornare da Membership 1.4.0 l'amministratore installa quindi prima Core 2.0.1+ e People 1.2.14+, poi esegue l'upgrade Membership 1.5.0.
+Per aggiornare da Membership 1.4.0 l'amministratore installa quindi prima Core 2.0.1+ e People 1.2.15+, poi esegue l'upgrade Membership 1.5.0.
 
 ### Dipendenza rimossa dopo l'installazione
 
@@ -282,7 +282,7 @@ Il log registra l'UUID e l'azione, ma non copia snapshot di campi sensibili Peop
 - Membership non dipende da classi private People.
 - `person_uuid` è presente nello schema 1.5.0 con indice univoco.
 - `first_name` e `last_name` legacy sono nullable nella linea 1.5.0.
-- Core minimo è 2.0.1 e People minimo è 1.2.14.
+- Core minimo è 2.0.1 e People minimo è 1.2.15.
 - Il contratto batch People per UUID è disponibile.
 
 ### Unit/service test
@@ -303,7 +303,7 @@ Il log registra l'UUID e l'azione, ma non copia snapshot di campi sensibili Peop
 
 Verificare almeno:
 
-- installazione pulita Core 2.0.1 + People 1.2.14 + Membership 1.5.0;
+- installazione pulita Core 2.0.1 + People 1.2.15 + Membership 1.5.0;
 - preflight che rifiuta People/Core incompatibili senza schema parziale;
 - upgrade Membership 1.4.0 → 1.5.0 senza perdita di dati;
 - creazione socio da persona People senza duplicare nome/cognome nei campi legacy;
@@ -319,8 +319,8 @@ Verificare almeno:
 
 Ordine obbligatorio:
 
-1. pubblicare People 1.2.14 con il contratto batch pubblico richiesto;
-2. verificare Core 2.0.1 + People 1.2.14 in Joomla 6.1.3;
+1. pubblicare People 1.2.15 con il contratto batch pubblico richiesto;
+2. verificare Core 2.0.1 + People 1.2.15 in Joomla 6.1.3;
 3. implementare e verificare Membership 1.5.0;
 4. mantenere la PR Membership in Draft finché runtime e migrazione 1.4.0 → 1.5.0 non sono verdi;
 5. solo dopo approvazione esplicita: Ready, merge, release e aggiornamento feed Joomla.
