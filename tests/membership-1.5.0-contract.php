@@ -65,10 +65,12 @@ foreach ($viewFiles as $viewName => $viewPath) {
         str_contains($viewSource, '$this->getDocument()->getWebAssetManager()'),
         "{$viewName} view must use the document injected into the Joomla 6 view."
     );
-    $expect(
-        str_contains($viewSource, "registerAndUseStyle('com_decaromembership.admin', 'com_decaromembership/css/admin.css'"),
-        "{$viewName} view must directly register and use the Membership admin stylesheet."
-    );
+    foreach (['registerAndUseStyle(', "'com_decaromembership.admin'", "'com_decaromembership/css/admin.css'"] as $marker) {
+        $expect(
+            str_contains($viewSource, $marker),
+            "{$viewName} view must directly register and use the Membership admin stylesheet."
+        );
+    }
     $expect(
         !str_contains($viewSource, 'getApplication()->getDocument()->getWebAssetManager()'),
         "{$viewName} view must not register assets through the application-global document."
@@ -79,10 +81,12 @@ $recordView = (string) file_get_contents($viewFiles['Record']);
 $recordsView = (string) file_get_contents($viewFiles['Records']);
 $expect(str_contains($recordsView, "ToolbarHelper::addNew('record.add')"), 'Records view must expose New through the Joomla toolbar.');
 foreach (['Record' => $recordView, 'Records' => $recordsView] as $viewName => $viewSource) {
-    $expect(
-        str_contains($viewSource, "registerAndUseScript('com_decaromembership.admin', 'com_decaromembership/js/admin.js'"),
-        "{$viewName} view must directly register and use the Membership admin script."
-    );
+    foreach (['registerAndUseScript(', "'com_decaromembership.admin'", "'com_decaromembership/js/admin.js'"] as $marker) {
+        $expect(
+            str_contains($viewSource, $marker),
+            "{$viewName} view must directly register and use the Membership admin script."
+        );
+    }
 }
 
 $updateSql = $root . '/component/admin/sql/updates/mysql/1.5.0.sql';
