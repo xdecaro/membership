@@ -41,6 +41,16 @@ $expect(($assets['version'] ?? '') === '1.5.0', 'Web Asset version must be 1.5.0
 $installer = (string) file_get_contents($root . '/package/script.php');
 $expect(str_contains($installer, "MINIMUM_CORE_VERSION = '2.0.1'"), 'Core minimum must be 2.0.1.');
 $expect(str_contains($installer, "MINIMUM_PEOPLE_VERSION = '1.2.15'"), 'People minimum must be 1.2.15.');
+$expect(str_contains($installer, 'memberCount'), 'Installer must detect whether legacy members exist before People backfill.');
+$expect(str_contains($installer, 'memberCount > 0'), 'Installer must skip People backfill when Membership has no members.');
+
+$italian = (string) file_get_contents($root . '/component/admin/language/it-IT/com_decaromembership.ini');
+$expect(str_contains($italian, 'COM_DECAROMEMBERSHIP_EXPORT="Esporta"'), 'Italian Export label is missing.');
+$expect(str_contains($italian, 'COM_DECAROMEMBERSHIP_NEW="Nuovo"'), 'Italian New label is missing.');
+
+$recordsTemplate = (string) file_get_contents($root . '/component/admin/tmpl/records/default.php');
+$expect(str_contains($recordsTemplate, "COM_DECAROMEMBERSHIP_NEW"), 'Records view must use the Membership New language key.');
+$expect(!str_contains($recordsTemplate, "Text::_('JNEW')"), 'Records view must not expose the untranslated JNEW key.');
 
 $updateSql = $root . '/component/admin/sql/updates/mysql/1.5.0.sql';
 $expect(is_file($updateSql), 'Membership 1.5.0 SQL update is missing.');
