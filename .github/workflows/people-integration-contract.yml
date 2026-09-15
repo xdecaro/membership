@@ -24,3 +24,5 @@ jobs:
         run: php tests/member-people-link.php
       - name: Member People backfill contract
         run: php tests/member-people-backfill.php
+      - name: Member list integration contract
+        run: php tests/member-list-people.php
