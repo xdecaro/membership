@@ -16,13 +16,16 @@ final class RecordRepository
 
     public function save(string $table, int $id, array $data): int
     {
+        $bindings = [];
+
         if ($id > 0) {
             $set = [];
             $q = $this->db->getQuery(true)->update($this->db->quoteName($table));
             foreach ($data as $column => $value) {
                 $ph = ':v_' . $column;
                 $set[] = $this->db->quoteName($column) . ' = ' . $ph;
-                $q->bind($ph, $value);
+                $bindings[$ph] = $value;
+                $q->bind($ph, $bindings[$ph], $this->bindType($value));
             }
             $q->set($set)->where($this->db->quoteName('id') . ' = :id')->bind(':id', $id, ParameterType::INTEGER);
             $this->db->setQuery($q)->execute();
@@ -35,11 +38,22 @@ final class RecordRepository
         foreach ($data as $column => $value) {
             $ph = ':v_' . $column;
             $values[] = $ph;
-            $q->bind($ph, $value);
+            $bindings[$ph] = $value;
+            $q->bind($ph, $bindings[$ph], $this->bindType($value));
         }
         $q->values(implode(',', $values));
         $this->db->setQuery($q)->execute();
         return (int) $this->db->insertid();
+    }
+
+    private function bindType(mixed $value): string
+    {
+        return match (true) {
+            $value === null => ParameterType::NULL,
+            is_bool($value) => ParameterType::BOOLEAN,
+            is_int($value) => ParameterType::INTEGER,
+            default => ParameterType::STRING,
+        };
     }
 
     public function trash(string $table, int $id, string $modified, int $userId): void
@@ -55,7 +69,7 @@ final class RecordRepository
 
     public function duplicateExists(string $table, string $column, mixed $value, int $excludeId = 0): bool
     {
-        $q = $this->db->getQuery(true)->select('COUNT(*)')->from($this->db->quoteName($table))->where($this->db->quoteName($column) . ' = :value')->bind(':value', $value);
+        $q = $this->db->getQuery(true)->select('COUNT(*)')->from($this->db->quoteName($table))->where($this->db->quoteName($column) . ' = :value')->bind(':value', $value, $this->bindType($value));
         if ($excludeId > 0) $q->where($this->db->quoteName('id') . ' <> :id')->bind(':id', $excludeId, ParameterType::INTEGER);
         return (int) $this->db->setQuery($q)->loadResult() > 0;
     }
