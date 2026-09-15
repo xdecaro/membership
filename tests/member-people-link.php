@@ -41,7 +41,7 @@ foreach ([
 }
 
 $model = file_get_contents($root . '/component/admin/src/Model/RecordModel.php') ?: '';
-if (!str_contains($model, "if ($entity === 'members')")) {
+if (!str_contains($model, "if (\$entity === 'members')")) {
     fwrite(STDERR, "RecordModel must isolate People link rules to members.\n");
     exit(1);
 }
@@ -52,8 +52,8 @@ if (!str_contains($model, 'validateForSave($id, $old, $data)')) {
 
 $audit = file_get_contents($root . '/component/admin/src/Service/AuditService.php') ?: '';
 if (!str_contains($audit, 'function personLink(')
-    || !str_contains($audit, "(object) ['person_uuid' => $oldUuid]")
-    || !str_contains($audit, "(object) ['person_uuid' => $newUuid]")) {
+    || !str_contains($audit, "(object) ['person_uuid' => \$oldUuid]")
+    || !str_contains($audit, "(object) ['person_uuid' => \$newUuid]")) {
     fwrite(STDERR, "Membership audit must record People link changes as UUID-only values.\n");
     exit(1);
 }
