@@ -12,6 +12,7 @@ final class HtmlView extends BaseHtmlView
     public mixed $state;
     public array $config = [];
     public array $relationMaps = [];
+    public array $peopleMap = [];
     public string $entity = 'members';
     public function display($tpl = null): void
     {
@@ -21,6 +22,9 @@ final class HtmlView extends BaseHtmlView
         $this->entity = $this->getModel()->getEntity();
         $this->config = $this->getModel()->getConfig();
         $this->relationMaps = $this->getModel()->getRelationMaps();
+        if ($this->entity === 'members') {
+            $this->peopleMap = $this->getModel()->resolvePeopleForItems($this->items);
+        }
         $wa = Factory::getApplication()->getDocument()->getWebAssetManager();
         $wa->useStyle('com_decaromembership.admin')->useScript('com_decaromembership.admin');
         ToolbarHelper::title(Text::_($this->config['label']), 'users');
