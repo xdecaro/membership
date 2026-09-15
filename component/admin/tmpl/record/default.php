@@ -62,7 +62,7 @@ $isMember=$this->entity==='members';
     <?php endif; ?>
   </section>
 <?php endif; ?>
-<div class="dm-form-grid">
+<div class="dm-card dm-form-grid">
 <?php foreach($this->config['fields'] as $name=>$field):
     if($isMember && in_array($name,$peopleOwnedFields,true)) continue;
     $value=$this->item->$name??($field['default']??'');
