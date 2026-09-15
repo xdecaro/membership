@@ -30,5 +30,7 @@ jobs:
         run: php tests/member-people-ui-contract.php
       - name: RecordRepository stable binding contract
         run: php tests/record-repository-bindings.php
+      - name: AuditService stable binding contract
+        run: php tests/audit-bindings.php
       - name: Membership 1.5.0 release contract
         run: php tests/membership-1.5.0-contract.php
