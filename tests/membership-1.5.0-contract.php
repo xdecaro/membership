@@ -22,6 +22,19 @@ foreach ([
     $expect($xml !== false && (string) $xml->version === '1.5.0', "{$manifestPath} must be 1.5.0.");
 }
 
+$componentManifest = simplexml_load_file($root . '/component/decaromembership.xml');
+if ($componentManifest !== false) {
+    foreach ($componentManifest->administration->submenu->menu as $menu) {
+        $link = trim((string) $menu['link']);
+        if ($link !== '') {
+            $expect(
+                str_contains($link, 'option=com_decaromembership'),
+                'Custom Membership submenu links must include option=com_decaromembership.'
+            );
+        }
+    }
+}
+
 $assets = json_decode((string) file_get_contents($root . '/component/media/joomla.asset.json'), true);
 $expect(($assets['version'] ?? '') === '1.5.0', 'Web Asset version must be 1.5.0.');
 
