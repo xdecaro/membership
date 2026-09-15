@@ -40,13 +40,17 @@ foreach ([
 }
 
 foreach (['Record' => $view, 'Records' => $recordsView] as $viewName => $assetView) {
-    if (!str_contains($assetView, "registerAndUseStyle('com_decaromembership.admin', 'com_decaromembership/css/admin.css'")) {
-        fwrite(STDERR, "{$viewName} must directly register the Membership admin stylesheet on Joomla 6.\n");
-        exit(1);
+    foreach (['registerAndUseStyle(', "'com_decaromembership.admin'", "'com_decaromembership/css/admin.css'"] as $marker) {
+        if (!str_contains($assetView, $marker)) {
+            fwrite(STDERR, "{$viewName} must directly register the Membership admin stylesheet on Joomla 6.\n");
+            exit(1);
+        }
     }
-    if (!str_contains($assetView, "registerAndUseScript('com_decaromembership.admin', 'com_decaromembership/js/admin.js'")) {
-        fwrite(STDERR, "{$viewName} must directly register the Membership admin script on Joomla 6.\n");
-        exit(1);
+    foreach (['registerAndUseScript(', "'com_decaromembership.admin'", "'com_decaromembership/js/admin.js'"] as $marker) {
+        if (!str_contains($assetView, $marker)) {
+            fwrite(STDERR, "{$viewName} must directly register the Membership admin script on Joomla 6.\n");
+            exit(1);
+        }
     }
 }
 
