@@ -1,15 +1,13 @@
 <?php
 defined('_JEXEC') or die;
 use Joomla\CMS\Language\Text;
-$wa=$this->getDocument()->getWebAssetManager();
-if(!$wa->assetExists('style','com_decaromembership.admin')){
-    $wa->registerAndUseStyle('com_decaromembership.admin','com_decaromembership/css/admin.css',['version'=>'auto']);
-}else{
-    $wa->useStyle('com_decaromembership.admin');
-}
+use Joomla\CMS\Uri\Uri;
+$membershipAssetBase=rtrim(Uri::root(true),'/').'/media/com_decaromembership';
+$membershipCssVersion=@filemtime(JPATH_ROOT.'/media/com_decaromembership/css/admin.css')?:'1.5.0';
 $escape = static fn (mixed $value): string => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 $dependencyBadge = static fn(array $dependency): string => ($dependency['available'] ?? false) ? 'is-ok' : 'is-bad';
 ?>
+<link rel="stylesheet" href="<?= $escape($membershipAssetBase.'/css/admin.css?v='.$membershipCssVersion) ?>">
 <div class="dm-page dm-info">
     <div class="dm-grid dm-grid-2">
         <section class="dm-card"><h2><?= Text::_('COM_DECAROMEMBERSHIP_PRODUCT') ?></h2><dl><dt><?= Text::_('COM_DECAROMEMBERSHIP_NAME') ?></dt><dd>Membership</dd><dt><?= Text::_('COM_DECAROMEMBERSHIP_VERSION') ?></dt><dd><?= $escape($this->info['extensions'][0]['version'] ?? '1.5.0') ?></dd><dt><?= Text::_('COM_DECAROMEMBERSHIP_COMPONENT') ?></dt><dd>com_decaromembership</dd><dt><?= Text::_('COM_DECAROMEMBERSHIP_PACKAGE') ?></dt><dd>pkg_decaromembership</dd></dl></section>
