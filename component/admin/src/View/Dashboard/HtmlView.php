@@ -11,8 +11,19 @@ final class HtmlView extends BaseHtmlView
     public function display($tpl = null): void
     {
         $this->data = $this->get('DashboardData');
-        $wa = Factory::getApplication()->getDocument()->getWebAssetManager();
-        $wa->useStyle('com_decaromembership.admin')->useScript('com_decaromembership.admin');
+        $wa = $this->getDocument()->getWebAssetManager();
+        $wa->registerAndUseStyle(
+            'com_decaromembership.admin',
+            'com_decaromembership/css/admin.css',
+            ['version' => 'auto']
+        );
+        $wa->registerAndUseScript(
+            'com_decaromembership.admin',
+            'com_decaromembership/js/admin.js',
+            ['version' => 'auto'],
+            ['defer' => true],
+            ['core']
+        );
         ToolbarHelper::title(Text::_('COM_DECAROMEMBERSHIP_DASHBOARD'), 'users');
         if (Factory::getApplication()->getIdentity()->authorise('core.admin', 'com_decaromembership')) ToolbarHelper::preferences('com_decaromembership');
         parent::display($tpl);
