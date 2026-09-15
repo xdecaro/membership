@@ -2,6 +2,7 @@
 namespace Xdecaro\Component\Decaromembership\Administrator\Service;
 defined('_JEXEC') or die;
 use Joomla\Database\DatabaseInterface;
+use Joomla\Database\ParameterType;
 
 final class RecordRepository
 {
@@ -9,7 +10,7 @@ final class RecordRepository
 
     public function load(string $table, int $id): ?object
     {
-        $q = $this->db->getQuery(true)->select('*')->from($this->db->quoteName($table))->where($this->db->quoteName('id') . ' = :id')->bind(':id', $id);
+        $q = $this->db->getQuery(true)->select('*')->from($this->db->quoteName($table))->where($this->db->quoteName('id') . ' = :id')->bind(':id', $id, ParameterType::INTEGER);
         return $this->db->setQuery($q)->loadObject() ?: null;
     }
 
@@ -23,7 +24,7 @@ final class RecordRepository
                 $set[] = $this->db->quoteName($column) . ' = ' . $ph;
                 $q->bind($ph, $value);
             }
-            $q->set($set)->where($this->db->quoteName('id') . ' = :id')->bind(':id', $id);
+            $q->set($set)->where($this->db->quoteName('id') . ' = :id')->bind(':id', $id, ParameterType::INTEGER);
             $this->db->setQuery($q)->execute();
             return $id;
         }
@@ -48,14 +49,57 @@ final class RecordRepository
             ->set($this->db->quoteName('modified') . ' = :modified')
             ->set($this->db->quoteName('modified_by') . ' = :uid')
             ->where($this->db->quoteName('id') . ' = :id')
-            ->bind(':modified', $modified)->bind(':uid', $userId)->bind(':id', $id);
+            ->bind(':modified', $modified)->bind(':uid', $userId, ParameterType::INTEGER)->bind(':id', $id, ParameterType::INTEGER);
         $this->db->setQuery($q)->execute();
     }
 
     public function duplicateExists(string $table, string $column, mixed $value, int $excludeId = 0): bool
     {
         $q = $this->db->getQuery(true)->select('COUNT(*)')->from($this->db->quoteName($table))->where($this->db->quoteName($column) . ' = :value')->bind(':value', $value);
-        if ($excludeId > 0) $q->where($this->db->quoteName('id') . ' <> :id')->bind(':id', $excludeId);
+        if ($excludeId > 0) $q->where($this->db->quoteName('id') . ' <> :id')->bind(':id', $excludeId, ParameterType::INTEGER);
         return (int) $this->db->setQuery($q)->loadResult() > 0;
+    }
+
+    public function findMemberIdByPersonUuid(string $uuid, int $excludeId = 0): ?int
+    {
+        $q = $this->db->getQuery(true)
+            ->select($this->db->quoteName('id'))
+            ->from($this->db->quoteName('#__decaromembership_members'))
+            ->where($this->db->quoteName('person_uuid') . ' = :uuid')
+            ->bind(':uuid', $uuid);
+        if ($excludeId > 0) {
+            $q->where($this->db->quoteName('id') . ' <> :exclude_id')->bind(':exclude_id', $excludeId, ParameterType::INTEGER);
+        }
+        $id = $this->db->setQuery($q, 0, 1)->loadResult();
+
+        return $id === null ? null : (int) $id;
+    }
+
+    public function updateMemberPersonUuid(int $memberId, string $uuid, string $modified, int $userId): void
+    {
+        $q = $this->db->getQuery(true)
+            ->update($this->db->quoteName('#__decaromembership_members'))
+            ->set($this->db->quoteName('person_uuid') . ' = :uuid')
+            ->set($this->db->quoteName('modified') . ' = :modified')
+            ->set($this->db->quoteName('modified_by') . ' = :user_id')
+            ->where($this->db->quoteName('id') . ' = :member_id')
+            ->bind(':uuid', $uuid)
+            ->bind(':modified', $modified)
+            ->bind(':user_id', $userId, ParameterType::INTEGER)
+            ->bind(':member_id', $memberId, ParameterType::INTEGER);
+        $this->db->setQuery($q)->execute();
+    }
+
+    public function loadUnlinkedMembersWithUserId(): array
+    {
+        $q = $this->db->getQuery(true)
+            ->select([$this->db->quoteName('id'), $this->db->quoteName('user_id')])
+            ->from($this->db->quoteName('#__decaromembership_members'))
+            ->where($this->db->quoteName('person_uuid') . ' IS NULL')
+            ->where($this->db->quoteName('user_id') . ' IS NOT NULL')
+            ->where($this->db->quoteName('user_id') . ' > 0')
+            ->order($this->db->quoteName('id') . ' ASC');
+
+        return (array) $this->db->setQuery($q)->loadObjectList();
     }
 }
