@@ -49,7 +49,9 @@ $expect(str_contains($italian, 'COM_DECAROMEMBERSHIP_EXPORT="Esporta"'), 'Italia
 $expect(str_contains($italian, 'COM_DECAROMEMBERSHIP_NEW="Nuovo"'), 'Italian New label is missing.');
 
 $recordsTemplate = (string) file_get_contents($root . '/component/admin/tmpl/records/default.php');
-$expect(str_contains($recordsTemplate, "COM_DECAROMEMBERSHIP_NEW"), 'Records view must use the Membership New language key.');
+$recordsView = (string) file_get_contents($root . '/component/admin/src/View/Records/HtmlView.php');
+$expect(str_contains($recordsView, "ToolbarHelper::addNew('record.add')"), 'Records view must expose New through the Joomla toolbar.');
+$expect(!str_contains($recordsTemplate, "COM_DECAROMEMBERSHIP_NEW"), 'Records template must not duplicate the Joomla toolbar New action.');
 $expect(!str_contains($recordsTemplate, "Text::_('JNEW')"), 'Records view must not expose the untranslated JNEW key.');
 
 $updateSql = $root . '/component/admin/sql/updates/mysql/1.5.0.sql';
