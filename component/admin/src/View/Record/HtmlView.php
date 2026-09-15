@@ -48,6 +48,7 @@ final class HtmlView extends BaseHtmlView
         }
 
         $wa = $app->getDocument()->getWebAssetManager();
+        $wa->getRegistry()->addExtensionRegistryFile('com_decaromembership');
         $wa->useStyle('com_decaromembership.admin')->useScript('com_decaromembership.admin');
         ToolbarHelper::title(Text::_($this->config['singular']), 'pencil');
         ToolbarHelper::apply('record.apply');
