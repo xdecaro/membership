@@ -25,7 +25,7 @@ final class HtmlView extends BaseHtmlView
         if ($this->entity === 'members') {
             $this->peopleMap = $this->getModel()->resolvePeopleForItems($this->items);
         }
-        $wa = Factory::getApplication()->getDocument()->getWebAssetManager();
+        $wa = $this->getDocument()->getWebAssetManager();
         $wa->getRegistry()->addExtensionRegistryFile('com_decaromembership');
         $wa->useStyle('com_decaromembership.admin')->useScript('com_decaromembership.admin');
         ToolbarHelper::title(Text::_($this->config['label']), 'users');
