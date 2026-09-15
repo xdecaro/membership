@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.5.0 - 2026-09-15
+- People 1.2.15 becomes the authoritative person registry for Membership identity/contact data.
+- Added nullable unique `person_uuid` to members while preserving `member_id` as the stable key for all Membership-domain records.
+- Kept all legacy member identity columns and made first/last name nullable for a non-destructive 1.4.0 → 1.5.0 transition.
+- New members require a valid People person; one People UUID can belong to only one Membership member.
+- Existing People links are immutable in the normal edit flow; explicit relink uses a dedicated ACL and UUID-only audit records.
+- Added deterministic legacy backfill through unique Joomla `user_id` matches only; ambiguous/unavailable matches are not guessed.
+- Added People-backed member list/search with one batch resolution per page and linked/unlinked filtering, without joins or direct People-table access.
+- Added People selector and read-only People identity summary to the member form while preserving Membership-owned fields.
+- Added Core 2.0.1+ and People 1.2.15+ package preflight requirements and diagnostics.
+- Added Joomla 6.1.3 clean-install, upgrade, dependency-preflight and People runtime coverage while retaining Finance 1.3.0 regression coverage.
+
 ## 1.4.0 - 2026-09-09
 - Added optional Finance 1.3.0 synchronization through the public `com_decarofinance` component service only.
 - Membership dues are upserted as Finance obligations and paid Membership payments are upserted as Finance payments without direct access to Finance tables or implementation classes.
