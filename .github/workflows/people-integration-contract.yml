@@ -28,3 +28,5 @@ jobs:
         run: php tests/member-list-people.php
       - name: Member form contract
         run: php tests/member-people-ui-contract.php
+      - name: Membership 1.5.0 release contract
+        run: php tests/membership-1.5.0-contract.php
