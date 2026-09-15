@@ -2,6 +2,12 @@
 defined('_JEXEC') or die;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
+$wa=$this->getDocument()->getWebAssetManager();
+if(!$wa->assetExists('style','com_decaromembership.admin')){
+    $wa->registerAndUseStyle('com_decaromembership.admin','com_decaromembership/css/admin.css',['version'=>'auto']);
+}else{
+    $wa->useStyle('com_decaromembership.admin');
+}
 $cards=['members'=>'COM_DECAROMEMBERSHIP_MEMBERS','cases'=>'COM_DECAROMEMBERSHIP_CASES','renewals'=>'COM_DECAROMEMBERSHIP_RENEWALS','cards'=>'COM_DECAROMEMBERSHIP_CARDS','dues'=>'COM_DECAROMEMBERSHIP_DUES','payments'=>'COM_DECAROMEMBERSHIP_PAYMENTS','transfers'=>'COM_DECAROMEMBERSHIP_TRANSFERS','documents'=>'COM_DECAROMEMBERSHIP_DOCUMENTS'];
 ?>
 <div class="dm-page">
