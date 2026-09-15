@@ -138,6 +138,17 @@ if ($mode === 'clean') {
 
 $uuid = strtolower((string) (getenv('MEMBERSHIP_EXPECTED_PERSON_UUID') ?: '550e8400-e29b-41d4-a716-446655440042'));
 $memberNumber = (string) (getenv('MEMBERSHIP_EXPECTED_MEMBER_NUMBER') ?: 'CI-UPGRADE-001');
+$repository = new \Xdecaro\Component\Decaromembership\Administrator\Service\RecordRepository($db);
+$backfill = new \Xdecaro\Component\Decaromembership\Administrator\Service\MemberPeopleBackfillService(
+    $repository,
+    $people,
+    new \Xdecaro\Component\Decaromembership\Administrator\Service\AuditService($db)
+);
+$first = $backfill->run((int) $admin->id, '2026-09-15 18:29:00');
+if (($first['linked'] ?? -1) !== 1) {
+    $fail('Authenticated People backfill did not link exactly one deterministic legacy member.');
+}
+
 $query = $db->getQuery(true)
     ->select('*')
     ->from($db->quoteName('#__decaromembership_members'))
@@ -170,7 +181,7 @@ $auditQuery = $db->getQuery(true)
     ->where($db->quoteName('action') . " = 'people_backfill'")
     ->bind(':member_id', $member->id, \Joomla\Database\ParameterType::INTEGER);
 if ((int) $db->setQuery($auditQuery)->loadResult() !== 1) {
-    $fail('Upgrade did not record exactly one automatic People backfill audit event.');
+    $fail('Upgrade did not record exactly one People backfill audit event.');
 }
 
 $person = $people->getPerson($uuid, false);
@@ -178,12 +189,6 @@ if (($person['display_name'] ?? '') !== 'Upgrade People Person') {
     $fail('Backfilled People identity cannot be resolved through the public provider.');
 }
 
-$repository = new \Xdecaro\Component\Decaromembership\Administrator\Service\RecordRepository($db);
-$backfill = new \Xdecaro\Component\Decaromembership\Administrator\Service\MemberPeopleBackfillService(
-    $repository,
-    $people,
-    new \Xdecaro\Component\Decaromembership\Administrator\Service\AuditService($db)
-);
 $second = $backfill->run((int) $admin->id, '2026-09-15 18:30:00');
 if (($second['linked'] ?? -1) !== 0) {
     $fail('People backfill is not idempotent on the second run.');
