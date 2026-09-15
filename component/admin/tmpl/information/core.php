@@ -2,13 +2,10 @@
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri;
 
-$wa=$this->getDocument()->getWebAssetManager();
-if(!$wa->assetExists('style','com_decaromembership.admin')){
-    $wa->registerAndUseStyle('com_decaromembership.admin','com_decaromembership/css/admin.css',['version'=>'auto']);
-}else{
-    $wa->useStyle('com_decaromembership.admin');
-}
+$membershipAssetBase=rtrim(Uri::root(true),'/').'/media/com_decaromembership';
+$membershipCssVersion=@filemtime(JPATH_ROOT.'/media/com_decaromembership/css/admin.css')?:'1.5.0';
 
 $escape = static fn (mixed $value): string => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 $core = (array) ($this->info['core'] ?? []);
@@ -24,6 +21,7 @@ foreach (($this->info['extensions'] ?? []) as $extension) {
     }
 }
 ?>
+<link rel="stylesheet" href="<?= $escape($membershipAssetBase.'/css/admin.css?v='.$membershipCssVersion) ?>">
 <div class="xdecaro-scope membership-core-scope dm-page dm-info">
     <div class="dm-grid dm-grid-2">
         <section class="dm-card xdecaro-card">
