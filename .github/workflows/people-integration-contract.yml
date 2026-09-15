@@ -16,5 +16,7 @@ jobs:
         with:
           php-version: '8.3'
           coverage: none
-      - name: People integration contract
+      - name: People integration schema contract
         run: php tests/people-integration-contract.php
+      - name: People adapter contract
+        run: php tests/people-integration-service.php
