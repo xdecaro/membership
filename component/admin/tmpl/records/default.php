@@ -29,7 +29,7 @@ $base='index.php?option=com_decaromembership&view=records&entity='.$this->entity
       <button type="submit" class="btn btn-primary"><?= Text::_('JSEARCH_FILTER_SUBMIT') ?></button>
       <a class="btn btn-outline-secondary" href="<?= Route::_($base) ?>"><?= Text::_('JSEARCH_FILTER_CLEAR') ?></a>
     </div>
-    <a class="btn btn-success" href="<?= Route::_('index.php?option=com_decaromembership&view=record&entity='.$this->entity) ?>"><?= Text::_('JNEW') ?></a>
+    <a class="btn btn-success" href="<?= Route::_('index.php?option=com_decaromembership&view=record&entity='.$this->entity) ?>"><?= Text::_('COM_DECAROMEMBERSHIP_NEW') ?></a>
   </div>
   <div class="table-responsive dm-table-wrap">
     <table class="table table-striped align-middle">
