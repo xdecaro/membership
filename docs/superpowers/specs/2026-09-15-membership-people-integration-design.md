@@ -54,6 +54,8 @@ Membership continua a essere la fonte autorevole per:
 
 Le tabelle figlie Membership continuano a riferirsi al `member_id` locale. `person_uuid` è il collegamento identitario, non sostituisce le chiavi interne di rinnovi, quote, pagamenti, pratiche e trasferimenti.
 
+Il campo `photo` esistente resta Membership-owned in 1.5.0 soltanto per eventuale uso associativo/tessera. Non viene interpretato come foto profilo generale People e non viene sincronizzato automaticamente.
+
 ## Modello dati
 
 A `#__decaromembership_members` viene aggiunta la colonna:
@@ -68,11 +70,15 @@ con indice univoco:
 UNIQUE KEY uq_member_person_uuid (person_uuid)
 ```
 
+L'UUID salvato deve essere quello restituito da People, normalizzato nella forma canonica minuscola a 36 caratteri con trattini. Membership non accetta UUID arbitrari digitati senza risoluzione People.
+
 MySQL consente più valori `NULL`, quindi i record esistenti possono restare temporaneamente non collegati mentre ogni UUID valorizzato resta univoco.
 
-Non viene introdotta una foreign key SQL verso People: i componenti devono restare installabili/aggiornabili senza vincoli DB incrociati e il collegamento viene validato attraverso l'API pubblica People.
+Non viene introdotta una foreign key SQL verso People: i componenti devono restare aggiornabili senza vincoli DB incrociati e il collegamento viene validato attraverso l'API pubblica People.
 
 La migrazione 1.5.0 è non distruttiva. I campi anagrafici legacy già presenti in `#__decaromembership_members` non vengono eliminati in questa release, per consentire upgrade sicuro e fallback dei record non ancora collegati.
+
+Poiché oggi `first_name` e `last_name` sono `NOT NULL`, la migrazione 1.5.0 li rende nullable preservando tutti i valori esistenti. In questo modo un nuovo socio collegato a People può essere creato senza scrivere copie obbligatorie del nome nei campi legacy. Lo schema di installazione pulita 1.5.0 deve usare la stessa struttura.
 
 ## Politica dei campi legacy
 
@@ -88,7 +94,7 @@ Per un socio esistente senza `person_uuid`:
 - Membership continua a mostrare i campi legacy necessari per non interrompere l'operatività;
 - il record viene marcato nell'interfaccia come **Persona People non collegata**;
 - è possibile modificare i dati strettamente associativi;
-- l'obiettivo operativo è collegare esplicitamente il socio a People.
+- i campi personali legacy non vengono estesi con nuova logica e l'obiettivo operativo è collegare esplicitamente il socio a People.
 
 Per i nuovi soci creati dopo l'upgrade a 1.5.0, `person_uuid` è obbligatorio a livello applicativo.
 
@@ -103,18 +109,19 @@ Non sono ammessi:
 - dipendenze da model/table class private di People;
 - duplicazione della logica anagrafica People dentro Membership.
 
-Membership introduce un adapter locale, ad esempio `PeopleIntegrationService`, che ha il compito di:
+Membership introduce un adapter locale, `PeopleIntegrationService`, che ha il compito di:
 
 - verificare presenza/versione compatibile di Core e People;
 - ottenere il `PersonProviderService` dal componente People;
 - cercare persone per il selettore amministrativo;
 - risolvere una persona per UUID;
+- risolvere in batch gli UUID delle liste;
 - trasformare errori People/ACL in messaggi Joomla controllati;
-- fornire a Membership DTO/array limitati ai dati realmente necessari.
+- fornire a Membership array/DTO limitati ai dati realmente necessari.
 
 ### Estensione API People richiesta
 
-Per evitare query N+1 nelle liste Membership, People deve esporre un metodo pubblico batch per UUID, ad esempio:
+Per evitare query N+1 nelle liste Membership, People deve esporre un metodo pubblico batch per UUID:
 
 ```php
 getPeopleByUuids(array $uuids, bool $sensitive = false): array
@@ -125,16 +132,18 @@ Il metodo deve:
 - normalizzare e deduplicare gli UUID;
 - applicare gli stessi ACL di `getPerson()`;
 - eseguire una sola query per batch;
-- restituire risultati indicizzati per UUID o comunque associabili deterministicamente;
+- restituire risultati associabili deterministicamente per UUID;
 - non esporre campi sensibili quando `$sensitive === false`.
 
 Questo contratto entra nella versione minima People 1.2.14 richiesta da Membership 1.5.0.
+
+Per il backfill tramite Joomla user ID si usa il provider pubblico People e si accetta una corrispondenza solo quando una ricerca limitata a due risultati restituisce esattamente una persona. Non si assume che il primo risultato sia automaticamente univoco.
 
 ## ACL e dati sensibili
 
 Membership non bypassa gli ACL People.
 
-Nelle liste Membership si usano solo dati People non sensibili, come UUID, display name e contatti consentiti dal provider standard.
+Nelle liste Membership si usano solo dati People non sensibili, come UUID e display name, più gli eventuali contatti già ammessi dal provider standard.
 
 Nella scheda socio, i dati sensibili vengono richiesti soltanto quando l'utente corrente è autorizzato da People (`people.view_sensitive` o privilegi equivalenti previsti da People). Se l'utente può gestire Membership ma non leggere dati sensibili People:
 
@@ -186,20 +195,24 @@ Non si esegue matching automatico soltanto per nome, cognome, email, TIN/codice 
 
 Il backfill è idempotente: rieseguirlo non modifica collegamenti già corretti e non crea duplicati.
 
-I casi non deterministici restano non collegati e vengono presentati in una vista/filtro amministrativo dedicato per il collegamento manuale.
+I casi non deterministici restano non collegati e vengono presentati in un filtro amministrativo dedicato per il collegamento manuale.
 
-## Liste Membership
+## Liste e ricerca Membership
 
 La lista soci deve mostrare l'identità People aggiornata senza N+1:
 
-1. Membership carica i record Membership;
-2. raccoglie tutti i `person_uuid` della pagina corrente;
+1. Membership carica i record Membership della pagina corrente;
+2. raccoglie tutti i `person_uuid` presenti;
 3. li risolve in un'unica chiamata batch People;
 4. usa `display_name` People per i soci collegati;
 5. usa nome/cognome legacy soltanto per i soci ancora non collegati;
 6. se una persona collegata non è più disponibile, mostra uno stato diagnostico chiaro senza perdere il record Membership.
 
-Filtri e ordinamenti che dipendono da dati People non devono essere implementati con join diretti alle tabelle People. Nella prima release 1.5.0 si mantiene il filtraggio Membership sui campi di dominio; eventuale ricerca globale cross-component richiederà un contratto API dedicato.
+L'ordinamento predefinito di Membership 1.5.0 non deve dipendere da `last_name` legacy per i soci collegati. Si usa un campo Membership stabile, preferibilmente `member_number` con fallback su `id`.
+
+La ricerca per nome/email può usare `PersonProviderService::searchPeople()` per ottenere UUID People e filtrare poi i record Membership su `person_uuid`, aggiungendo il fallback legacy per i soci non ancora collegati. Nessun join SQL cross-component è ammesso.
+
+Una vera paginazione/ordinamento alfabetico globale guidata da People, se richiesta oltre i limiti del provider corrente, richiederà un contratto pageable dedicato People e non viene simulata con ordinamenti parziali della sola pagina corrente.
 
 ## Persona archiviata, disabilitata o non disponibile
 
@@ -224,23 +237,31 @@ Rinnovi, tessere, quote, pagamenti, trasferimenti, casi, documenti, notifiche e 
 
 Questo evita di cambiare contemporaneamente identità, contabilità e storico associativo.
 
-## Dipendenze e diagnostica
+## Dipendenze e comportamento in errore
 
-Membership 1.5.0 dichiara e verifica:
+Membership 1.5.0 richiede:
 
 - Joomla 6;
 - PHP 8.3+;
 - Core by xdecaro 2.0.1+;
 - People by xdecaro 1.2.14+.
 
-Se Core o People mancano o sono troppo vecchi:
+### Installazione pulita e upgrade
 
-- l'installer/update non deve corrompere dati;
-- l'amministrazione mostra un errore comprensibile;
-- le funzioni che richiedono People vengono disabilitate in modo controllato;
-- nessun fatal error deve essere generato per classi mancanti.
+Il preflight deve verificare Core e People **prima** di applicare modifiche schema Membership 1.5.0. Se una dipendenza manca o è troppo vecchia, installazione/upgrade si interrompono con un messaggio Joomla chiaro e senza migrazioni parziali.
 
-Per Membership 1.5.x People non è più soltanto un'integrazione opzionale per la creazione di nuovi soci: è la fonte identitaria richiesta. I soci legacy non collegati restano leggibili durante la transizione, ma non si creano nuove anagrafiche Membership autonome.
+Per aggiornare da Membership 1.4.0 l'amministratore installa quindi prima Core 2.0.1+ e People 1.2.14+, poi esegue l'upgrade Membership 1.5.0.
+
+### Dipendenza rimossa dopo l'installazione
+
+Se Core o People vengono successivamente disabilitati/rimossi, Membership deve evitare fatal error:
+
+- i dati Membership restano intatti;
+- la diagnostica indica la dipendenza mancante;
+- creazione/collegamento/risoluzione People vengono disabilitati;
+- le funzioni puramente associative che non richiedono una lettura People possono restare accessibili quando tecnicamente sicuro.
+
+People è comunque una dipendenza runtime della linea Membership 1.5.x per la gestione ordinaria dell'identità.
 
 ## Audit
 
@@ -260,6 +281,7 @@ Il log registra l'UUID e l'azione, ma non copia snapshot di campi sensibili Peop
 - Membership non contiene query o riferimenti diretti a `#__xdecaropeople_*`.
 - Membership non dipende da classi private People.
 - `person_uuid` è presente nello schema 1.5.0 con indice univoco.
+- `first_name` e `last_name` legacy sono nullable nella linea 1.5.0.
 - Core minimo è 2.0.1 e People minimo è 1.2.14.
 - Il contratto batch People per UUID è disponibile.
 
@@ -272,16 +294,19 @@ Il log registra l'UUID e l'azione, ma non copia snapshot di campi sensibili Peop
 - socio legacy senza UUID resta caricabile.
 - ricollegamento non autorizzato viene rifiutato.
 - backfill tramite user ID unico collega correttamente.
-- backfill ambiguo/non risolto non crea collegamenti.
+- due People con lo stesso user ID non vengono auto-collegate.
+- backfill non risolto non crea collegamenti.
 - backfill ripetuto è idempotente.
+- assenza runtime di People genera diagnostica controllata e non fatal error.
 
 ### Runtime Joomla 6.1.3
 
 Verificare almeno:
 
 - installazione pulita Core 2.0.1 + People 1.2.14 + Membership 1.5.0;
+- preflight che rifiuta People/Core incompatibili senza schema parziale;
 - upgrade Membership 1.4.0 → 1.5.0 senza perdita di dati;
-- creazione socio da persona People;
+- creazione socio da persona People senza duplicare nome/cognome nei campi legacy;
 - lista soci con risoluzione batch People;
 - modifica nome in People riflessa in Membership senza riscrivere il socio;
 - persona People non disponibile gestita senza fatal error;
@@ -310,6 +335,7 @@ Non fanno parte di questa integrazione:
 - join SQL cross-component;
 - sincronizzazione bidirezionale dei dati personali;
 - copia automatica di dati sensibili People nei log Membership;
+- ordinamento alfabetico globale simulato usando solo la pagina Membership corrente;
 - refactor non correlati di Finance, Forms, Documents o altri componenti.
 
-Questi limiti mantengono la migrazione reversibile, non distruttiva e focalizzata sull'identità centrale.
+Questi limiti mantengono la migrazione non distruttiva, verificabile e focalizzata sull'identità centrale.
