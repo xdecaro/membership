@@ -32,6 +32,11 @@ final class MemberPeopleLinkService
             throw new RuntimeException('People person is required for a new member.');
         }
 
+        if ($memberId > 0 && $old !== null && $submittedUuid === '') {
+            $data['person_uuid'] = null;
+            return $this->stripPeopleOwnedFields($data);
+        }
+
         if ($submittedUuid === '') {
             $data['person_uuid'] = null;
             return $data;
@@ -49,6 +54,11 @@ final class MemberPeopleLinkService
         }
 
         $data['person_uuid'] = $canonicalUuid;
+        return $this->stripPeopleOwnedFields($data);
+    }
+
+    private function stripPeopleOwnedFields(array $data): array
+    {
         foreach ([
             'first_name','last_name','birth_date','birth_place','tax_code','address','city',
             'province','postal_code','country','email','phone','user_id'
