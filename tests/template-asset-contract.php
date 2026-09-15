@@ -23,16 +23,16 @@ foreach ($templates as $name => [$relativePath, $needsScript]) {
         continue;
     }
 
-    if (!str_contains($code, 'getWebAssetManager()')) {
-        $errors[] = "$name template must obtain the Joomla WebAssetManager";
+    if (!str_contains($code, '/media/com_decaromembership/css/admin.css')) {
+        $errors[] = "$name template must render the external Membership admin.css link directly";
     }
 
-    if (!str_contains($code, 'registerAndUseStyle') || !str_contains($code, 'com_decaromembership/css/admin.css')) {
-        $errors[] = "$name template must register and use Membership admin.css directly";
+    if ($needsScript && !str_contains($code, '/media/com_decaromembership/js/admin.js')) {
+        $errors[] = "$name template must render the external Membership admin.js script directly";
     }
 
-    if ($needsScript && (!str_contains($code, 'registerAndUseScript') || !str_contains($code, 'com_decaromembership/js/admin.js'))) {
-        $errors[] = "$name template must register and use Membership admin.js directly";
+    if (preg_match('/<style\b/i', $code)) {
+        $errors[] = "$name template must not introduce inline CSS";
     }
 }
 
@@ -46,4 +46,4 @@ if ($errors !== []) {
     exit(1);
 }
 
-fwrite(STDOUT, "Template asset contract OK\n");
+fwrite(STDOUT, "Template direct asset contract OK\n");
