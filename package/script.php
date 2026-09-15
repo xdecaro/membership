@@ -69,33 +69,40 @@ final class pkg_decaromembershipInstallerScript
             return;
         }
 
-        try {
-            /** @var DatabaseInterface $db */
-            $db = Factory::getContainer()->get(DatabaseInterface::class);
-            $component = Factory::getApplication()->bootComponent('com_decaromembership');
-            if (!method_exists($component, 'getPeopleIntegrationService')) {
-                throw new \RuntimeException('Membership People integration service is unavailable.');
-            }
+        $app = Factory::getApplication();
+        $identity = $app->getIdentity();
 
-            $backfill = new MemberPeopleBackfillService(
-                new RecordRepository($db),
-                $component->getPeopleIntegrationService(),
-                new AuditService($db)
-            );
-            $result = $backfill->run(
-                (int) Factory::getApplication()->getIdentity()->id,
-                Factory::getDate()->toSql()
-            );
+        if ($identity && (int) $identity->id > 0) {
+            try {
+                /** @var DatabaseInterface $db */
+                $db = Factory::getContainer()->get(DatabaseInterface::class);
+                $component = $app->bootComponent('com_decaromembership');
+                if (!method_exists($component, 'getPeopleIntegrationService')) {
+                    throw new \RuntimeException('Membership People integration service is unavailable.');
+                }
 
-            if (($result['linked'] ?? 0) > 0) {
-                Factory::getApplication()->enqueueMessage(
-                    'Membership people_backfill linked ' . (int) $result['linked'] . ' legacy member(s) to People.',
-                    'message'
+                $backfill = new MemberPeopleBackfillService(
+                    new RecordRepository($db),
+                    $component->getPeopleIntegrationService(),
+                    new AuditService($db)
+                );
+                $result = $backfill->run((int) $identity->id, Factory::getDate()->toSql());
+
+                if (($result['linked'] ?? 0) > 0) {
+                    $app->enqueueMessage(
+                        'Membership people_backfill linked ' . (int) $result['linked'] . ' legacy member(s) to People.',
+                        'message'
+                    );
+                }
+            } catch (\Throwable $e) {
+                $app->enqueueMessage(
+                    'Membership installed or updated, but the People backfill could not be completed automatically.',
+                    'warning'
                 );
             }
-        } catch (\Throwable $e) {
-            Factory::getApplication()->enqueueMessage(
-                'Membership installed or updated, but the People backfill could not be completed automatically.',
+        } else {
+            $app->enqueueMessage(
+                'Membership People backfill deferred because the installer has no authenticated Joomla identity.',
                 'warning'
             );
         }
@@ -113,7 +120,7 @@ final class pkg_decaromembershipInstallerScript
                 $db->setQuery($query)->execute();
             }
         } catch (\Throwable $e) {
-            Factory::getApplication()->enqueueMessage('Membership installed, but optional integration plugins could not be enabled automatically.','warning');
+            $app->enqueueMessage('Membership installed, but optional integration plugins could not be enabled automatically.','warning');
         }
     }
 }
