@@ -22,8 +22,8 @@ foreach ([
     'function findByUserIdUnique(int $userId): ?array',
     'function openPersonUrl(string $uuid): string',
     "bootComponent('com_xdecaropeople')",
-    "method_exists($component, 'getPersonProviderService')",
-    "searchPeople(['user_id' => $userId], 2, false)",
+    "method_exists(\$component, 'getPersonProviderService')",
+    "searchPeople(['user_id' => \$userId], 2, false)",
     'count($rows) === 1 ? $rows[0] : null',
 ] as $marker) {
     if (!str_contains($service, $marker)) {
