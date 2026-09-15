@@ -20,3 +20,5 @@ jobs:
         run: php tests/people-integration-contract.php
       - name: People adapter contract
         run: php tests/people-integration-service.php
+      - name: Member People link contract
+        run: php tests/member-people-link.php
