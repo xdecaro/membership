@@ -120,12 +120,13 @@ if ($mode === 'clean') {
         $fail('Membership list batch resolution did not return the People identity.');
     }
 
-    $db->updateObject('#__xdecaropeople_people', (object) [
+    $renamedRow = (object) [
         'id' => $personId,
         'display_name' => 'CI People Renamed',
         'first_name' => 'CI People',
         'last_name' => 'Renamed',
-    ], 'id');
+    ];
+    $db->updateObject('#__xdecaropeople_people', $renamedRow, 'id');
     $renamed = $people->getPerson($uuid, false);
     $memberAfterRename = $repository->load('#__decaromembership_members', $memberId);
     if (($renamed['display_name'] ?? '') !== 'CI People Renamed' || $memberAfterRename?->first_name !== null || $memberAfterRename?->last_name !== null) {
