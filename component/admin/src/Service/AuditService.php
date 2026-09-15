@@ -18,6 +18,18 @@ final class AuditService
         $this->db->setQuery($q)->execute();
     }
 
+    public function personLink(int $memberId, string $action, ?string $oldUuid, ?string $newUuid, int $userId, string $created): void
+    {
+        $allowed = ['people_link', 'people_relink', 'people_backfill'];
+        if (!in_array($action, $allowed, true)) {
+            throw new \InvalidArgumentException('Unsupported People link audit action.');
+        }
+
+        $old = $oldUuid !== null ? (object) ['person_uuid' => $oldUuid] : null;
+        $new = $newUuid !== null ? (object) ['person_uuid' => $newUuid] : null;
+        $this->record('members', $memberId, $action, $userId, $old, $new, $created);
+    }
+
     public function caseStatus(int $caseId, ?int $oldStatusId, ?int $newStatusId, int $userId, string $created): void
     {
         $q = $this->db->getQuery(true)->insert($this->db->quoteName('#__decaromembership_case_status_history'))
