@@ -34,6 +34,8 @@ jobs:
         run: php tests/css-theme-contract.php
       - name: Language contract
         run: php tests/language-contract.php
+      - name: RecordValidator optional date contract
+        run: php tests/record-validator-date-null.php
       - name: RecordRepository stable binding contract
         run: php tests/record-repository-bindings.php
       - name: AuditService stable binding contract
