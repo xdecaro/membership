@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS `#__decaromembership_renewals`;
 DROP TABLE IF EXISTS `#__decaromembership_case_status_history`;
 DROP TABLE IF EXISTS `#__decaromembership_cases`;
 DROP TABLE IF EXISTS `#__decaromembership_case_statuses`;
+DROP TABLE IF EXISTS `#__decaromembership_member_history`;
 DROP TABLE IF EXISTS `#__decaromembership_members`;
 DROP TABLE IF EXISTS `#__decaromembership_locations`;
 DROP TABLE IF EXISTS `#__decaromembership_categories`;
