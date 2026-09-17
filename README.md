@@ -6,7 +6,7 @@ Membership è il componente Joomla 6 per la gestione del dominio associativo: so
 
 - Componente: `com_decaromembership`
 - Pacchetto: `pkg_decaromembership`
-- Versione corrente: **1.5.0**
+- Versione corrente: **1.6.0**
 - Joomla: `6.*`
 - PHP: `8.3+`
 - Core richiesto: **2.0.1+**
@@ -15,17 +15,17 @@ Membership è il componente Joomla 6 per la gestione del dominio associativo: so
 
 ## People
 
-Da Membership 1.5.0 **People è l'anagrafica autorevole della persona**. Ogni nuovo socio deve essere collegato a una persona People tramite `person_uuid`; lo stesso UUID può appartenere a un solo socio Membership.
+Da Membership 1.6.0 **People è l'anagrafica autorevole della persona**. Ogni nuovo socio deve essere collegato a una persona People tramite `person_uuid`; lo stesso UUID può appartenere a un solo socio Membership.
 
 Membership mantiene il proprio `member_id` come chiave stabile per rinnovi, tessere, quote, pagamenti, trasferimenti, pratiche, documenti e audit. Nome, cognome, nascita, contatti e residenza vengono invece risolti tramite il servizio pubblico di People, senza query alle tabelle `#__xdecaropeople_*` e senza dipendenze da Model/Table private di People.
 
-L'upgrade 1.4.0 → 1.5.0 è non distruttivo: i campi anagrafici legacy restano nel database e i soci esistenti possono rimanere temporaneamente non collegati. Il backfill automatico collega soltanto corrispondenze deterministiche basate su un `user_id` People univoco. Il normale salvataggio non può cambiare un collegamento People già esistente; la correzione passa da un'azione esplicita con ACL dedicata e audit UUID-only.
+L'upgrade 1.4.0 → 1.6.0 è non distruttivo: i campi anagrafici legacy restano nel database e i soci esistenti possono rimanere temporaneamente non collegati. Il backfill automatico collega soltanto corrispondenze deterministiche basate su un `user_id` People univoco. Il normale salvataggio non può cambiare un collegamento People già esistente; la correzione passa da un'azione esplicita con ACL dedicata e audit UUID-only.
 
 Le liste soci risolvono le identità People in batch per evitare N+1. Se People o una persona collegata non è temporaneamente disponibile, Membership mantiene accessibile il record associativo e mostra uno stato controllato invece di interrogare direttamente i dati People.
 
 ## Xdecaro Core
 
-Membership 1.5.0 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
+Membership 1.6.0 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
 
 La pagina **Informazioni/Diagnostica** mostra le versioni installate e minime richieste di Core e People e lo stato di compatibilità/disponibilità delle relative API.
 
@@ -53,11 +53,11 @@ Il package registra l'update server Joomla `updates/pkg_decaromembership.xml`. I
 
 ## Test di integrazione
 
-La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.5.0 copre:
+La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.6.0 copre:
 
 - installazione pulita con Core 2.0.1 e People 1.2.15 pubblicati e fissati per SHA-256;
 - collegamento socio ↔ persona People e risoluzione batch dell'identità;
-- upgrade non distruttivo 1.4.0 → 1.5.0 con conservazione di socio e record figli;
+- upgrade non distruttivo 1.4.0 → 1.6.0 con conservazione di socio e record figli;
 - backfill deterministico e idempotente tramite `user_id` univoco;
 - rifiuto preflight quando mancano Core o People richiesti;
 - regressioni Finance 1.3.0: aggiornamento quota/pagamento prima dell'allocazione, replay idempotente e rifiuto delle modifiche successive all'allocazione.
@@ -73,3 +73,8 @@ La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra com
 - `dist/` — output locale generato, non versionato.
 
 Copyright (C) 2026 Luca De Caro. GNU GPL v2 o successiva.
+
+
+## Lifecycle associativo 1.6.0
+
+Membership 1.6.0 separa esplicitamente identità People e ciclo di vita associativo. Aggiunge date domanda/ammissione/cessazione, diritti di elettorato espliciti, storico non distruttivo di stato/categoria/sede, data di efficacia dei trasferimenti e servizi pubblici di sola lettura per People. Le regole statutarie specifiche restano configurabili e non vengono hardcodate nel Core.
