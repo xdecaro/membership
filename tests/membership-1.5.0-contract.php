@@ -41,6 +41,8 @@ $expect(($assets['version'] ?? '') === '1.5.0', 'Web Asset version must be 1.5.0
 $installer = (string) file_get_contents($root . '/package/script.php');
 $expect(str_contains($installer, "MINIMUM_CORE_VERSION = '2.0.1'"), 'Core minimum must be 2.0.1.');
 $expect(str_contains($installer, "MINIMUM_PEOPLE_VERSION = '1.2.15'"), 'People minimum must be 1.2.15.');
+$expect(str_contains($installer, "'pkg_core', 'pkg_xdecarocore'"), 'Installer must accept canonical and legacy Core package identities.');
+$expect(str_contains($installer, "'pkg_people', 'pkg_xdecaropeople'"), 'Installer must accept canonical and legacy People package identities.');
 $expect(str_contains($installer, 'memberCount'), 'Installer must detect whether legacy members exist before People backfill.');
 $expect(str_contains($installer, 'memberCount > 0'), 'Installer must skip People backfill when Membership has no members.');
 
