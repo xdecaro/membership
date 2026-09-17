@@ -33,8 +33,13 @@ jobs:
           php tests/membership-1.6.0-lifecycle-contract.php
       - run: python3 build/build.py && python3 build/validate.py --dist
       - run: python3 build/update_feed_checksum.py
-      - name: Verify checksum
-        run: VERSION="${{ steps.version.outputs.version }}"; SHA=$(sha256sum "dist/pkg_decaromembership_${VERSION}.zip"|awk '{print $1}'); grep -q "<sha256>${SHA}</sha256>" updates/pkg_decaromembership.xml
+      - name: Verify updater metadata
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          SHA=$(sha256sum "dist/pkg_decaromembership_${VERSION}.zip" | awk '{print $1}')
+          grep -Fq "<version>${VERSION}</version>" updates/pkg_decaromembership.xml
+          grep -Fq "https://github.com/xdecaro/membership/releases/download/v${VERSION}/pkg_decaromembership_${VERSION}.zip" updates/pkg_decaromembership.xml
+          grep -Fq "<sha256>${SHA}</sha256>" updates/pkg_decaromembership.xml
       - name: Create release
         env: {GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'}
         run: |
