@@ -85,7 +85,7 @@ def validate_people_boundary():
 
 
 def validate():
-    if VERSION != '1.5.0':
+    if VERSION != '1.6.0':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -142,6 +142,7 @@ def validate():
         'membership.notifications.bridge',
         'membership.tasks.bridge',
         'membership.reminders.process',
+        'membership.people_history',
     )
     bridge = require(
         'component/admin/src/Service/CrossProductIntegrationService.php',
@@ -157,7 +158,7 @@ def validate():
     if '#__decaromembership_' in provider:
         fail('Analytics adapter must delegate to Membership source service')
     require('plugins/task/decaromembership/src/Extension/Decaromembership.php', 'TaskPluginTrait', 'decaromembership.reminders', 'getReminderService')
-    require('component/admin/services/provider.php', 'MembershipComponent', 'PeopleIntegrationService::class', 'AnalyticsSourceService::class', 'ReminderService::class', 'setPeopleIntegrationService', 'setReminderService')
+    require('component/admin/services/provider.php', 'MembershipComponent', 'PeopleIntegrationService::class', 'MembershipEligibilityService::class', 'MembershipPersonHistoryService::class', 'AnalyticsSourceService::class', 'ReminderService::class', 'setPeopleIntegrationService', 'setMembershipEligibilityService', 'setMembershipPersonHistoryService', 'setReminderService')
 
     installer = require(
         'package/script.php',
@@ -183,8 +184,16 @@ def validate():
         if marker not in update_sql:
             fail(f'1.5.0 schema missing {marker}')
 
+    lifecycle_marker = ROOT / 'component/admin/sql/updates/mysql/1.6.0.sql'
+    if not lifecycle_marker.is_file():
+        fail('Membership 1.6.0 schema update missing')
+    lifecycle_sql = lifecycle_marker.read_text(encoding='utf-8')
+    for marker in ('current_period_started_on', 'rights_status', 'can_vote_override', 'seniority_credit_days', '#__decaromembership_member_history'):
+        if marker not in lifecycle_sql:
+            fail(f'1.6.0 schema missing {marker}')
+
     install = (ROOT / 'component/admin/sql/install.mysql.utf8mb4.sql').read_text()
-    for marker in ('#__decaromembership_notifications', '`person_uuid` CHAR(36) NULL', 'uq_member_person_uuid'):
+    for marker in ('#__decaromembership_notifications', '`person_uuid` CHAR(36) NULL', 'uq_member_person_uuid', '#__decaromembership_member_history', '`rights_status` VARCHAR(30)'):
         if marker not in install:
             fail(f'clean install schema missing {marker}')
     for sql in (ROOT / 'component/admin/sql').rglob('*.sql'):
