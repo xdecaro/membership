@@ -8,6 +8,8 @@ use RuntimeException;
 use Xdecaro\Component\Decaromembership\Administrator\Helper\EntityRegistry;
 use Xdecaro\Component\Decaromembership\Administrator\Service\AuditService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\MemberPeopleLinkService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\MembershipEligibilityService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\MembershipPersonHistoryService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\PeopleIntegrationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\RecordRepository;
 use Xdecaro\Component\Decaromembership\Administrator\Service\RecordValidator;
@@ -65,6 +67,9 @@ final class RecordModel extends BaseDatabaseModel
 
         if ($entity === 'members') {
             $data = $this->memberPeopleLinkService($repository, $audit)->validateForSave($id, $old, $data);
+            foreach (['can_vote_override', 'can_candidate_override'] as $overrideField) {
+                $data[$overrideField] = ($data[$overrideField] ?? '') === '' ? null : (int) $data[$overrideField];
+            }
         }
 
         foreach ($config['fields'] as $name => $field) {
@@ -88,6 +93,13 @@ final class RecordModel extends BaseDatabaseModel
 
         if ($entity === 'members' && $old && $oldPersonUuid === '' && trim((string) ($new->person_uuid ?? '')) !== '') {
             $audit->personLink($id, 'people_link', null, strtolower((string) $new->person_uuid), $userId, $now);
+        }
+        if ($entity === 'members' && is_object($new)) {
+            $history = new MembershipPersonHistoryService(
+                $this->getDatabase(),
+                new MembershipEligibilityService($this->getDatabase())
+            );
+            $history->recordTransition($id, $old, $new, $userId, $now);
         }
         if ($entity === 'cases' && $old && (int) ($old->status_id ?? 0) !== (int) ($new->status_id ?? 0)) {
             $audit->caseStatus($id, ($old->status_id ?? null) ? (int) $old->status_id : null, ($new->status_id ?? null) ? (int) $new->status_id : null, $userId, $now);
