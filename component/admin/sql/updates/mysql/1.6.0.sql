@@ -1,7 +1,9 @@
 ALTER TABLE `#__decaromembership_members`
   ADD COLUMN `application_date` DATE NULL AFTER `first_registration_date`,
   ADD COLUMN `admission_date` DATE NULL AFTER `application_date`,
-  ADD COLUMN `status_effective_date` DATE NULL AFTER `admission_date`,
+  ADD COLUMN `current_membership_start_date` DATE NULL AFTER `admission_date`,
+  ADD COLUMN `seniority_credit_days` INT UNSIGNED NOT NULL DEFAULT 0 AFTER `current_membership_start_date`,
+  ADD COLUMN `status_effective_date` DATE NULL AFTER `seniority_credit_days`,
   ADD COLUMN `cessation_date` DATE NULL AFTER `status_effective_date`,
   ADD COLUMN `cessation_reason` VARCHAR(190) NULL AFTER `cessation_date`,
   ADD COLUMN `voting_active` TINYINT NOT NULL DEFAULT 0 AFTER `cessation_reason`,
