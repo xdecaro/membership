@@ -22,8 +22,8 @@ final class pkg_decaromembershipInstallerScript
         try {
             /** @var DatabaseInterface $db */
             $db = Factory::getContainer()->get(DatabaseInterface::class);
-            $core = $this->installedVersion($db, 'package', 'pkg_xdecarocore');
-            $people = $this->installedVersion($db, 'package', 'pkg_xdecaropeople');
+            $core = $this->installedPackageVersion($db, ['pkg_core', 'pkg_xdecarocore']);
+            $people = $this->installedPackageVersion($db, ['pkg_people', 'pkg_xdecaropeople']);
         } catch (\Throwable $e) {
             Factory::getApplication()->enqueueMessage('Membership 1.5.0 could not verify required xdecaro dependencies.', 'error');
             return false;
@@ -39,6 +39,24 @@ final class pkg_decaromembershipInstallerScript
         }
 
         return true;
+    }
+
+    private function installedPackageVersion(DatabaseInterface $db, array $elements): ?string
+    {
+        $versions = [];
+        foreach ($elements as $element) {
+            $version = $this->installedVersion($db, 'package', (string) $element);
+            if ($version !== null) {
+                $versions[] = $version;
+            }
+        }
+
+        if ($versions === []) {
+            return null;
+        }
+
+        usort($versions, 'version_compare');
+        return (string) end($versions);
     }
 
     private function installedVersion(DatabaseInterface $db, string $type, string $element): ?string
