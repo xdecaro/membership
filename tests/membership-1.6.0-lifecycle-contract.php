@@ -26,7 +26,7 @@ $personService = (string) file_get_contents($root . '/component/admin/src/Servic
 $eligibility = (string) file_get_contents($root . '/component/admin/src/Service/MembershipEligibilityService.php');
 $history = (string) file_get_contents($root . '/component/admin/src/Service/MembershipHistoryService.php');
 
-foreach (['application_date','admission_date','status_effective_date','cessation_date','cessation_reason','voting_active','voting_passive'] as $field) {
+foreach (['application_date','admission_date','current_membership_start_date','seniority_credit_days','status_effective_date','cessation_date','cessation_reason','voting_active','voting_passive'] as $field) {
     $expect(str_contains($install, $field), "Install schema missing {$field}.");
     $expect(str_contains($update, $field), "1.6.0 migration missing {$field}.");
 }
@@ -38,6 +38,8 @@ foreach (['in_review','admitted','lapsed','resigned','expelled','deceased','tran
     $expect(str_contains($members, "'{$status}'"), "Membership lifecycle status missing: {$status}.");
 }
 $expect(str_contains($transfers, "'effective_at'"), 'Transfer effective date field is missing.');
+$cases = (string) file_get_contents($root . '/component/admin/src/Config/CaseEntities.php');
+$expect(str_contains($cases, "'readmission'"), 'Readmission must be an explicit Membership case type.');
 $expect(str_contains($recordValidator, "empty(\$data['effective_at'])"), 'Completed transfers must require an effective date.');
 $expect(str_contains($recordModel, 'updateMemberLocation'), 'Completed transfers must update the Membership location.');
 $expect(str_contains($recordModel, 'recordMemberChange'), 'Membership lifecycle changes must be written to history.');
@@ -49,6 +51,7 @@ $expect(str_contains($component, 'getMembershipEligibilityService'), 'Membership
 $expect(str_contains($personService, 'getMembershipsByPersonUuid'), 'Person Membership public lookup is missing.');
 $expect(str_contains($eligibility, 'getSnapshot'), 'Eligibility snapshot is missing.');
 $expect(str_contains($eligibility, 'isFeeCurrent'), 'Fee status helper is missing.');
+$expect(str_contains($eligibility, 'calculateSeniorityDays'), 'Membership seniority calculation is missing.');
 $expect(str_contains($history, '#__decaromembership_member_history'), 'Lifecycle service must use dedicated member history.');
 
 if ($failures !== []) {
