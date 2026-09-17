@@ -18,7 +18,7 @@ foreach ([
     'function dependencyStatus(): array',
     'function getPerson(string $uuid, bool $sensitive = false): ?array',
     'function searchPeople(string $search, int $limit = 50): array',
-    "method_exists($provider, 'searchPeopleForIdentity')",
+    'method_exists($provider, \'searchPeopleForIdentity\')',
     'searchPeopleForIdentity($filters, $limit)',
     "installedPackageVersion(['pkg_core', 'pkg_xdecarocore'])",
     "installedPackageVersion(['pkg_people', 'pkg_xdecaropeople'])",
