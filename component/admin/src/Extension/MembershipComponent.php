@@ -10,6 +10,8 @@ use Xdecaro\Component\Decaromembership\Administrator\Service\CoreIntegrationServ
 use Xdecaro\Component\Decaromembership\Administrator\Service\CrossProductIntegrationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\PeopleIntegrationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\ReminderService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\PersonMembershipService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\MembershipEligibilityService;
 
 final class MembershipComponent extends MVCComponent
 {
@@ -18,12 +20,16 @@ final class MembershipComponent extends MVCComponent
     private ?PeopleIntegrationService $peopleIntegration = null;
     private ?AnalyticsSourceService $analytics = null;
     private ?ReminderService $reminders = null;
+    private ?PersonMembershipService $personMembership = null;
+    private ?MembershipEligibilityService $eligibility = null;
 
     public function setCoreIntegrationService(CoreIntegrationService $service): void { $this->coreIntegration = $service; }
     public function setCrossProductIntegrationService(CrossProductIntegrationService $service): void { $this->crossProduct = $service; }
     public function setPeopleIntegrationService(PeopleIntegrationService $service): void { $this->peopleIntegration = $service; }
     public function setAnalyticsSourceService(AnalyticsSourceService $service): void { $this->analytics = $service; }
     public function setReminderService(ReminderService $service): void { $this->reminders = $service; }
+    public function setPersonMembershipService(PersonMembershipService $service): void { $this->personMembership = $service; }
+    public function setMembershipEligibilityService(MembershipEligibilityService $service): void { $this->eligibility = $service; }
 
     public function getCoreIntegrationService(): CoreIntegrationService
     {
@@ -53,5 +59,17 @@ final class MembershipComponent extends MVCComponent
     {
         if ($this->reminders === null) { throw new RuntimeException('Membership reminder service is unavailable.'); }
         return $this->reminders;
+    }
+
+    public function getPersonMembershipService(): PersonMembershipService
+    {
+        if ($this->personMembership === null) { throw new RuntimeException('Membership person service is unavailable.'); }
+        return $this->personMembership;
+    }
+
+    public function getMembershipEligibilityService(): MembershipEligibilityService
+    {
+        if ($this->eligibility === null) { throw new RuntimeException('Membership eligibility service is unavailable.'); }
+        return $this->eligibility;
     }
 }

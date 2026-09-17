@@ -8,6 +8,7 @@ use RuntimeException;
 use Xdecaro\Component\Decaromembership\Administrator\Helper\EntityRegistry;
 use Xdecaro\Component\Decaromembership\Administrator\Service\AuditService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\MemberPeopleLinkService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\MembershipHistoryService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\PeopleIntegrationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\RecordRepository;
 use Xdecaro\Component\Decaromembership\Administrator\Service\RecordValidator;
@@ -85,6 +86,32 @@ final class RecordModel extends BaseDatabaseModel
         $id = $repository->save($config['table'], $id, $data);
         $new = $repository->load($config['table'], $id);
         $audit->record($entity, $id, $old ? 'update' : 'create', $userId, $old, $new, $now);
+
+        $history = new MembershipHistoryService($this->getDatabase());
+        if ($entity === 'members' && $new) {
+            $history->recordMemberChange($id, $old, $new, $userId, $now);
+        }
+
+        if ($entity === 'transfers' && $new && ($new->status ?? '') === 'completed' && (!$old || ($old->status ?? '') !== 'completed')) {
+            $memberId = (int) ($new->member_id ?? 0);
+            $destinationId = (int) ($new->to_location_id ?? 0);
+            if ($memberId > 0 && $destinationId > 0) {
+                $beforeMember = $repository->load('#__decaromembership_members', $memberId);
+                $repository->updateMemberLocation($memberId, $destinationId, $now, $userId);
+                $afterMember = $repository->load('#__decaromembership_members', $memberId);
+                if ($afterMember) {
+                    $history->recordMemberChange(
+                        $memberId,
+                        $beforeMember,
+                        $afterMember,
+                        $userId,
+                        $now,
+                        'transfer',
+                        $id
+                    );
+                }
+            }
+        }
 
         if ($entity === 'members' && $old && $oldPersonUuid === '' && trim((string) ($new->person_uuid ?? '')) !== '') {
             $audit->personLink($id, 'people_link', null, strtolower((string) $new->person_uuid), $userId, $now);

@@ -22,7 +22,12 @@ final class RecordValidator
     public function validateBusinessRules(string $entity, array $data): void
     {
         if ($entity === 'transfers' && ($data['status'] ?? '') === 'completed') {
-            if (empty($data['source_confirmed']) || empty($data['destination_confirmed']) || (float) ($data['arrears_amount'] ?? 0) > 0) {
+            if (
+                empty($data['source_confirmed'])
+                || empty($data['destination_confirmed'])
+                || (float) ($data['arrears_amount'] ?? 0) > 0
+                || empty($data['effective_at'])
+            ) {
                 throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_TRANSFER_INCOMPLETE'));
             }
         }

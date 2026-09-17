@@ -12,6 +12,7 @@ final class OperationsEntities
                 'from_location_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_FROM_LOCATION','type'=>'relation','relation'=>'locations'],
                 'to_location_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_TO_LOCATION','type'=>'relation','relation'=>'locations','required'=>true],
                 'requested_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_REQUESTED_AT','type'=>'date'],
+                'effective_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_EFFECTIVE_AT','type'=>'date'],
                 'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STATUS','type'=>'select','options'=>['requested'=>'COM_DECAROMEMBERSHIP_TRANSFER_REQUESTED','waiting_source'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_SOURCE','waiting_destination'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_DESTINATION','waiting_documents'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_DOCUMENTS','waiting_arrears'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_ARREARS','completed'=>'COM_DECAROMEMBERSHIP_TRANSFER_COMPLETED','cancelled'=>'COM_DECAROMEMBERSHIP_TRANSFER_CANCELLED']],
                 'delegation_status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_DELEGATION_STATUS','type'=>'text'],
                 'card_position'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CARD_POSITION','type'=>'text'],

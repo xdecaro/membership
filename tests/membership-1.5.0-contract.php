@@ -10,7 +10,7 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $version = trim((string) file_get_contents($root . '/VERSION'));
-$expect($version === '1.5.0', 'VERSION must be 1.5.0.');
+$expect($version === '1.6.0', 'VERSION must be 1.6.0.');
 
 foreach ([
     'component/decaromembership.xml',
@@ -19,7 +19,7 @@ foreach ([
     'plugins/task/decaromembership/decaromembership.xml',
 ] as $manifestPath) {
     $xml = simplexml_load_file($root . '/' . $manifestPath);
-    $expect($xml !== false && (string) $xml->version === '1.5.0', "{$manifestPath} must be 1.5.0.");
+    $expect($xml !== false && (string) $xml->version === '1.6.0', "{$manifestPath} must be 1.6.0.");
 }
 
 $componentManifest = simplexml_load_file($root . '/component/decaromembership.xml');
@@ -36,7 +36,7 @@ if ($componentManifest !== false) {
 }
 
 $assets = json_decode((string) file_get_contents($root . '/component/media/joomla.asset.json'), true);
-$expect(($assets['version'] ?? '') === '1.5.0', 'Web Asset version must be 1.5.0.');
+$expect(($assets['version'] ?? '') === '1.6.0', 'Web Asset version must be 1.6.0.');
 
 $installer = (string) file_get_contents($root . '/package/script.php');
 $expect(str_contains($installer, "MINIMUM_CORE_VERSION = '2.0.1'"), 'Core minimum must be 2.0.1.');
@@ -91,12 +91,13 @@ foreach (['Record' => $recordView, 'Records' => $recordsView] as $viewName => $v
     }
 }
 
-$updateSql = $root . '/component/admin/sql/updates/mysql/1.5.0.sql';
-$expect(is_file($updateSql), 'Membership 1.5.0 SQL update is missing.');
+$updateSql = $root . '/component/admin/sql/updates/mysql/1.6.0.sql';
+$expect(is_file($updateSql), 'Membership 1.6.0 SQL update is missing.');
 if (is_file($updateSql)) {
     $sql = (string) file_get_contents($updateSql);
-    $expect(str_contains($sql, 'person_uuid'), '1.5.0 SQL must contain person_uuid.');
-    $expect(!preg_match('/\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE)\b/i', $sql), '1.5.0 SQL must be non-destructive.');
+    $expect(str_contains($sql, 'application_date'), '1.6.0 SQL must contain application_date.');
+    $expect(str_contains($sql, '#__decaromembership_member_history'), '1.6.0 SQL must create member history.');
+    $expect(!preg_match('/\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE)\b/i', $sql), '1.6.0 SQL must be non-destructive.');
 }
 
 $source = '';
@@ -109,10 +110,12 @@ foreach ($iterator as $file) {
 $expect(!str_contains($source, '#__xdecaropeople_'), 'Membership must not query People private tables.');
 $expect(!preg_match('/People\\\\Administrator\\\\(?:Model|Table)\\\\/', $source), 'Membership must not import People private Model/Table classes.');
 $expect(str_contains($source, 'getPeopleByUuids'), 'Membership must use the People batch provider.');
+$expect(str_contains($source, 'membership.person_memberships'), 'Membership must expose the person-memberships capability.');
+$expect(str_contains($source, 'MembershipEligibilityService'), 'Membership eligibility service is missing.');
 
 if ($failures !== []) {
     fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);
     exit(1);
 }
 
-echo "Membership 1.5.0 release contract OK\n";
+echo "Membership 1.6.0 release contract OK\n";

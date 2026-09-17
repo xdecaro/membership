@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+  <changelog version="1.6.0" date="2026-09-18">
+    <change type="feature">Membership lifecycle dates, rights and non-destructive history.</change>
+    <change type="feature">Public person-memberships and eligibility services for People integration.</change>
+    <change type="feature">Transfer effective date with controlled destination update on completion.</change>
+  </changelog>
+
   <changelog>
     <element>pkg_decaromembership</element>
     <type>package</type>
