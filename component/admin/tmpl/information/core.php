@@ -2,6 +2,10 @@
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Language\Text;
+use Joomla\CMS\Uri\Uri;
+
+$membershipAssetBase=rtrim(Uri::root(true),'/').'/media/com_decaromembership';
+$membershipCssVersion=@filemtime(JPATH_ROOT.'/media/com_decaromembership/css/admin.css')?:'1.5.0';
 
 $escape = static fn (mixed $value): string => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 $core = (array) ($this->info['core'] ?? []);
@@ -9,14 +13,22 @@ $coreInstalled = !empty($core['installed']);
 $coreApi = !empty($core['api_available']);
 $coreUi = !empty($core['ui_available']);
 $coreVersion = (string) ($core['version'] ?? '');
+$componentVersion = '1.5.0';
+foreach (($this->info['extensions'] ?? []) as $extension) {
+    if (($extension['element'] ?? '') === 'com_decaromembership' && ($extension['version'] ?? '') !== '') {
+        $componentVersion = (string) $extension['version'];
+        break;
+    }
+}
 ?>
+<link rel="stylesheet" href="<?= $escape($membershipAssetBase.'/css/admin.css?v='.$membershipCssVersion) ?>">
 <div class="xdecaro-scope membership-core-scope dm-page dm-info">
     <div class="dm-grid dm-grid-2">
         <section class="dm-card xdecaro-card">
             <h2><?= Text::_('COM_DECAROMEMBERSHIP_PRODUCT') ?></h2>
             <dl>
                 <dt><?= Text::_('COM_DECAROMEMBERSHIP_NAME') ?></dt><dd>Membership by xdecaro</dd>
-                <dt><?= Text::_('COM_DECAROMEMBERSHIP_VERSION') ?></dt><dd>1.1.0</dd>
+                <dt><?= Text::_('COM_DECAROMEMBERSHIP_VERSION') ?></dt><dd><?= $escape($componentVersion) ?></dd>
                 <dt><?= Text::_('COM_DECAROMEMBERSHIP_COMPONENT') ?></dt><dd><code>com_decaromembership</code></dd>
                 <dt><?= Text::_('COM_DECAROMEMBERSHIP_PACKAGE') ?></dt><dd><code>pkg_decaromembership</code></dd>
             </dl>

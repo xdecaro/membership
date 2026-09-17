@@ -19,8 +19,12 @@ final class HtmlView extends BaseHtmlView
     public function display($tpl = null): void
     {
         $this->info = $this->get('Information');
-        $webAssets = Factory::getApplication()->getDocument()->getWebAssetManager();
-        $webAssets->useStyle('com_decaromembership.admin');
+        $webAssets = $this->getDocument()->getWebAssetManager();
+        $webAssets->registerAndUseStyle(
+            'com_decaromembership.admin',
+            'com_decaromembership/css/admin.css',
+            ['version' => 'auto']
+        );
 
         if (class_exists(\xdecaro\Core\Version::class)
             && version_compare((string) \xdecaro\Core\Version::VERSION, self::MINIMUM_CORE_UI_VERSION, '>=')
@@ -33,7 +37,13 @@ final class HtmlView extends BaseHtmlView
         }
 
         if ($this->coreUi) {
-            $webAssets->useStyle('com_decaromembership.core-bridge');
+            $webAssets->registerAndUseStyle(
+                'com_decaromembership.core-bridge',
+                'com_decaromembership/css/core-bridge.css',
+                ['version' => 'auto'],
+                [],
+                ['com_decaromembership.admin']
+            );
             $this->setLayout('core');
         }
 

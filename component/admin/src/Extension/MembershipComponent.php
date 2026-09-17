@@ -8,17 +8,20 @@ use RuntimeException;
 use Xdecaro\Component\Decaromembership\Administrator\Service\AnalyticsSourceService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\CoreIntegrationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\CrossProductIntegrationService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\PeopleIntegrationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\ReminderService;
 
 final class MembershipComponent extends MVCComponent
 {
     private ?CoreIntegrationService $coreIntegration = null;
     private ?CrossProductIntegrationService $crossProduct = null;
+    private ?PeopleIntegrationService $peopleIntegration = null;
     private ?AnalyticsSourceService $analytics = null;
     private ?ReminderService $reminders = null;
 
     public function setCoreIntegrationService(CoreIntegrationService $service): void { $this->coreIntegration = $service; }
     public function setCrossProductIntegrationService(CrossProductIntegrationService $service): void { $this->crossProduct = $service; }
+    public function setPeopleIntegrationService(PeopleIntegrationService $service): void { $this->peopleIntegration = $service; }
     public function setAnalyticsSourceService(AnalyticsSourceService $service): void { $this->analytics = $service; }
     public function setReminderService(ReminderService $service): void { $this->reminders = $service; }
 
@@ -32,6 +35,12 @@ final class MembershipComponent extends MVCComponent
     {
         if ($this->crossProduct === null) { throw new RuntimeException('Membership cross-product integration service is unavailable.'); }
         return $this->crossProduct;
+    }
+
+    public function getPeopleIntegrationService(): PeopleIntegrationService
+    {
+        if ($this->peopleIntegration === null) { throw new RuntimeException('Membership People integration service is unavailable.'); }
+        return $this->peopleIntegration;
     }
 
     public function getAnalyticsSourceService(): AnalyticsSourceService

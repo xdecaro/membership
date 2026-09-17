@@ -1,0 +1,44 @@
+name: Membership People integration contract
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: People integration schema contract
+        run: php tests/people-integration-contract.php
+      - name: People adapter contract
+        run: php tests/people-integration-service.php
+      - name: Member People link contract
+        run: php tests/member-people-link.php
+      - name: Member People backfill contract
+        run: php tests/member-people-backfill.php
+      - name: Member list integration contract
+        run: php tests/member-list-people.php
+      - name: Member form contract
+        run: php tests/member-people-ui-contract.php
+      - name: Template asset contract
+        run: php tests/template-asset-contract.php
+      - name: CSS theme contract
+        run: php tests/css-theme-contract.php
+      - name: Language contract
+        run: php tests/language-contract.php
+      - name: RecordValidator optional date contract
+        run: php tests/record-validator-date-null.php
+      - name: RecordRepository stable binding contract
+        run: php tests/record-repository-bindings.php
+      - name: AuditService stable binding contract
+        run: php tests/audit-bindings.php
+      - name: Membership 1.5.0 release contract
+        run: php tests/membership-1.5.0-contract.php

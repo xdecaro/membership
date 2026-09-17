@@ -28,20 +28,24 @@ def require(path, *markers):
     return text
 
 
-def validate_finance_boundary():
-    banned_table_prefix = '#__' + 'decarofinance_'
-    banned_class_fragment = '\\component\\decarofinance\\'
-
+def validate_private_boundaries():
     for runtime_root in ('component', 'plugins', 'package'):
         for path in (ROOT / runtime_root).rglob('*'):
             if not path.is_file():
                 continue
             text = path.read_text(encoding='utf-8', errors='ignore')
-            if banned_table_prefix in text:
+            lowered = text.lower()
+            if '#__decarofinance_' in text:
                 fail(f'Membership runtime accesses Finance private table: {path.relative_to(ROOT)}')
-            if banned_class_fragment in text.lower():
+            if '\\component\\decarofinance\\' in lowered:
                 fail(f'Membership runtime depends on Finance implementation class: {path.relative_to(ROOT)}')
+            if '#__xdecaropeople_' in text:
+                fail(f'Membership runtime accesses People private table: {path.relative_to(ROOT)}')
+            if re.search(r'People\\Administrator\\(?:Model|Table)\\', text, re.I):
+                fail(f'Membership runtime depends on private People Model/Table: {path.relative_to(ROOT)}')
 
+
+def validate_finance_boundary():
     require(
         'component/admin/src/Service/CrossProductIntegrationService.php',
         "bootComponent('com_decarofinance')",
@@ -50,23 +54,38 @@ def validate_finance_boundary():
         'upsertPayment',
         'allocatePaymentIdempotent',
     )
+    require('tests/finance-integration-contract.php', 'com_decarofinance', 'getFinanceService', 'allocatePaymentIdempotent')
+    require('tests/finance-runtime.php', 'MEMBERSHIP_JOOMLA_ROOT', 'syncDueToFinance', 'syncPaymentToFinance', 'syncPaidPaymentAllocation')
+
+
+def validate_people_boundary():
     require(
-        'tests/finance-integration-contract.php',
-        'com_decarofinance',
-        'getFinanceService',
-        'allocatePaymentIdempotent',
+        'component/admin/src/Service/PeopleIntegrationService.php',
+        "MINIMUM_CORE_VERSION = '2.0.1'",
+        "MINIMUM_PEOPLE_VERSION = '1.2.15'",
+        "bootComponent('com_xdecaropeople')",
+        'getPersonProviderService',
+        'getPeopleByUuids',
     )
     require(
-        'tests/finance-runtime.php',
-        'MEMBERSHIP_JOOMLA_ROOT',
-        'syncDueToFinance',
-        'syncPaymentToFinance',
-        'syncPaidPaymentAllocation',
+        'component/admin/src/Service/MemberPeopleLinkService.php',
+        'validateForSave',
+        'linkLegacyMember',
+        'relinkMember',
+        'stripPeopleOwnedFields',
     )
+    require(
+        'component/admin/src/Service/MemberPeopleBackfillService.php',
+        'loadUnlinkedMembersWithUserId',
+        'findByUserIdUnique',
+        'people_backfill',
+    )
+    require('component/admin/src/Model/RecordsModel.php', 'resolvePeopleForItems', 'searchPeople($search, 200)', 'getPeopleByUuids')
+    require('component/admin/src/Controller/PeopleController.php', 'searchPeople($q, 20)', 'relinkMember', 'JsonResponse')
 
 
 def validate():
-    if VERSION != '1.4.0':
+    if VERSION != '1.5.0':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -83,6 +102,8 @@ def validate():
     root = ET.parse(manifests[0]).getroot()
     if root.find('./files') is not None:
         fail('Membership remains administrator-only')
+    if (root.find('targetplatform').get('version') or '') != '6.*':
+        fail('Membership must target Joomla 6 only')
     for sql in root.findall('./install/sql/file') + root.findall('./uninstall/sql/file'):
         if (sql.get('driver') or '') != 'mysql' or (sql.get('charset') or '') != 'utf8':
             fail('Joomla SQL manifest entries must use mysql/utf8')
@@ -90,8 +111,13 @@ def validate():
     assets = json.loads((ROOT / 'component/media/joomla.asset.json').read_text())
     if assets.get('version') != VERSION:
         fail('asset version mismatch')
+    for asset in assets.get('assets', []):
+        if asset.get('version') != VERSION:
+            fail(f"asset {asset.get('name')} version mismatch")
 
     package_root = ET.parse(manifests[1]).getroot()
+    if (package_root.find('targetplatform').get('version') or '') != '6.*':
+        fail('Membership package must target Joomla 6 only')
     children = {
         (n.get('type', ''), n.get('id', ''), n.get('group', ''), (n.text or '').strip())
         for n in package_root.findall('./files/file')
@@ -104,6 +130,10 @@ def validate():
     if children != expected:
         fail(f'package children mismatch: {children}')
 
+    validate_private_boundaries()
+    validate_finance_boundary()
+    validate_people_boundary()
+
     require(
         'component/admin/src/Service/CoreIntegrationService.php',
         "COMPONENT='com_decaromembership'",
@@ -115,86 +145,63 @@ def validate():
     )
     bridge = require(
         'component/admin/src/Service/CrossProductIntegrationService.php',
-        'com_xdecaronotifications',
-        'getNotificationService',
-        'com_xdecarotasks',
-        'getTaskService',
-        'source_component',
+        'com_xdecaronotifications', 'getNotificationService', 'com_xdecarotasks', 'getTaskService', 'source_component',
     )
     if '#__xdecaronotifications_' in bridge or '#__xdecarotasks_' in bridge:
         fail('cross-product bridge accesses private tables')
 
-    validate_finance_boundary()
-
-    require(
-        'component/admin/src/Service/AnalyticsSourceService.php',
-        'assertAuthorised',
-        '#__decaromembership_members',
-        'membership.members.total',
-        'membership.expiring',
-    )
-    require(
-        'component/admin/src/Service/ReminderService.php',
-        '#__decaromembership_renewals',
-        '#__decaromembership_cards',
-        '#__decaromembership_documents',
-        '#__decaromembership_dues',
-        'external_key',
-        'integration_manager_user_id',
-    )
-    require(
-        'plugins/xdecaroanalytics/decaromembership/src/Extension/Decaromembership.php',
-        'RegisterProvidersEvent::NAME',
-        'getAnalyticsSourceService',
-    )
-    provider = require(
-        'plugins/xdecaroanalytics/decaromembership/src/Provider/MembershipProvider.php',
-        'implements AnalyticsProviderInterface',
-        "return 'membership'",
-    )
+    require('component/admin/src/Service/AnalyticsSourceService.php', 'assertAuthorised', '#__decaromembership_members', 'membership.members.total', 'membership.expiring')
+    require('component/admin/src/Service/ReminderService.php', '#__decaromembership_renewals', '#__decaromembership_cards', '#__decaromembership_documents', '#__decaromembership_dues', 'external_key', 'integration_manager_user_id')
+    require('plugins/xdecaroanalytics/decaromembership/src/Extension/Decaromembership.php', 'RegisterProvidersEvent::NAME', 'getAnalyticsSourceService')
+    provider = require('plugins/xdecaroanalytics/decaromembership/src/Provider/MembershipProvider.php', 'implements AnalyticsProviderInterface', "return 'membership'")
     if '#__decaromembership_' in provider:
         fail('Analytics adapter must delegate to Membership source service')
-    require(
-        'plugins/task/decaromembership/src/Extension/Decaromembership.php',
-        'TaskPluginTrait',
-        'decaromembership.reminders',
-        'getReminderService',
-    )
-    require(
-        'component/admin/services/provider.php',
-        'MembershipComponent',
-        'AnalyticsSourceService::class',
-        'ReminderService::class',
-        'setReminderService',
-    )
+    require('plugins/task/decaromembership/src/Extension/Decaromembership.php', 'TaskPluginTrait', 'decaromembership.reminders', 'getReminderService')
+    require('component/admin/services/provider.php', 'MembershipComponent', 'PeopleIntegrationService::class', 'AnalyticsSourceService::class', 'ReminderService::class', 'setPeopleIntegrationService', 'setReminderService')
 
     installer = require(
         'package/script.php',
+        "MINIMUM_CORE_VERSION = '2.0.1'",
+        "MINIMUM_PEOPLE_VERSION = '1.2.15'",
+        "['install', 'update', 'discover_install']",
         "['install', 'discover_install']",
+        'MemberPeopleBackfillService',
         "'xdecaroanalytics'",
         "'task'",
-        'decaromembership',
         'ParameterType::INTEGER',
     )
-    if "['update'" in installer or "$type === 'update'" in installer:
-        fail('package installer must not force-enable plugins during updates')
+    if installer.index("['install', 'discover_install']") < installer.index("'xdecaroanalytics'"):
+        pass
+    else:
+        fail('optional plugin enablement must remain install/discover-only')
 
-    if not (ROOT / f'component/admin/sql/updates/mysql/{VERSION}.sql').is_file():
-        fail('schema marker missing')
+    schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.5.0.sql'
+    if not schema_marker.is_file():
+        fail('Membership 1.5.0 schema update missing')
+    update_sql = schema_marker.read_text(encoding='utf-8')
+    for marker in ('person_uuid', 'uq_member_person_uuid', 'MODIFY `first_name` VARCHAR(190) NULL', 'MODIFY `last_name` VARCHAR(190) NULL'):
+        if marker not in update_sql:
+            fail(f'1.5.0 schema missing {marker}')
+
     install = (ROOT / 'component/admin/sql/install.mysql.utf8mb4.sql').read_text()
-    if '#__decaromembership_notifications' not in install:
-        fail('legacy Membership notifications table unexpectedly removed')
+    for marker in ('#__decaromembership_notifications', '`person_uuid` CHAR(36) NULL', 'uq_member_person_uuid'):
+        if marker not in install:
+            fail(f'clean install schema missing {marker}')
     for sql in (ROOT / 'component/admin/sql').rglob('*.sql'):
         if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE)\b', sql.read_text(), re.I) and 'uninstall' not in sql.name:
             fail(f'destructive update SQL: {sql}')
 
-    feed = ET.parse(ROOT / 'updates/pkg_decaromembership.xml').getroot().find('update')
-    if feed is None or (feed.findtext('version') or '').strip() != VERSION:
-        fail('update feed mismatch')
-    expected_url = f'https://github.com/xdecaro/membership/releases/download/v{VERSION}/pkg_decaromembership_{VERSION}.zip'
-    if (feed.findtext('./downloads/downloadurl') or '').strip() != expected_url:
+    feed_update = ET.parse(ROOT / 'updates/pkg_decaromembership.xml').getroot().find('update')
+    if feed_update is None:
+        fail('update feed missing')
+    feed_version = (feed_update.findtext('version') or '').strip()
+    def parts(v): return tuple(int(p) for p in v.split('.'))
+    if not feed_version or parts(feed_version) > parts(VERSION):
+        fail('public update feed cannot be newer than source')
+    expected_url = f'https://github.com/xdecaro/membership/releases/download/v{feed_version}/pkg_decaromembership_{feed_version}.zip'
+    if (feed_update.findtext('./downloads/downloadurl') or '').strip() != expected_url:
         fail('update download mismatch')
-    sha = (feed.findtext('sha256') or '').strip()
+    sha = (feed_update.findtext('sha256') or '').strip()
     if re.fullmatch(r'[0-9a-f]{64}', sha) is None:
         fail('update feed SHA-256 must be a 64-character lowercase hex digest')
 
@@ -211,25 +218,14 @@ def validate_dist():
         dist / 'SHA256SUMS.txt',
     ]
     for path in files:
-        if not path.is_file():
-            fail(f'missing {path.name}')
+        if not path.is_file(): fail(f'missing {path.name}')
 
     with zipfile.ZipFile(files[3]) as archive:
-        expected = {
-            'pkg_decaromembership.xml',
-            'script.php',
-            'com_decaromembership.zip',
-            'plg_xdecaroanalytics_decaromembership.zip',
-            'plg_task_decaromembership.zip',
-        }
-        if set(archive.namelist()) != expected:
-            fail('unexpected package contents')
-
+        expected = {'pkg_decaromembership.xml','script.php','com_decaromembership.zip','plg_xdecaroanalytics_decaromembership.zip','plg_task_decaromembership.zip'}
+        if set(archive.namelist()) != expected: fail('unexpected package contents')
     for path in files[:4]:
         with zipfile.ZipFile(path) as archive:
-            if archive.testzip() is not None:
-                fail(f'corrupt {path.name}')
-
+            if archive.testzip() is not None: fail(f'corrupt {path.name}')
     print(f'Membership {VERSION} dist validation OK')
 
 
@@ -238,8 +234,7 @@ def main():
     parser.add_argument('--dist', action='store_true')
     args = parser.parse_args()
     validate()
-    if args.dist:
-        validate_dist()
+    if args.dist: validate_dist()
 
 
 if __name__ == '__main__':

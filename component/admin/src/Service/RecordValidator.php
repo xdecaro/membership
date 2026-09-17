@@ -34,7 +34,7 @@ final class RecordValidator
     private function filterValue(mixed $raw, array $field): mixed
     {
         if ($raw === '' || $raw === null) {
-            if (($field['unique'] ?? false) || in_array($field['type'], ['number', 'money', 'relation'], true)) return null;
+            if (($field['unique'] ?? false) || in_array($field['type'], ['number', 'money', 'relation', 'date'], true)) return null;
             if ($field['type'] === 'boolean') return 0;
             if ($field['type'] === 'published') return 1;
             return '';

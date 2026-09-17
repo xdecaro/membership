@@ -7,6 +7,8 @@ use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use RuntimeException;
 use Xdecaro\Component\Decaromembership\Administrator\Helper\EntityRegistry;
 use Xdecaro\Component\Decaromembership\Administrator\Service\AuditService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\MemberPeopleLinkService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\PeopleIntegrationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\RecordRepository;
 use Xdecaro\Component\Decaromembership\Administrator\Service\RecordValidator;
 
@@ -21,6 +23,15 @@ final class RecordModel extends BaseDatabaseModel
     private function repository(): RecordRepository
     {
         return new RecordRepository($this->getDatabase());
+    }
+
+    private function memberPeopleLinkService(RecordRepository $repository, AuditService $audit): MemberPeopleLinkService
+    {
+        return new MemberPeopleLinkService(
+            $repository,
+            new PeopleIntegrationService($this->getDatabase()),
+            $audit
+        );
     }
 
     public function getItem(int $id = 0): object
@@ -49,6 +60,12 @@ final class RecordModel extends BaseDatabaseModel
         $data = $validator->filter($config, $input);
         $validator->validateBusinessRules($entity, $data);
         $repository = $this->repository();
+        $old = $id > 0 ? $repository->load($config['table'], $id) : null;
+        $audit = new AuditService($this->getDatabase());
+
+        if ($entity === 'members') {
+            $data = $this->memberPeopleLinkService($repository, $audit)->validateForSave($id, $old, $data);
+        }
 
         foreach ($config['fields'] as $name => $field) {
             if (($field['unique'] ?? false) && isset($data[$name]) && $data[$name] !== '' && $data[$name] !== null && $repository->duplicateExists($config['table'], $name, $data[$name], $id)) {
@@ -58,7 +75,7 @@ final class RecordModel extends BaseDatabaseModel
 
         $userId = (int) Factory::getApplication()->getIdentity()->id;
         $now = Factory::getDate()->toSql();
-        $old = $id > 0 ? $repository->load($config['table'], $id) : null;
+        $oldPersonUuid = $entity === 'members' ? strtolower(trim((string) ($old->person_uuid ?? ''))) : '';
         $data['modified'] = $now;
         $data['modified_by'] = $userId;
         if ($id < 1) {
@@ -67,8 +84,11 @@ final class RecordModel extends BaseDatabaseModel
         }
         $id = $repository->save($config['table'], $id, $data);
         $new = $repository->load($config['table'], $id);
-        $audit = new AuditService($this->getDatabase());
         $audit->record($entity, $id, $old ? 'update' : 'create', $userId, $old, $new, $now);
+
+        if ($entity === 'members' && $old && $oldPersonUuid === '' && trim((string) ($new->person_uuid ?? '')) !== '') {
+            $audit->personLink($id, 'people_link', null, strtolower((string) $new->person_uuid), $userId, $now);
+        }
         if ($entity === 'cases' && $old && (int) ($old->status_id ?? 0) !== (int) ($new->status_id ?? 0)) {
             $audit->caseStatus($id, ($old->status_id ?? null) ? (int) $old->status_id : null, ($new->status_id ?? null) ? (int) $new->status_id : null, $userId, $now);
         }
