@@ -2,6 +2,7 @@
 
 ## 1.6.0 - 2026-09-18
 - Added explicit membership lifecycle dates, cessation metadata and voting-right flags.
+- Added an explicit readmission case type plus current-period start and recognised prior-seniority credit, so interruptions do not have to be counted as active membership.
 - Added non-destructive member lifecycle history for status, category, location and rights changes.
 - Added transfer effective date and automatic location update only when a transfer is validly completed.
 - Added public person-memberships and eligibility capabilities for optional People integration.
