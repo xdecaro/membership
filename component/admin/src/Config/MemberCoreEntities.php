@@ -28,6 +28,8 @@ final class MemberCoreEntities
                 'first_registration_date'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_FIRST_REGISTRATION','type'=>'date'],
                 'application_date'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_APPLICATION_DATE','type'=>'date'],
                 'admission_date'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_ADMISSION_DATE','type'=>'date'],
+                'current_membership_start_date'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CURRENT_MEMBERSHIP_START','type'=>'date'],
+                'seniority_credit_days'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_SENIORITY_CREDIT_DAYS','type'=>'number','default'=>0],
                 'status_effective_date'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STATUS_EFFECTIVE_DATE','type'=>'date'],
                 'cessation_date'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CESSATION_DATE','type'=>'date'],
                 'cessation_reason'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CESSATION_REASON','type'=>'text'],
