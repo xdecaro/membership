@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.6.0 - 2026-09-18
+- Added explicit membership lifecycle dates, cessation metadata and voting-right flags.
+- Added non-destructive member lifecycle history for status, category, location and rights changes.
+- Added transfer effective date and automatic location update only when a transfer is validly completed.
+- Added public person-memberships and eligibility capabilities for optional People integration.
+- Preserved People as the authoritative personal registry and all existing Membership/Finance behavior.
+
+
 ## 1.5.0 - 2026-09-15
 - People 1.2.15 becomes the authoritative person registry for Membership identity/contact data.
 - Added nullable unique `person_uuid` to members while preserving `member_id` as the stable key for all Membership-domain records.
