@@ -78,3 +78,8 @@ Copyright (C) 2026 Luca De Caro. GNU GPL v2 o successiva.
 ## Lifecycle associativo 1.6.0
 
 Membership 1.6.0 separa esplicitamente identità People e ciclo di vita associativo. Aggiunge date domanda/ammissione/cessazione, diritti di elettorato espliciti, storico non distruttivo di stato/categoria/sede, data di efficacia dei trasferimenti e servizi pubblici di sola lettura per People. Le regole statutarie specifiche restano configurabili e non vengono hardcodate nel Core.
+
+
+### Riammissione e anzianità
+
+La riammissione è una pratica distinta (`case.type = readmission`) e non viene confusa con una nuova iscrizione. `first_registration_date` conserva la prima iscrizione conosciuta; `current_membership_start_date` indica l'inizio del periodo associativo attuale e `seniority_credit_days` conserva l'eventuale anzianità pregressa riconosciuta dalla policy dell'organizzazione. Il servizio di eleggibilità espone `seniority_days` senza conteggiare automaticamente i periodi di interruzione. La regola di riconoscimento dell'anzianità resta dell'organizzazione e non viene hardcodata nel Core.
