@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS `#__decaromembership_member_history`;
 DROP TABLE IF EXISTS `#__decaromembership_audit_log`;
 DROP TABLE IF EXISTS `#__decaromembership_entity_links`;
 DROP TABLE IF EXISTS `#__decaromembership_notifications`;
