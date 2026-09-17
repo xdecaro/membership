@@ -10,7 +10,7 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $version = trim((string) file_get_contents($root . '/VERSION'));
-$expect($version === '1.5.0', 'VERSION must be 1.5.0.');
+$expect(version_compare($version, '1.5.0', '>='), 'VERSION must be 1.5.0 or newer.');
 
 foreach ([
     'component/decaromembership.xml',
@@ -19,7 +19,7 @@ foreach ([
     'plugins/task/decaromembership/decaromembership.xml',
 ] as $manifestPath) {
     $xml = simplexml_load_file($root . '/' . $manifestPath);
-    $expect($xml !== false && (string) $xml->version === '1.5.0', "{$manifestPath} must be 1.5.0.");
+    $expect($xml !== false && (string) $xml->version === $version, "{$manifestPath} must match VERSION.");
 }
 
 $componentManifest = simplexml_load_file($root . '/component/decaromembership.xml');
@@ -36,7 +36,7 @@ if ($componentManifest !== false) {
 }
 
 $assets = json_decode((string) file_get_contents($root . '/component/media/joomla.asset.json'), true);
-$expect(($assets['version'] ?? '') === '1.5.0', 'Web Asset version must be 1.5.0.');
+$expect(($assets['version'] ?? '') === $version, 'Web Asset version must match VERSION.');
 
 $installer = (string) file_get_contents($root . '/package/script.php');
 $expect(str_contains($installer, "MINIMUM_CORE_VERSION = '2.0.1'"), 'Core minimum must be 2.0.1.');
