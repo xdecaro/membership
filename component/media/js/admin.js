@@ -16,7 +16,9 @@
   };
 
   const personLabel = (person) => {
-    const meta = [person.email, person.phone].filter(Boolean).join(' · ');
+    const identity = [person.birth_date, person.birth_place].filter(Boolean).join(' · ');
+    const contact = [person.email, person.phone].filter(Boolean).join(' · ');
+    const meta = [identity, contact].filter(Boolean).join(' — ');
     return meta ? `${person.display_name || person.uuid} — ${meta}` : (person.display_name || person.uuid);
   };
 
