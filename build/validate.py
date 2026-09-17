@@ -85,7 +85,7 @@ def validate_people_boundary():
 
 
 def validate():
-    if VERSION != '1.5.0':
+    if VERSION != '1.6.0':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -182,6 +182,14 @@ def validate():
     for marker in ('person_uuid', 'uq_member_person_uuid', 'MODIFY `first_name` VARCHAR(190) NULL', 'MODIFY `last_name` VARCHAR(190) NULL'):
         if marker not in update_sql:
             fail(f'1.5.0 schema missing {marker}')
+
+    lifecycle_marker = ROOT / 'component/admin/sql/updates/mysql/1.6.0.sql'
+    if not lifecycle_marker.is_file():
+        fail('Membership 1.6.0 schema update missing')
+    lifecycle_sql = lifecycle_marker.read_text(encoding='utf-8')
+    for marker in ('application_date', 'admission_date', 'status_effective_date', 'cessation_date', 'voting_active', 'voting_passive', '#__decaromembership_member_history'):
+        if marker not in lifecycle_sql:
+            fail(f'1.6.0 schema missing {marker}')
 
     install = (ROOT / 'component/admin/sql/install.mysql.utf8mb4.sql').read_text()
     for marker in ('#__decaromembership_notifications', '`person_uuid` CHAR(36) NULL', 'uq_member_person_uuid'):
