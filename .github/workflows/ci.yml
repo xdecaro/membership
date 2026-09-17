@@ -88,6 +88,7 @@ jobs:
           test "$finance_schema" = '1.3.0'
           test "$membership_schema" = "$(cat "$GITHUB_WORKSPACE/VERSION")"
           MEMBERSHIP_JOOMLA_ROOT="$GITHUB_WORKSPACE/joomla" MEMBERSHIP_PEOPLE_RUNTIME_MODE=clean php "$GITHUB_WORKSPACE/tests/people-runtime.php"
+          MEMBERSHIP_JOOMLA_ROOT="$GITHUB_WORKSPACE/joomla" php "$GITHUB_WORKSPACE/tests/lifecycle-runtime.php"
           MEMBERSHIP_JOOMLA_ROOT="$GITHUB_WORKSPACE/joomla" php "$GITHUB_WORKSPACE/tests/finance-runtime.php"
 
   joomla-upgrade:
