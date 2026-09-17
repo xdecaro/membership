@@ -72,6 +72,8 @@ if (!str_contains($itLanguage, 'COM_DECAROMEMBERSHIP_FIELD_PUBLISHED="Pubblicato
 foreach ([
     'membershipPeopleSearch',
     'data-membership-people-search',
+    'person.birth_date',
+    'person.birth_place',
     '250',
     'people.search',
 ] as $marker) {
@@ -94,6 +96,8 @@ foreach ([
     'checkToken()',
     "authorise('membership.relink_person', 'com_decaromembership')",
     'searchPeople($q, 20)',
+    "'birth_date' => (string) ($row['birth_date'] ?? '')",
+    "'birth_place' => (string) ($row['birth_place'] ?? '')",
     'relinkMember(',
     'JsonResponse',
 ] as $marker) {
