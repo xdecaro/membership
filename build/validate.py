@@ -187,7 +187,7 @@ def validate():
     if not lifecycle_marker.is_file():
         fail('Membership 1.6.0 schema update missing')
     lifecycle_sql = lifecycle_marker.read_text(encoding='utf-8')
-    for marker in ('application_date', 'admission_date', 'status_effective_date', 'cessation_date', 'voting_active', 'voting_passive', '#__decaromembership_member_history'):
+    for marker in ('application_date', 'admission_date', 'current_membership_start_date', 'seniority_credit_days', 'status_effective_date', 'cessation_date', 'voting_active', 'voting_passive', '#__decaromembership_member_history'):
         if marker not in lifecycle_sql:
             fail(f'1.6.0 schema missing {marker}')
 
