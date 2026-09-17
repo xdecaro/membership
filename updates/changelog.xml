@@ -3,6 +3,18 @@
   <changelog>
     <element>pkg_decaromembership</element>
     <type>package</type>
+    <version>1.6.0</version>
+    <note>Storico del rapporto associativo, riammissione, diritti configurabili e servizio pubblico membership.people_history collegato a People.</note>
+  </changelog>
+  <changelog>
+    <element>pkg_decaromembership</element>
+    <type>package</type>
+    <version>1.5.0</version>
+    <note>People diventa l'anagrafica autorevole tramite person_uuid, con migrazione non distruttiva e ricerca anagrafica tramite provider pubblico.</note>
+  </changelog>
+  <changelog>
+    <element>pkg_decaromembership</element>
+    <type>package</type>
     <version>1.4.0</version>
     <note>Integrazione opzionale con Finance 1.3.0 tramite servizio pubblico: aggiornamenti prima dell'allocazione, replay idempotente e rifiuto delle modifiche conflittuali dopo l'allocazione.</note>
   </changelog>

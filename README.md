@@ -6,7 +6,7 @@ Membership è il componente Joomla 6 per la gestione del dominio associativo: so
 
 - Componente: `com_decaromembership`
 - Pacchetto: `pkg_decaromembership`
-- Versione corrente: **1.5.0**
+- Versione corrente: **1.6.0**
 - Joomla: `6.*`
 - PHP: `8.3+`
 - Core richiesto: **2.0.1+**
@@ -23,9 +23,23 @@ L'upgrade 1.4.0 → 1.5.0 è non distruttivo: i campi anagrafici legacy restano 
 
 Le liste soci risolvono le identità People in batch per evitare N+1. Se People o una persona collegata non è temporaneamente disponibile, Membership mantiene accessibile il record associativo e mostra uno stato controllato invece di interrogare direttamente i dati People.
 
+## Ciclo associativo e diritti
+
+Membership 1.6.0 distingue l'identità personale dal ciclo associativo. La scheda socio mantiene stato, decorrenza del periodo attuale, eventuale cessazione/motivo, categoria, sede, anzianità riconosciuta e stato dei diritti. Le modifiche rilevanti di stato, categoria e sede vengono registrate in uno storico dedicato senza sovrascrivere il significato dei dati precedenti.
+
+Le regole di elettorato attivo/passivo sono centralizzate nel servizio pubblico `MembershipEligibilityService`. I requisiti minimi di anzianità e l'eventuale obbligo di quota in regola sono configurabili: non vengono hardcodate regole specifiche ENS o di un'altra associazione. Sono disponibili override espliciti e tracciabili sul singolo socio.
+
+La riammissione è una pratica distinta dalla nuova iscrizione. L'anzianità precedente può essere rappresentata con il credito di anzianità senza alterare la data anagrafica della persona.
+
+## People → Membership history
+
+Membership espone la capability pubblica `membership.people_history` v1 e il servizio `MembershipPersonHistoryService`. Dato un `person_uuid` People, il servizio restituisce soltanto dati del dominio associativo: posizione corrente, categoria/sede, stato, diritti, storico e trasferimenti. Non restituisce né duplica dati personali People.
+
+Questo contratto consente a People di mostrare una futura tab Membership in sola lettura senza accedere alle tabelle private `#__decaromembership_*`.
+
 ## Xdecaro Core
 
-Membership 1.5.0 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
+Membership 1.6.0 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
 
 La pagina **Informazioni/Diagnostica** mostra le versioni installate e minime richieste di Core e People e lo stato di compatibilità/disponibilità delle relative API.
 
@@ -53,7 +67,7 @@ Il package registra l'update server Joomla `updates/pkg_decaromembership.xml`. I
 
 ## Test di integrazione
 
-La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.5.0 copre:
+La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.6.0 copre:
 
 - installazione pulita con Core 2.0.1 e People 1.2.15 pubblicati e fissati per SHA-256;
 - collegamento socio ↔ persona People e risoluzione batch dell'identità;

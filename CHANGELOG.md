@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.6.0 - 2026-09-18
+- Added non-destructive membership lifecycle fields for current period, ending reason, rights state, right overrides and recognised seniority.
+- Added dedicated member history records for status, category and location changes.
+- Added configurable eligibility policies for active/passive association rights without hardcoding ENS-specific rules.
+- Added readmission as a first-class Membership case type.
+- Added public `membership.people_history` v1 capability keyed by People `person_uuid`, including current Membership state, safe history, transfers and eligibility summary.
+- Added public Membership eligibility and person-history services while keeping People authoritative for personal identity data.
+- Improved related-member labels by resolving People identities in batch instead of relying on legacy duplicated names.
+- Fixed Joomla update-feed generation so version, download URL and SHA-256 advance together.
+- Added Joomla 6.1.3 runtime coverage for lifecycle, eligibility and public history.
+
+
 ## 1.5.0 - 2026-09-15
 - People 1.2.15 becomes the authoritative person registry for Membership identity/contact data.
 - Added nullable unique `person_uuid` to members while preserving `member_id` as the stable key for all Membership-domain records.

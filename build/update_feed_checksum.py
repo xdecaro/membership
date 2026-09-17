@@ -12,10 +12,17 @@ FEED = ROOT / 'updates/pkg_decaromembership.xml'
 
 sha = hashlib.sha256(PACKAGE.read_bytes()).hexdigest()
 tree = ET.parse(FEED)
-node = tree.getroot().find('./update/sha256')
-if node is None:
-    raise SystemExit('Missing <sha256> in Membership update feed')
-node.text = sha
+update = tree.getroot().find('./update')
+if update is None:
+    raise SystemExit('Missing <update> in Membership update feed')
+version_node = update.find('version')
+download_node = update.find('./downloads/downloadurl')
+sha_node = update.find('sha256')
+if version_node is None or download_node is None or sha_node is None:
+    raise SystemExit('Incomplete Membership update feed')
+version_node.text = VERSION
+download_node.text = f'https://github.com/xdecaro/membership/releases/download/v{VERSION}/pkg_decaromembership_{VERSION}.zip'
+sha_node.text = sha
 ET.indent(tree, space='  ')
 tree.write(FEED, encoding='utf-8', xml_declaration=True)
 print(sha)
