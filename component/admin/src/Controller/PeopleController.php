@@ -56,6 +56,8 @@ final class PeopleController extends BaseController
                 $result[] = [
                     'uuid' => strtolower(trim((string) ($row['uuid'] ?? ''))),
                     'display_name' => (string) ($row['display_name'] ?? ''),
+                    'birth_date' => (string) ($row['birth_date'] ?? ''),
+                    'birth_place' => (string) ($row['birth_place'] ?? ''),
                     'email' => (string) ($row['email'] ?? ''),
                     'phone' => (string) ($row['phone'] ?? ''),
                 ];
