@@ -29,6 +29,16 @@ final class RecordValidator
         if ($entity === 'relations' && (int) ($data['member_id'] ?? 0) > 0 && (int) ($data['member_id'] ?? 0) === (int) ($data['related_member_id'] ?? 0)) {
             throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_SELF_RELATION'));
         }
+        if ($entity === 'members') {
+            $periodStart = trim((string) ($data['current_period_started_on'] ?? ''));
+            $endedOn = trim((string) ($data['ended_on'] ?? ''));
+            if ($periodStart !== '' && $endedOn !== '' && $endedOn < $periodStart) {
+                throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_MEMBER_PERIOD'));
+            }
+            if ((int) ($data['seniority_credit_days'] ?? 0) < 0) {
+                throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_SENIORITY_CREDIT'));
+            }
+        }
     }
 
     private function filterValue(mixed $raw, array $field): mixed
