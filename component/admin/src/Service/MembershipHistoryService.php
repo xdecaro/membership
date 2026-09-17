@@ -24,7 +24,7 @@ final class MembershipHistoryService
         }
 
         $changes = [];
-        foreach (['status', 'category_id', 'location_id', 'voting_active', 'voting_passive'] as $field) {
+        foreach (['status', 'category_id', 'location_id', 'voting_active', 'voting_passive', 'current_membership_start_date', 'seniority_credit_days'] as $field) {
             $before = $old?->{$field} ?? null;
             $after = $new->{$field} ?? null;
             if ((string) $before !== (string) $after) {
@@ -58,6 +58,10 @@ final class MembershipHistoryService
             'new_voting_active' => $new->voting_active ?? null,
             'old_voting_passive' => $old?->voting_passive ?? null,
             'new_voting_passive' => $new->voting_passive ?? null,
+            'old_current_membership_start_date' => $old?->current_membership_start_date ?? null,
+            'new_current_membership_start_date' => $new->current_membership_start_date ?? null,
+            'old_seniority_credit_days' => $old?->seniority_credit_days ?? null,
+            'new_seniority_credit_days' => $new->seniority_credit_days ?? null,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         $query = $this->db->getQuery(true)
