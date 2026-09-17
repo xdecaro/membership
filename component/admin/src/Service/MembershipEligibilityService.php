@@ -29,6 +29,8 @@ final class MembershipEligibilityService
                 $this->db->quoteName('first_registration_date'),
                 $this->db->quoteName('application_date'),
                 $this->db->quoteName('admission_date'),
+                $this->db->quoteName('current_membership_start_date'),
+                $this->db->quoteName('seniority_credit_days'),
                 $this->db->quoteName('cessation_date'),
             ])
             ->from($this->db->quoteName('#__decaromembership_members'))
@@ -51,8 +53,40 @@ final class MembershipEligibilityService
         $row['is_active_member'] = $active;
         $row['can_vote'] = $active && !empty($row['voting_active']);
         $row['can_be_candidate'] = $active && !empty($row['voting_passive']);
+        $row['seniority_days'] = $this->calculateSeniorityDays($row);
 
         return $row;
+    }
+
+    private function calculateSeniorityDays(array $row): int
+    {
+        $credit = max(0, (int) ($row['seniority_credit_days'] ?? 0));
+        $start = trim((string) ($row['current_membership_start_date'] ?? ''));
+        if ($start === '') {
+            $start = trim((string) ($row['admission_date'] ?? ''));
+        }
+        if ($start === '') {
+            $start = trim((string) ($row['first_registration_date'] ?? ''));
+        }
+        if ($start === '') {
+            return $credit;
+        }
+
+        try {
+            $from = new \DateTimeImmutable($start);
+            $end = new \DateTimeImmutable('today');
+            $cessation = trim((string) ($row['cessation_date'] ?? ''));
+            if ($cessation !== '' && $cessation < $end->format('Y-m-d')) {
+                $end = new \DateTimeImmutable($cessation);
+            }
+            if ($end < $from) {
+                return $credit;
+            }
+
+            return $credit + (int) $from->diff($end)->days;
+        } catch (\Throwable) {
+            return $credit;
+        }
     }
 
     public function isFeeCurrent(int $memberId, string $associationYear): bool
