@@ -27,8 +27,8 @@ final class PeopleIntegrationService
 
     public function dependencyStatus(): array
     {
-        $core = $this->installedVersion('package', 'pkg_xdecarocore');
-        $people = $this->installedVersion('package', 'pkg_xdecaropeople');
+        $core = $this->installedPackageVersion(['pkg_core', 'pkg_xdecarocore']);
+        $people = $this->installedPackageVersion(['pkg_people', 'pkg_xdecaropeople']);
 
         return [
             'core_version' => $core,
@@ -56,8 +56,20 @@ final class PeopleIntegrationService
 
     public function searchPeople(string $search, int $limit = 50): array
     {
+        $provider = $this->provider();
+        $filters = ['search' => trim($search)];
+
+        if (method_exists($provider, 'searchPeopleForIdentity')) {
+            try {
+                return (array) $provider->searchPeopleForIdentity($filters, $limit);
+            } catch (Throwable) {
+                // Identity details have a narrower People ACL. Fall back to the public
+                // person result rather than making the Membership picker unusable.
+            }
+        }
+
         try {
-            return (array) $this->provider()->searchPeople(['search' => trim($search)], $limit, false);
+            return (array) $provider->searchPeople($filters, $limit, false);
         } catch (Throwable $e) {
             throw new RuntimeException('People search is unavailable: ' . $e->getMessage(), (int) $e->getCode(), $e);
         }
@@ -127,6 +139,24 @@ final class PeopleIntegrationService
         }
 
         return $provider;
+    }
+
+    private function installedPackageVersion(array $elements): ?string
+    {
+        $versions = [];
+        foreach ($elements as $element) {
+            $version = $this->installedVersion('package', (string) $element);
+            if ($version !== null) {
+                $versions[] = $version;
+            }
+        }
+
+        if ($versions === []) {
+            return null;
+        }
+
+        usort($versions, 'version_compare');
+        return (string) end($versions);
     }
 
     private function installedVersion(string $type, string $element): ?string
