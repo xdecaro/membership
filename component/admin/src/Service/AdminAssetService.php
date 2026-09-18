@@ -5,24 +5,35 @@ namespace Xdecaro\Component\Decaromembership\Administrator\Service;
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Document\HtmlDocument;
+use Joomla\CMS\Uri\Uri;
 use Throwable;
 
 final class AdminAssetService
 {
-    private const COMPONENT = 'com_decaromembership';
+    private const VERSION = '1.6.3';
     private const MINIMUM_CORE_UI_VERSION = '1.3.0';
 
     public static function useAssets(HtmlDocument $document, bool $withCoreUi = false): bool
     {
         $webAssets = $document->getWebAssetManager();
+        $webAssets->useScript('core');
 
-        // Joomla only resolves extension asset URIs reliably after the component
-        // Web Asset registry has been loaded. Registering an ad-hoc asset with the
-        // same name as joomla.asset.json can later be replaced by the registry and
-        // lose its "used" state, leaving the page unstyled.
-        $webAssets->getRegistry()->addExtensionRegistryFile(self::COMPONENT);
-        $webAssets->useStyle('com_decaromembership.admin');
-        $webAssets->useScript('com_decaromembership.admin');
+        $base = rtrim(Uri::root(true), '/') . '/media/com_decaromembership';
+
+        // Runtime fallback verified on the real Joomla 6.1.3 site:
+        // the Membership media files return HTTP 200, but Web Asset Manager
+        // activation does not emit the component CSS/JS tags in the document.
+        // Use HtmlDocument's URL API so the browser receives the exact assets.
+        $document->addStyleSheet(
+            $base . '/css/admin.css',
+            ['version' => self::VERSION]
+        );
+
+        $document->addScript(
+            $base . '/js/admin.js',
+            ['version' => self::VERSION],
+            ['defer' => true]
+        );
 
         if (!$withCoreUi
             || !class_exists(\xdecaro\Core\Version::class)
@@ -41,7 +52,10 @@ final class AdminAssetService
             return false;
         }
 
-        $webAssets->useStyle('com_decaromembership.core-bridge');
+        $document->addStyleSheet(
+            $base . '/css/core-bridge.css',
+            ['version' => self::VERSION]
+        );
 
         return true;
     }
