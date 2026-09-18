@@ -35,6 +35,7 @@ final class MemberCoreEntities
                 'cessation_reason'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CESSATION_REASON','type'=>'text'],
                 'voting_active'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_VOTING_ACTIVE','type'=>'boolean'],
                 'voting_passive'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_VOTING_PASSIVE','type'=>'boolean'],
+                'organization_uuid'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_ORGANIZATION','type'=>'organization'],
                 'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STATUS','type'=>'select','options'=>[
                     'pending'=>'COM_DECAROMEMBERSHIP_STATUS_PENDING',
                     'in_review'=>'COM_DECAROMEMBERSHIP_STATUS_IN_REVIEW',
