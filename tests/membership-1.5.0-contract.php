@@ -62,8 +62,12 @@ $viewFiles = [
 ];
 
 $assetService = (string) file_get_contents($root . '/component/admin/src/Service/AdminAssetService.php');
-foreach (['registerAndUseStyle(', "'com_decaromembership/css/admin.css'", 'registerAndUseScript(', "'com_decaromembership/js/admin.js'"] as $marker) {
+foreach (["getRegistry()->addExtensionRegistryFile", "useStyle('com_decaromembership.admin')", "useScript('com_decaromembership.admin')"] as $marker) {
     $expect(str_contains($assetService, $marker), "AdminAssetService missing {$marker}.");
+}
+$assetManifestSource = (string) file_get_contents($root . '/component/media/joomla.asset.json');
+foreach (['com_decaromembership/css/admin.css', 'com_decaromembership/js/admin.js'] as $assetUri) {
+    $expect(str_contains($assetManifestSource, $assetUri), "Web Asset manifest missing {$assetUri}.");
 }
 
 foreach ($viewFiles as $viewName => $viewPath) {
