@@ -49,7 +49,7 @@ $expect(str_contains($template, 'name="jform[organization_uuid]"'), 'Member form
 $expect(!str_contains($template, 'name="jform[organization_uuid]" required'), 'Organization field must not be required.');
 
 $expect(str_contains($model, 'validateOptionalUuid'), 'Member save must validate a submitted organization through the public provider.');
-$expect(str_contains($model, "!array_key_exists('organization_uuid', \\$input)"), 'Existing organization link must be preserved if Organizations is temporarily unavailable.');
+$expect(str_contains($model, "!array_key_exists('organization_uuid', \$input)"), 'Existing organization link must be preserved if Organizations is temporarily unavailable.');
 $expect(str_contains($history, "'organization_uuid'"), 'Organization changes must be included in Membership history.');
 $expect(str_contains($history, "'organization_uuid' => 'organization_change'"), 'Organization-only changes must have a dedicated history event.');
 
