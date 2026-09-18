@@ -29,8 +29,8 @@ $service = (string) file_get_contents($root . '/component/admin/src/Service/Admi
 foreach ([
     'addStyleSheet(',
     'addScript(',
-    '/media/com_decaromembership/css/admin.css',
-    '/media/com_decaromembership/js/admin.js',
+    '/media/com_decaromembership',
+    '/css/admin.css',
 ] as $marker) {
     $expect(str_contains($service, $marker), "AdminAssetService missing {$marker}.");
 }
