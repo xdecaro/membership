@@ -24,7 +24,7 @@ final class MembershipHistoryService
         }
 
         $changes = [];
-        foreach (['status', 'category_id', 'location_id', 'voting_active', 'voting_passive', 'current_membership_start_date', 'seniority_credit_days'] as $field) {
+        foreach (['status', 'category_id', 'organization_uuid', 'location_id', 'voting_active', 'voting_passive', 'current_membership_start_date', 'seniority_credit_days'] as $field) {
             $before = $old?->{$field} ?? null;
             $after = $new->{$field} ?? null;
             if ((string) $before !== (string) $after) {
@@ -41,6 +41,7 @@ final class MembershipHistoryService
             $eventType = match ($changes[0]) {
                 'status' => 'status_change',
                 'category_id' => 'category_change',
+                'organization_uuid' => 'organization_change',
                 'location_id' => 'location_change',
                 'voting_active', 'voting_passive' => 'rights_change',
                 default => 'lifecycle_change',
@@ -75,6 +76,8 @@ final class MembershipHistoryService
                 $this->db->quoteName('new_category_id'),
                 $this->db->quoteName('old_location_id'),
                 $this->db->quoteName('new_location_id'),
+                $this->db->quoteName('old_organization_uuid'),
+                $this->db->quoteName('new_organization_uuid'),
                 $this->db->quoteName('effective_date'),
                 $this->db->quoteName('source_entity_type'),
                 $this->db->quoteName('source_entity_id'),
@@ -82,7 +85,7 @@ final class MembershipHistoryService
                 $this->db->quoteName('user_id'),
                 $this->db->quoteName('created'),
             ])
-            ->values(':member_id,:event_type,:old_status,:new_status,:old_category,:new_category,:old_location,:new_location,:effective_date,:source_type,:source_id,:metadata,:user_id,:created')
+            ->values(':member_id,:event_type,:old_status,:new_status,:old_category,:new_category,:old_location,:new_location,:old_organization_uuid,:new_organization_uuid,:effective_date,:source_type,:source_id,:metadata,:user_id,:created')
             ->bind(':member_id', $memberId, ParameterType::INTEGER)
             ->bind(':event_type', $eventType)
             ->bind(':old_status', $old?->status)
@@ -91,6 +94,8 @@ final class MembershipHistoryService
             ->bind(':new_category', $new->category_id, $new->category_id === null ? ParameterType::NULL : ParameterType::INTEGER)
             ->bind(':old_location', $old?->location_id, $old?->location_id === null ? ParameterType::NULL : ParameterType::INTEGER)
             ->bind(':new_location', $new->location_id, $new->location_id === null ? ParameterType::NULL : ParameterType::INTEGER)
+            ->bind(':old_organization_uuid', $old?->organization_uuid)
+            ->bind(':new_organization_uuid', $new->organization_uuid)
             ->bind(':effective_date', $effectiveDate)
             ->bind(':source_type', $sourceEntityType)
             ->bind(':source_id', $sourceEntityId, $sourceEntityId === null ? ParameterType::NULL : ParameterType::INTEGER)
