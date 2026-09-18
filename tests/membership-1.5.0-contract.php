@@ -62,8 +62,8 @@ $viewFiles = [
 ];
 
 $assetService = (string) file_get_contents($root . '/component/admin/src/Service/AdminAssetService.php');
-foreach (["getRegistry()->addExtensionRegistryFile", "useStyle('com_decaromembership.admin')", "useScript('com_decaromembership.admin')"] as $marker) {
-    $expect(str_contains($assetService, $marker), "AdminAssetService missing {$marker}.");
+foreach (['addStyleSheet(', 'addScript(', '/media/com_decaromembership/css/admin.css', '/media/com_decaromembership/js/admin.js'] as $marker) {
+    $expect(str_contains($assetService, $marker), "AdminAssetService missing direct runtime asset marker {$marker}.");
 }
 $assetManifestSource = (string) file_get_contents($root . '/component/media/joomla.asset.json');
 foreach (['com_decaromembership/css/admin.css', 'com_decaromembership/js/admin.js'] as $assetUri) {
