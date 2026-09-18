@@ -3,10 +3,6 @@ defined('_JEXEC') or die;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
-use Joomla\CMS\Uri\Uri;
-$membershipAssetBase=rtrim(Uri::root(true),'/').'/media/com_decaromembership';
-$membershipCssVersion=@filemtime(JPATH_ROOT.'/media/com_decaromembership/css/admin.css')?:'1.5.0';
-$membershipJsVersion=@filemtime(JPATH_ROOT.'/media/com_decaromembership/js/admin.js')?:'1.5.0';
 $app=\Joomla\CMS\Factory::getApplication();
 $search=$app->input->getString('filter_search','');
 $peopleLink=$this->entity==='members'?$app->input->getCmd('people_link','all'):'all';
@@ -82,4 +78,3 @@ $base='index.php?option=com_decaromembership&view=records&entity='.$this->entity
   <div class="dm-pagination"><?= $this->pagination->getListFooter() ?></div>
 </div>
 <input type="hidden" name="task" value=""><input type="hidden" name="entity" value="<?= $esc($this->entity) ?>"><input type="hidden" name="boxchecked" value="0"><?= HTMLHelper::_('form.token') ?></form>
-<script src="<?= $esc($membershipAssetBase.'/js/admin.js?v='.$membershipJsVersion) ?>"></script>
