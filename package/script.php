@@ -25,16 +25,16 @@ final class pkg_decaromembershipInstallerScript
             $core = $this->installedPackageVersion($db, ['pkg_core', 'pkg_xdecarocore']);
             $people = $this->installedPackageVersion($db, ['pkg_people', 'pkg_xdecaropeople']);
         } catch (\Throwable $e) {
-            Factory::getApplication()->enqueueMessage('Membership 1.5.0 could not verify required xdecaro dependencies.', 'error');
+            Factory::getApplication()->enqueueMessage('Membership could not verify required xdecaro dependencies.', 'error');
             return false;
         }
 
         if ($core === null || version_compare($core, self::MINIMUM_CORE_VERSION, '<')) {
-            Factory::getApplication()->enqueueMessage('Membership 1.5.0 requires Core by xdecaro 2.0.1 or newer.', 'error');
+            Factory::getApplication()->enqueueMessage('Membership requires Core by xdecaro 2.0.1 or newer.', 'error');
             return false;
         }
         if ($people === null || version_compare($people, self::MINIMUM_PEOPLE_VERSION, '<')) {
-            Factory::getApplication()->enqueueMessage('Membership 1.5.0 requires People by xdecaro 1.2.15 or newer.', 'error');
+            Factory::getApplication()->enqueueMessage('Membership requires People by xdecaro 1.2.15 or newer.', 'error');
             return false;
         }
 
@@ -90,6 +90,23 @@ final class pkg_decaromembershipInstallerScript
         $app = Factory::getApplication();
         $identity = $app->getIdentity();
         $memberCount = null;
+
+        $requiredAssets = [
+            JPATH_ROOT . '/media/com_decaromembership/css/admin.css',
+            JPATH_ROOT . '/media/com_decaromembership/css/core-bridge.css',
+            JPATH_ROOT . '/media/com_decaromembership/js/admin.js',
+            JPATH_ROOT . '/media/com_decaromembership/joomla.asset.json',
+        ];
+        $missingAssets = array_values(array_filter(
+            $requiredAssets,
+            static fn (string $path): bool => !is_file($path)
+        ));
+        if ($missingAssets !== []) {
+            $app->enqueueMessage(
+                'Membership media assets are missing after installation. Reinstall the package and verify write permissions for /media/com_decaromembership.',
+                'error'
+            );
+        }
 
         try {
             /** @var DatabaseInterface $db */
