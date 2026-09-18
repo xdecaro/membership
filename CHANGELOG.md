@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.7.0 - 2026-09-18
+- Simplified member creation around the required People identity and a compact essential membership section.
+- Added optional `organization_uuid` on members without making Organizations a package dependency.
+- Added public-provider-only integration with Organizations; Membership never reads Organizations private tables.
+- Kept internal `location_id` and Membership locations as standalone/legacy compatibility data.
+- Added an advanced collapsible section for card, lifecycle dates, seniority, voting rights and legacy/internal location.
+- Added non-destructive organization-link history with old/new organization UUID values.
+- Public person-membership output resolves the organization name when Organizations is available, while preserving compatibility with People 1.5.x.
+- Added clean-install, upgrade, static-contract and real Joomla 6.1.3 runtime coverage for standalone and Organizations-enabled scenarios.
+
+
+
 ## 1.6.3 - 2026-09-18
 - Switched Membership administrator CSS/JS delivery to direct HtmlDocument asset URLs after the real Joomla 6.1.3 console test proved direct linking works while Web Asset activation still emitted no tags.
 - Removed the stray dashboard output above the Membership title.
