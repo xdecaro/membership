@@ -33,7 +33,7 @@ foreach ($templates as $name => $relativePath) {
 }
 
 $assetService = (string) file_get_contents($root . '/component/admin/src/Service/AdminAssetService.php');
-foreach (['addStyleSheet(', 'addScript(', '/media/com_decaromembership', '/css/admin.css'] as $marker) {
+foreach (['addStyleSheet(', 'addScript(', '/media/com_decaromembership', '/css/admin.css', '/js/admin.js'] as $marker) {
     if (!str_contains($assetService, $marker)) {
         $errors[] = "AdminAssetService missing {$marker}";
     }
