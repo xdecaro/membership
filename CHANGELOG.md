@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.6.3 - 2026-09-18
+- Switched Membership administrator CSS/JS delivery to direct HtmlDocument asset URLs after the real Joomla 6.1.3 console test proved direct linking works while Web Asset activation still emitted no tags.
+- Removed the stray dashboard output above the Membership title.
+- Added a regression contract for direct runtime asset delivery and the dashboard output fix.
+- Preserved People, Finance, lifecycle, ACL and database behavior.
+
+
 ## 1.6.2 - 2026-09-18
 - Fixed the root cause of missing administrator styles/scripts: explicitly load the `com_decaromembership` Web Asset registry before activating its assets.
 - Switched from ad-hoc `registerAndUseStyle` / `registerAndUseScript` calls to registry-backed `useStyle` / `useScript`.
