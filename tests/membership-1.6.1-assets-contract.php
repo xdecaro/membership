@@ -12,7 +12,7 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $version = trim((string) file_get_contents($root . '/VERSION'));
-$expect($version === '1.6.1', 'VERSION must be 1.6.1.');
+$expect(version_compare($version, '1.6.1', '>='), 'VERSION must be 1.6.1 or newer.');
 
 foreach ([
     'component/media/css/admin.css',
@@ -27,10 +27,9 @@ foreach ([
 
 $service = (string) file_get_contents($root . '/component/admin/src/Service/AdminAssetService.php');
 foreach ([
-    'registerAndUseStyle',
-    'com_decaromembership/css/admin.css',
-    'registerAndUseScript',
-    'com_decaromembership/js/admin.js',
+    'addExtensionRegistryFile',
+    "useStyle('com_decaromembership.admin')",
+    "useScript('com_decaromembership.admin')",
 ] as $marker) {
     $expect(str_contains($service, $marker), "AdminAssetService missing {$marker}.");
 }
@@ -76,4 +75,4 @@ if ($failures !== []) {
     exit(1);
 }
 
-echo "Membership 1.6.1 admin asset contract OK\n";
+echo "Membership 1.6.1+ admin asset compatibility contract OK\n";

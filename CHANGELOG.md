@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.6.2 - 2026-09-18
+- Fixed the root cause of missing administrator styles/scripts: explicitly load the `com_decaromembership` Web Asset registry before activating its assets.
+- Switched from ad-hoc `registerAndUseStyle` / `registerAndUseScript` calls to registry-backed `useStyle` / `useScript`.
+- Added a regression contract for the exact console-observed condition where media files exist and return HTTP 200 but are not attached to the page.
+- Preserved all 1.6.1 media-install checks and all People/Finance/lifecycle behavior.
+
+
 ## 1.6.1 - 2026-09-18
 - Fixed administrator CSS/JS delivery by centralizing all Membership asset registration through Joomla Web Asset Manager.
 - Removed duplicate manual `<link>` and `<script>` tags from Dashboard, lists, forms and Information templates.

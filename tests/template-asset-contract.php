@@ -33,9 +33,16 @@ foreach ($templates as $name => $relativePath) {
 }
 
 $assetService = (string) file_get_contents($root . '/component/admin/src/Service/AdminAssetService.php');
+foreach (["getRegistry()->addExtensionRegistryFile", "useStyle('com_decaromembership.admin')", "useScript('com_decaromembership.admin')"] as $marker) {
+    if (!str_contains($assetService, $marker)) {
+        $errors[] = "AdminAssetService missing {$marker}";
+    }
+}
+
+$assetManifest = (string) file_get_contents($root . '/component/media/joomla.asset.json');
 foreach (['com_decaromembership/css/admin.css', 'com_decaromembership/js/admin.js'] as $asset) {
-    if (!str_contains($assetService, $asset)) {
-        $errors[] = "AdminAssetService missing {$asset}";
+    if (!str_contains($assetManifest, $asset)) {
+        $errors[] = "joomla.asset.json missing {$asset}";
     }
 }
 

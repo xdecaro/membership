@@ -6,7 +6,7 @@ Membership è il componente Joomla 6 per la gestione del dominio associativo: so
 
 - Componente: `com_decaromembership`
 - Pacchetto: `pkg_decaromembership`
-- Versione corrente: **1.6.1**
+- Versione corrente: **1.6.2**
 - Joomla: `6.*`
 - PHP: `8.3+`
 - Core richiesto: **2.0.1+**
@@ -25,7 +25,7 @@ Le liste soci risolvono le identità People in batch per evitare N+1. Se People 
 
 ## Xdecaro Core
 
-Membership 1.6.1 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
+Membership 1.6.2 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
 
 La pagina **Informazioni/Diagnostica** mostra le versioni installate e minime richieste di Core e People e lo stato di compatibilità/disponibilità delle relative API.
 
@@ -53,7 +53,7 @@ Il package registra l'update server Joomla `updates/pkg_decaromembership.xml`. I
 
 ## Test di integrazione
 
-La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.6.1 copre:
+La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.6.2 copre:
 
 - installazione pulita con Core 2.0.1 e People 1.2.15 pubblicati e fissati per SHA-256;
 - collegamento socio ↔ persona People e risoluzione batch dell'identità;
@@ -88,3 +88,8 @@ La riammissione è una pratica distinta (`case.type = readmission`) e non viene 
 ## Asset amministrativi 1.6.1
 
 Membership 1.6.1 corregge il caricamento dell'interfaccia amministrativa: CSS e JavaScript vengono registrati una sola volta tramite Joomla Web Asset Manager da un servizio condiviso tra Dashboard, liste, form e Informazioni. I template non inseriscono più tag `<link>` o `<script>` manuali duplicati. L'installer verifica inoltre che `/media/com_decaromembership/css/admin.css`, `core-bridge.css`, `admin.js` e `joomla.asset.json` siano realmente presenti dopo installazione/aggiornamento. La CI controlla sia installazione pulita sia upgrade su Joomla 6.1.3 e verifica fisicamente gli asset installati.
+
+
+## Web Asset registry 1.6.2
+
+Membership 1.6.2 corregge la causa individuata tramite Console Joomla: i file CSS/JS risultavano presenti e raggiungibili con HTTP 200, ma non venivano allegati al documento HTML. Il servizio amministrativo ora carica esplicitamente il registry `com_decaromembership` con `addExtensionRegistryFile()` e poi usa gli asset dichiarati in `joomla.asset.json` tramite `useStyle()` e `useScript()`. Questo evita registrazioni ad hoc con lo stesso nome degli asset del manifest e mantiene un unico contratto Web Asset Manager coerente con gli altri componenti xdecaro.

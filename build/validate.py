@@ -85,7 +85,7 @@ def validate_people_boundary():
 
 
 def validate():
-    if VERSION != '1.6.1':
+    if VERSION != '1.6.2':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -195,6 +195,10 @@ def validate():
     if not asset_marker.is_file():
         fail('Membership 1.6.1 schema marker missing')
 
+    registry_marker = ROOT / 'component/admin/sql/updates/mysql/1.6.2.sql'
+    if not registry_marker.is_file():
+        fail('Membership 1.6.2 schema marker missing')
+
     for media_path in (
         ROOT / 'component/media/css/admin.css',
         ROOT / 'component/media/css/core-bridge.css',
@@ -206,10 +210,9 @@ def validate():
 
     asset_service = require(
         'component/admin/src/Service/AdminAssetService.php',
-        'registerAndUseStyle',
-        'com_decaromembership/css/admin.css',
-        'registerAndUseScript',
-        'com_decaromembership/js/admin.js',
+        "addExtensionRegistryFile(self::COMPONENT)",
+        "useStyle('com_decaromembership.admin')",
+        "useScript('com_decaromembership.admin')",
     )
     for view_path in (
         'component/admin/src/View/Dashboard/HtmlView.php',
