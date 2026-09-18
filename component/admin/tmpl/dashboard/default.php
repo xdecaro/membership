@@ -4,7 +4,7 @@ use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 $cards=['members'=>'COM_DECAROMEMBERSHIP_MEMBERS','cases'=>'COM_DECAROMEMBERSHIP_CASES','renewals'=>'COM_DECAROMEMBERSHIP_RENEWALS','cards'=>'COM_DECAROMEMBERSHIP_CARDS','dues'=>'COM_DECAROMEMBERSHIP_DUES','payments'=>'COM_DECAROMEMBERSHIP_PAYMENTS','transfers'=>'COM_DECAROMEMBERSHIP_TRANSFERS','documents'=>'COM_DECAROMEMBERSHIP_DOCUMENTS'];
 ?>
-">
+
 <div class="dm-page">
   <div class="dm-hero"><div><h1><?= Text::_('COM_DECAROMEMBERSHIP_DASHBOARD') ?></h1><p><?= Text::_('COM_DECAROMEMBERSHIP_DASHBOARD_DESC') ?></p></div></div>
   <div class="dm-grid dm-grid-kpi">

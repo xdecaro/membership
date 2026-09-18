@@ -12,23 +12,14 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $version = trim((string) file_get_contents($root . '/VERSION'));
-$expect($version === '1.6.2', 'VERSION must be 1.6.2.');
+$expect(version_compare($version, '1.6.2', '>='), 'VERSION must be 1.6.2 or newer.');
 
 $service = (string) file_get_contents($root . '/component/admin/src/Service/AdminAssetService.php');
-foreach ([
-    "private const COMPONENT = 'com_decaromembership'",
-    "getRegistry()->addExtensionRegistryFile(self::COMPONENT)",
-    "useStyle('com_decaromembership.admin')",
-    "useScript('com_decaromembership.admin')",
-] as $marker) {
-    $expect(str_contains($service, $marker), "AdminAssetService missing registry marker: {$marker}");
-}
-
-$expect(!str_contains($service, 'registerAndUseStyle'), '1.6.2 must not ad-hoc register the Membership style.');
-$expect(!str_contains($service, 'registerAndUseScript'), '1.6.2 must not ad-hoc register the Membership script.');
+$expect(str_contains($service, 'addStyleSheet('), 'Current Membership runtime must emit its stylesheet through HtmlDocument.');
+$expect(str_contains($service, 'addScript('), 'Current Membership runtime must emit its script through HtmlDocument.');
 
 $assetManifest = json_decode((string) file_get_contents($root . '/component/media/joomla.asset.json'), true);
-$expect(($assetManifest['version'] ?? '') === '1.6.2', 'joomla.asset.json version must be 1.6.2.');
+$expect(($assetManifest['version'] ?? '') === $version, 'joomla.asset.json version must match VERSION.');
 
 $names = [];
 foreach (($assetManifest['assets'] ?? []) as $asset) {
@@ -42,4 +33,4 @@ if ($failures !== []) {
     exit(1);
 }
 
-echo "Membership 1.6.2 Web Asset registry contract OK\n";
+echo "Membership 1.6.2+ asset compatibility contract OK\n";

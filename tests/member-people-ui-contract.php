@@ -46,9 +46,9 @@ foreach (['Record' => $view, 'Records' => $recordsView] as $viewName => $assetVi
         exit(1);
     }
 }
-foreach (["getRegistry()->addExtensionRegistryFile", "useStyle('com_decaromembership.admin')", "useScript('com_decaromembership.admin')"] as $marker) {
+foreach (['addStyleSheet(', 'addScript(', '/media/com_decaromembership', '/css/admin.css', '/js/admin.js'] as $marker) {
     if (!str_contains($assetService, $marker)) {
-        fwrite(STDERR, "Membership AdminAssetService missing registry-backed asset marker: {$marker}\n");
+        fwrite(STDERR, "Membership AdminAssetService missing direct asset marker: {$marker}\n");
         exit(1);
     }
 }
