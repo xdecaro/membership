@@ -9,7 +9,7 @@ $coreInstalled = !empty($core['installed']);
 $coreApi = !empty($core['api_available']);
 $coreUi = !empty($core['ui_available']);
 $coreVersion = (string) ($core['version'] ?? '');
-$componentVersion = '1.6.3';
+$componentVersion = '1.7.0';
 foreach (($this->info['extensions'] ?? []) as $extension) {
     if (($extension['element'] ?? '') === 'com_decaromembership' && ($extension['version'] ?? '') !== '') {
         $componentVersion = (string) $extension['version'];
