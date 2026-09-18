@@ -85,7 +85,7 @@ def validate_people_boundary():
 
 
 def validate():
-    if VERSION != '1.6.0':
+    if VERSION != '1.6.1':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -191,6 +191,45 @@ def validate():
         if marker not in lifecycle_sql:
             fail(f'1.6.0 schema missing {marker}')
 
+    asset_marker = ROOT / 'component/admin/sql/updates/mysql/1.6.1.sql'
+    if not asset_marker.is_file():
+        fail('Membership 1.6.1 schema marker missing')
+
+    for media_path in (
+        ROOT / 'component/media/css/admin.css',
+        ROOT / 'component/media/css/core-bridge.css',
+        ROOT / 'component/media/js/admin.js',
+        ROOT / 'component/media/joomla.asset.json',
+    ):
+        if not media_path.is_file():
+            fail(f'missing Membership media asset: {media_path.relative_to(ROOT)}')
+
+    asset_service = require(
+        'component/admin/src/Service/AdminAssetService.php',
+        'registerAndUseStyle',
+        'com_decaromembership/css/admin.css',
+        'registerAndUseScript',
+        'com_decaromembership/js/admin.js',
+    )
+    for view_path in (
+        'component/admin/src/View/Dashboard/HtmlView.php',
+        'component/admin/src/View/Records/HtmlView.php',
+        'component/admin/src/View/Record/HtmlView.php',
+        'component/admin/src/View/Information/HtmlView.php',
+    ):
+        require(view_path, 'AdminAssetService::useAssets')
+
+    for template_path in (
+        'component/admin/tmpl/dashboard/default.php',
+        'component/admin/tmpl/records/default.php',
+        'component/admin/tmpl/record/default.php',
+        'component/admin/tmpl/information/default.php',
+        'component/admin/tmpl/information/core.php',
+    ):
+        template_text = (ROOT / template_path).read_text(encoding='utf-8')
+        if '<link rel="stylesheet"' in template_text or '<script src=' in template_text:
+            fail(f'duplicate manual asset tag remains in {template_path}')
+
     install = (ROOT / 'component/admin/sql/install.mysql.utf8mb4.sql').read_text()
     for marker in ('#__decaromembership_notifications', '`person_uuid` CHAR(36) NULL', 'uq_member_person_uuid'):
         if marker not in install:
@@ -231,6 +270,19 @@ def validate_dist():
     with zipfile.ZipFile(files[3]) as archive:
         expected = {'pkg_decaromembership.xml','script.php','com_decaromembership.zip','plg_xdecaroanalytics_decaromembership.zip','plg_task_decaromembership.zip'}
         if set(archive.namelist()) != expected: fail('unexpected package contents')
+
+        component_bytes = archive.read('com_decaromembership.zip')
+        import io
+        with zipfile.ZipFile(io.BytesIO(component_bytes)) as component_archive:
+            required_component_assets = {
+                'media/css/admin.css',
+                'media/css/core-bridge.css',
+                'media/js/admin.js',
+                'media/joomla.asset.json',
+            }
+            missing = required_component_assets.difference(component_archive.namelist())
+            if missing:
+                fail(f'component package missing media assets: {sorted(missing)}')
     for path in files[:4]:
         with zipfile.ZipFile(path) as archive:
             if archive.testzip() is not None: fail(f'corrupt {path.name}')
