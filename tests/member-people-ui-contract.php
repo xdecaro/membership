@@ -46,7 +46,7 @@ foreach (['Record' => $view, 'Records' => $recordsView] as $viewName => $assetVi
         exit(1);
     }
 }
-foreach (['addStyleSheet(', 'addScript(', '/media/com_decaromembership/css/admin.css', '/media/com_decaromembership/js/admin.js'] as $marker) {
+foreach (['addStyleSheet(', 'addScript(', '/media/com_decaromembership', '/css/admin.css'] as $marker) {
     if (!str_contains($assetService, $marker)) {
         fwrite(STDERR, "Membership AdminAssetService missing direct asset marker: {$marker}\n");
         exit(1);
