@@ -27,9 +27,10 @@ foreach ([
 
 $service = (string) file_get_contents($root . '/component/admin/src/Service/AdminAssetService.php');
 foreach ([
-    'addExtensionRegistryFile',
-    "useStyle('com_decaromembership.admin')",
-    "useScript('com_decaromembership.admin')",
+    'addStyleSheet(',
+    'addScript(',
+    '/media/com_decaromembership/css/admin.css',
+    '/media/com_decaromembership/js/admin.js',
 ] as $marker) {
     $expect(str_contains($service, $marker), "AdminAssetService missing {$marker}.");
 }
