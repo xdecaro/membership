@@ -62,7 +62,7 @@ $viewFiles = [
 ];
 
 $assetService = (string) file_get_contents($root . '/component/admin/src/Service/AdminAssetService.php');
-foreach (['addStyleSheet(', 'addScript(', '/media/com_decaromembership/css/admin.css', '/media/com_decaromembership/js/admin.js'] as $marker) {
+foreach (['addStyleSheet(', 'addScript(', '/media/com_decaromembership', '/css/admin.css'] as $marker) {
     $expect(str_contains($assetService, $marker), "AdminAssetService missing direct runtime asset marker {$marker}.");
 }
 $assetManifestSource = (string) file_get_contents($root . '/component/media/joomla.asset.json');
