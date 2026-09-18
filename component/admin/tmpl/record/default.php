@@ -63,13 +63,96 @@ $isMember=$this->entity==='members';
     <?php endif; ?>
   </section>
 <?php endif; ?>
-<div class="dm-card dm-form-grid">
-<?php foreach($this->config['fields'] as $name=>$field):
-    if($isMember && in_array($name,$peopleOwnedFields,true)) continue;
-    $value=$this->item->$name??($field['default']??'');
-    if(($field['type']??'')==='relation'): ?>
-      <div class="dm-field"><label for="jform_<?= $esc($name) ?>"><?= Text::_($field['label']) ?><?= ($field['required']??false)?' *':'' ?></label><select id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]"<?= ($field['required']??false)?' required':'' ?>><option value="">-</option><?php foreach($this->relations[$name]??[] as $opt): ?><option value="<?= (int)$opt->id ?>"<?= (int)$value===(int)$opt->id?' selected':'' ?>><?= $esc($opt->title) ?></option><?php endforeach; ?></select></div>
-    <?php else: echo $renderField($name,$field,$value); endif; ?>
-<?php endforeach; ?>
-</div>
+
+<?php if($isMember):
+    $primaryFields=['category_id','status','member_number','first_registration_date'];
+    $organizationUuid=strtolower(trim((string)($this->item->organization_uuid??'')));
+?>
+  <section class="dm-card dm-member-primary">
+    <div class="dm-section-head">
+      <div>
+        <h2><?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_ESSENTIALS') ?></h2>
+        <p class="dm-muted mb-0"><?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_ESSENTIALS_DESC') ?></p>
+      </div>
+    </div>
+    <div class="dm-form-grid">
+      <?php foreach($primaryFields as $name):
+          $field=$this->config['fields'][$name]??null;
+          if(!$field) continue;
+          $value=$this->item->$name??($field['default']??'');
+          if(($field['type']??'')==='relation'): ?>
+            <div class="dm-field">
+              <label for="jform_<?= $esc($name) ?>"><?= Text::_($field['label']) ?></label>
+              <select id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]">
+                <option value="">-</option>
+                <?php foreach($this->relations[$name]??[] as $opt): ?>
+                  <option value="<?= (int)$opt->id ?>"<?= (int)$value===(int)$opt->id?' selected':'' ?>><?= $esc($opt->title) ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          <?php else: echo $renderField($name,$field,$value); endif;
+      endforeach; ?>
+
+      <?php if($this->organizationsAvailable): ?>
+        <div class="dm-field dm-field-wide">
+          <label for="jform_organization_uuid"><?= Text::_('COM_DECAROMEMBERSHIP_FIELD_ORGANIZATION') ?></label>
+          <select id="jform_organization_uuid" name="jform[organization_uuid]">
+            <option value=""><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_NONE') ?></option>
+            <?php foreach($this->organizationOptions as $organization):
+                $uuid=strtolower(trim((string)($organization['uuid']??'')));
+                if($uuid==='') continue;
+                $label=trim((string)($organization['name']??''));
+                $type=trim((string)($organization['type']??''));
+                if($type!=='') $label.=' · '.$type;
+            ?>
+              <option value="<?= $esc($uuid) ?>"<?= $organizationUuid===$uuid?' selected':'' ?>><?= $esc($label) ?></option>
+            <?php endforeach; ?>
+          </select>
+          <small class="dm-muted"><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_OPTIONAL_HELP') ?></small>
+        </div>
+      <?php elseif($organizationUuid!==''): ?>
+        <input type="hidden" name="jform[organization_uuid]" value="<?= $esc($organizationUuid) ?>">
+        <div class="dm-field dm-field-wide">
+          <div class="alert alert-warning mb-0"><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_LINK_PRESERVED') ?></div>
+        </div>
+      <?php else: ?>
+        <div class="dm-field dm-field-wide">
+          <p class="dm-muted mb-0"><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_NOT_REQUIRED') ?></p>
+        </div>
+      <?php endif; ?>
+    </div>
+  </section>
+
+  <details class="dm-card dm-member-advanced">
+    <summary><?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_ADVANCED') ?></summary>
+    <p class="dm-muted"><?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_ADVANCED_DESC') ?></p>
+    <div class="dm-form-grid">
+    <?php foreach($this->config['fields'] as $name=>$field):
+        if(in_array($name,$peopleOwnedFields,true) || in_array($name,$primaryFields,true) || $name==='organization_uuid') continue;
+        $value=$this->item->$name??($field['default']??'');
+        if(($field['type']??'')==='relation'): ?>
+          <div class="dm-field">
+            <label for="jform_<?= $esc($name) ?>"><?= Text::_($field['label']) ?><?= ($field['required']??false)?' *':'' ?></label>
+            <select id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]"<?= ($field['required']??false)?' required':'' ?>>
+              <option value="">-</option>
+              <?php foreach($this->relations[$name]??[] as $opt): ?>
+                <option value="<?= (int)$opt->id ?>"<?= (int)$value===(int)$opt->id?' selected':'' ?>><?= $esc($opt->title) ?></option>
+              <?php endforeach; ?>
+            </select>
+            <?php if($name==='location_id'): ?><small class="dm-muted"><?= Text::_('COM_DECAROMEMBERSHIP_LOCATION_LEGACY_HELP') ?></small><?php endif; ?>
+          </div>
+        <?php else: echo $renderField($name,$field,$value); endif;
+    endforeach; ?>
+    </div>
+  </details>
+<?php else: ?>
+  <div class="dm-card dm-form-grid">
+  <?php foreach($this->config['fields'] as $name=>$field):
+      $value=$this->item->$name??($field['default']??'');
+      if(($field['type']??'')==='relation'): ?>
+        <div class="dm-field"><label for="jform_<?= $esc($name) ?>"><?= Text::_($field['label']) ?><?= ($field['required']??false)?' *':'' ?></label><select id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]"<?= ($field['required']??false)?' required':'' ?>><option value="">-</option><?php foreach($this->relations[$name]??[] as $opt): ?><option value="<?= (int)$opt->id ?>"<?= (int)$value===(int)$opt->id?' selected':'' ?>><?= $esc($opt->title) ?></option><?php endforeach; ?></select></div>
+      <?php else: echo $renderField($name,$field,$value); endif; ?>
+  <?php endforeach; ?>
+  </div>
+<?php endif; ?>
 <input type="hidden" name="id" value="<?= (int)($this->item->id??0) ?>"><input type="hidden" name="entity" value="<?= $esc($this->entity) ?>"><input type="hidden" name="task" value=""><?= HTMLHelper::_('form.token') ?></form>

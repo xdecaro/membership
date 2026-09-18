@@ -17,6 +17,9 @@ final class HtmlView extends BaseHtmlView
     public ?array $person = null;
     public bool $personSensitive = false;
     public bool $canRelinkPerson = false;
+    public bool $organizationsAvailable = false;
+    public array $organizationOptions = [];
+    public ?array $selectedOrganization = null;
 
     public function display($tpl = null): void
     {
@@ -45,6 +48,44 @@ final class HtmlView extends BaseHtmlView
                 } catch (Throwable $e) {
                     $this->person = null;
                 }
+            }
+
+            try {
+                $membershipComponent = $app->bootComponent('com_decaromembership');
+                $organizations = $membershipComponent->getOrganizationsIntegrationService();
+                $this->organizationsAvailable = $organizations->isAvailable();
+
+                if ($this->organizationsAvailable) {
+                    $options = [];
+                    foreach ($organizations->searchOrganizations('', 200) as $organization) {
+                        $organizationUuid = strtolower(trim((string) ($organization['uuid'] ?? '')));
+                        if ($organizationUuid !== '') {
+                            $options[$organizationUuid] = $organization;
+                        }
+                    }
+
+                    $selectedUuid = strtolower(trim((string) ($this->item->organization_uuid ?? '')));
+                    if ($selectedUuid !== '') {
+                        try {
+                            $this->selectedOrganization = $organizations->getOrganization($selectedUuid);
+                            if ($this->selectedOrganization !== null) {
+                                $options[$selectedUuid] = $this->selectedOrganization;
+                            }
+                        } catch (Throwable) {
+                            $this->selectedOrganization = null;
+                        }
+                    }
+
+                    uasort($options, static fn(array $a, array $b): int => strcasecmp(
+                        (string) ($a['name'] ?? ''),
+                        (string) ($b['name'] ?? '')
+                    ));
+                    $this->organizationOptions = array_values($options);
+                }
+            } catch (Throwable) {
+                $this->organizationsAvailable = false;
+                $this->organizationOptions = [];
+                $this->selectedOrganization = null;
             }
         }
 

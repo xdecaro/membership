@@ -12,11 +12,11 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $version = trim((string) file_get_contents($root . '/VERSION'));
-$expect($version === '1.6.3', 'VERSION must be 1.6.3.');
+$expect(version_compare($version, '1.6.3', '>='), 'VERSION must be 1.6.3 or newer.');
 
 $service = (string) file_get_contents($root . '/component/admin/src/Service/AdminAssetService.php');
 foreach ([
-    "private const VERSION = '1.6.3'",
+    "private const VERSION = '",
     "Uri::root(true)",
     "addStyleSheet(",
     "/media/com_decaromembership",
@@ -40,4 +40,4 @@ if ($failures !== []) {
     exit(1);
 }
 
-echo "Membership 1.6.3 direct administrator asset contract OK\n";
+echo "Membership 1.6.3+ direct administrator asset compatibility contract OK\n";

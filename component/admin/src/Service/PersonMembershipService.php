@@ -9,7 +9,7 @@ use RuntimeException;
 
 final class PersonMembershipService
 {
-    public function __construct(private DatabaseInterface $db) {}
+    public function __construct(private DatabaseInterface $db, private ?OrganizationsIntegrationService $organizations = null) {}
 
     public function getMembershipsByPersonUuid(string $personUuid): array
     {
@@ -36,6 +36,7 @@ final class PersonMembershipService
                 $this->db->quoteName('m.voting_active'),
                 $this->db->quoteName('m.voting_passive'),
                 $this->db->quoteName('m.category_id'),
+                $this->db->quoteName('m.organization_uuid'),
                 $this->db->quoteName('m.location_id'),
                 $this->db->quoteName('c.name', 'category_name'),
                 $this->db->quoteName('l.name', 'location_name'),
@@ -47,7 +48,38 @@ final class PersonMembershipService
             ->where($this->db->quoteName('m.published') . ' >= 0')
             ->bind(':uuid', $personUuid);
 
-        return array_values((array) $this->db->setQuery($query)->loadAssocList());
+        $rows = array_values((array) $this->db->setQuery($query)->loadAssocList());
+
+        if ($this->organizations !== null && $this->organizations->isAvailable()) {
+            $names = [];
+            foreach ($rows as $row) {
+                $organizationUuid = strtolower(trim((string) ($row['organization_uuid'] ?? '')));
+                if ($organizationUuid === '' || array_key_exists($organizationUuid, $names)) {
+                    continue;
+                }
+
+                try {
+                    $organization = $this->organizations->getOrganization($organizationUuid);
+                    $names[$organizationUuid] = (string) ($organization['name'] ?? '');
+                } catch (\Throwable) {
+                    $names[$organizationUuid] = '';
+                }
+            }
+
+            foreach ($rows as &$row) {
+                $organizationUuid = strtolower(trim((string) ($row['organization_uuid'] ?? '')));
+                $organizationName = $organizationUuid !== '' ? (string) ($names[$organizationUuid] ?? '') : '';
+                $row['organization_name'] = $organizationName;
+
+                // Backward-compatible display field used by People 1.5.x.
+                if ($organizationName !== '') {
+                    $row['location_name'] = $organizationName;
+                }
+            }
+            unset($row);
+        }
+
+        return $rows;
     }
 
     public function getHistoryByPersonUuid(string $personUuid, int $limit = 100): array

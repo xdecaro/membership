@@ -12,6 +12,7 @@ use Xdecaro\Component\Decaromembership\Administrator\Service\PeopleIntegrationSe
 use Xdecaro\Component\Decaromembership\Administrator\Service\ReminderService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\PersonMembershipService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\MembershipEligibilityService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\OrganizationsIntegrationService;
 
 final class MembershipComponent extends MVCComponent
 {
@@ -22,6 +23,7 @@ final class MembershipComponent extends MVCComponent
     private ?ReminderService $reminders = null;
     private ?PersonMembershipService $personMembership = null;
     private ?MembershipEligibilityService $eligibility = null;
+    private ?OrganizationsIntegrationService $organizations = null;
 
     public function setCoreIntegrationService(CoreIntegrationService $service): void { $this->coreIntegration = $service; }
     public function setCrossProductIntegrationService(CrossProductIntegrationService $service): void { $this->crossProduct = $service; }
@@ -30,6 +32,7 @@ final class MembershipComponent extends MVCComponent
     public function setReminderService(ReminderService $service): void { $this->reminders = $service; }
     public function setPersonMembershipService(PersonMembershipService $service): void { $this->personMembership = $service; }
     public function setMembershipEligibilityService(MembershipEligibilityService $service): void { $this->eligibility = $service; }
+    public function setOrganizationsIntegrationService(OrganizationsIntegrationService $service): void { $this->organizations = $service; }
 
     public function getCoreIntegrationService(): CoreIntegrationService
     {
@@ -71,5 +74,11 @@ final class MembershipComponent extends MVCComponent
     {
         if ($this->eligibility === null) { throw new RuntimeException('Membership eligibility service is unavailable.'); }
         return $this->eligibility;
+    }
+
+    public function getOrganizationsIntegrationService(): OrganizationsIntegrationService
+    {
+        if ($this->organizations === null) { throw new RuntimeException('Membership Organizations integration service is unavailable.'); }
+        return $this->organizations;
     }
 }

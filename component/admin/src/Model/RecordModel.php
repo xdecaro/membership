@@ -9,6 +9,7 @@ use Xdecaro\Component\Decaromembership\Administrator\Helper\EntityRegistry;
 use Xdecaro\Component\Decaromembership\Administrator\Service\AuditService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\MemberPeopleLinkService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\MembershipHistoryService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\OrganizationsIntegrationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\PeopleIntegrationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\RecordRepository;
 use Xdecaro\Component\Decaromembership\Administrator\Service\RecordValidator;
@@ -66,6 +67,30 @@ final class RecordModel extends BaseDatabaseModel
 
         if ($entity === 'members') {
             $data = $this->memberPeopleLinkService($repository, $audit)->validateForSave($id, $old, $data);
+
+            // Organizations is optional. Preserve an existing link if the field is
+            // not present in the request (for example while the provider is offline).
+            if ($old !== null && !array_key_exists('organization_uuid', $input)) {
+                $data['organization_uuid'] = $old->organization_uuid ?? null;
+            }
+
+            $organizationUuid = strtolower(trim((string) ($data['organization_uuid'] ?? '')));
+            if ($organizationUuid === '') {
+                $data['organization_uuid'] = null;
+            } else {
+                $organizations = new OrganizationsIntegrationService();
+                $oldOrganizationUuid = strtolower(trim((string) ($old->organization_uuid ?? '')));
+
+                if (!$organizations->isAvailable()) {
+                    if ($oldOrganizationUuid !== '' && $organizationUuid === $oldOrganizationUuid) {
+                        $data['organization_uuid'] = $oldOrganizationUuid;
+                    } else {
+                        throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ORGANIZATIONS_UNAVAILABLE'));
+                    }
+                } else {
+                    $data['organization_uuid'] = $organizations->validateOptionalUuid($organizationUuid);
+                }
+            }
         }
 
         foreach ($config['fields'] as $name => $field) {

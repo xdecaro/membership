@@ -36,7 +36,7 @@ $base='index.php?option=com_decaromembership&view=records&entity='.$this->entity
       <thead><tr><th class="w-1"><?= HTMLHelper::_('grid.checkall') ?></th>
       <?php foreach($this->config['list'] as $column):
           $field=$this->config['fields'][$column]??['label'=>$column];
-          $canSort=!($this->entity==='members'&&in_array($column,['first_name','last_name'],true));
+          $canSort=!($this->entity==='members'&&in_array($column,['first_name','last_name','email'],true));
           $sortUrl=$base.'&filter_search='.rawurlencode($search).'&people_link='.rawurlencode($peopleLink).'&order='.$column.'&dir='.$nextDir($column);
       ?>
         <th><?php if($canSort): ?><a href="<?= Route::_($sortUrl) ?>"><?= Text::_($field['label']) ?></a><?php else: ?><?= Text::_($field['label']) ?><?php endif; ?></th>
@@ -52,9 +52,9 @@ $base='index.php?option=com_decaromembership&view=records&entity='.$this->entity
         <?php foreach($this->config['list'] as $column):
             $value=$item->$column??'';
             $identityBadge='';
-            if($this->entity==='members'&&in_array($column,['first_name','last_name'],true)) {
+            if($this->entity==='members'&&in_array($column,['first_name','last_name','email'],true)) {
                 if($person) {
-                    $value=$column==='first_name'?($person['first_name']??''):($person['last_name']??($person['display_name']??''));
+                    $value=$column==='first_name'?($person['first_name']??''):($column==='last_name'?($person['last_name']??($person['display_name']??'')):($person['email']??''));
                     if($column==='last_name') $identityBadge='<span class="badge text-bg-success ms-1">'.$esc(Text::_('COM_DECAROMEMBERSHIP_PEOPLE_LINKED')).'</span>';
                 } elseif($linked) {
                     $value=$column==='last_name'?(($item->member_number??'')!==''?$item->member_number:'#'.(int)$item->id):'';

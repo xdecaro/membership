@@ -41,8 +41,12 @@ def validate_private_boundaries():
                 fail(f'Membership runtime depends on Finance implementation class: {path.relative_to(ROOT)}')
             if '#__xdecaropeople_' in text:
                 fail(f'Membership runtime accesses People private table: {path.relative_to(ROOT)}')
+            if '#__xdecaroorganizations_' in text:
+                fail(f'Membership runtime accesses Organizations private table: {path.relative_to(ROOT)}')
             if re.search(r'People\\Administrator\\(?:Model|Table)\\', text, re.I):
                 fail(f'Membership runtime depends on private People Model/Table: {path.relative_to(ROOT)}')
+            if re.search(r'Organizations\\Administrator\\(?:Model|Table)\\', text, re.I):
+                fail(f'Membership runtime depends on private Organizations Model/Table: {path.relative_to(ROOT)}')
 
 
 def validate_finance_boundary():
@@ -84,8 +88,32 @@ def validate_people_boundary():
     require('component/admin/src/Controller/PeopleController.php', 'searchPeople($q, 20)', 'relinkMember', 'JsonResponse')
 
 
+def validate_organizations_boundary():
+    require(
+        'component/admin/src/Service/OrganizationsIntegrationService.php',
+        "bootComponent('com_xdecaroorganizations')",
+        'getOrganizationProviderService',
+        'searchOrganizations',
+        'validateOptionalUuid',
+    )
+    require(
+        'component/admin/src/Model/RecordModel.php',
+        'OrganizationsIntegrationService',
+        'validateOptionalUuid',
+        "array_key_exists('organization_uuid', $input)",
+    )
+    require(
+        'component/admin/tmpl/record/default.php',
+        'COM_DECAROMEMBERSHIP_MEMBER_ESSENTIALS',
+        'COM_DECAROMEMBERSHIP_ORGANIZATION_NONE',
+        'COM_DECAROMEMBERSHIP_MEMBER_ADVANCED',
+        'COM_DECAROMEMBERSHIP_LOCATION_LEGACY_HELP',
+    )
+    require('tests/organizations-runtime.php', 'getOrganizationsIntegrationService', 'CI-SIMPLE-001', 'CI-ORG-001')
+
+
 def validate():
-    if VERSION != '1.6.3':
+    if VERSION != '1.7.0':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -133,6 +161,7 @@ def validate():
     validate_private_boundaries()
     validate_finance_boundary()
     validate_people_boundary()
+    validate_organizations_boundary()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',
@@ -157,7 +186,7 @@ def validate():
     if '#__decaromembership_' in provider:
         fail('Analytics adapter must delegate to Membership source service')
     require('plugins/task/decaromembership/src/Extension/Decaromembership.php', 'TaskPluginTrait', 'decaromembership.reminders', 'getReminderService')
-    require('component/admin/services/provider.php', 'MembershipComponent', 'PeopleIntegrationService::class', 'AnalyticsSourceService::class', 'ReminderService::class', 'setPeopleIntegrationService', 'setReminderService')
+    require('component/admin/services/provider.php', 'MembershipComponent', 'PeopleIntegrationService::class', 'OrganizationsIntegrationService::class', 'AnalyticsSourceService::class', 'ReminderService::class', 'setPeopleIntegrationService', 'setOrganizationsIntegrationService', 'setReminderService')
 
     installer = require(
         'package/script.php',
@@ -203,6 +232,14 @@ def validate():
     if not direct_asset_marker.is_file():
         fail('Membership 1.6.3 schema marker missing')
 
+    simple_member_marker = ROOT / 'component/admin/sql/updates/mysql/1.7.0.sql'
+    if not simple_member_marker.is_file():
+        fail('Membership 1.7.0 schema update missing')
+    simple_member_sql = simple_member_marker.read_text(encoding='utf-8')
+    for marker in ('organization_uuid', 'old_organization_uuid', 'new_organization_uuid'):
+        if marker not in simple_member_sql:
+            fail(f'1.7.0 schema missing {marker}')
+
     for media_path in (
         ROOT / 'component/media/css/admin.css',
         ROOT / 'component/media/css/core-bridge.css',
@@ -240,7 +277,7 @@ def validate():
             fail(f'duplicate manual asset tag remains in {template_path}')
 
     install = (ROOT / 'component/admin/sql/install.mysql.utf8mb4.sql').read_text()
-    for marker in ('#__decaromembership_notifications', '`person_uuid` CHAR(36) NULL', 'uq_member_person_uuid'):
+    for marker in ('#__decaromembership_notifications', '`person_uuid` CHAR(36) NULL', 'uq_member_person_uuid', '`organization_uuid` CHAR(36) NULL', 'idx_member_organization_uuid'):
         if marker not in install:
             fail(f'clean install schema missing {marker}')
     for sql in (ROOT / 'component/admin/sql').rglob('*.sql'):

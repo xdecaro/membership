@@ -39,7 +39,7 @@ final class InformationModel extends BaseDatabaseModel
             'integrations' => MembershipHelper::integrations(),
             'diagnostics' => MembershipHelper::diagnostics(),
             'extensions' => [
-                ['name' => 'Membership by xdecaro', 'element' => 'com_decaromembership', 'version' => $componentVersion ?: '1.5.0'],
+                ['name' => 'Membership by xdecaro', 'element' => 'com_decaromembership', 'version' => $componentVersion ?: '1.7.0'],
                 ['name' => 'Membership Package', 'element' => 'pkg_decaromembership', 'version' => $packageVersion],
             ],
             'core' => [
