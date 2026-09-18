@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.6.1 - 2026-09-18
+- Fixed administrator CSS/JS delivery by centralizing all Membership asset registration through Joomla Web Asset Manager.
+- Removed duplicate manual `<link>` and `<script>` tags from Dashboard, lists, forms and Information templates.
+- Added installer diagnostics for missing `/media/com_decaromembership` assets.
+- Added clean-install and upgrade CI assertions that verify the actual CSS/JS files installed on Joomla 6.1.3.
+- Added package validation that rejects builds missing Membership media assets.
+
+
 ## 1.6.0 - 2026-09-18
 - Added explicit membership lifecycle dates, cessation metadata and voting-right flags.
 - Added an explicit readmission case type plus current-period start and recognised prior-seniority credit, so interruptions do not have to be counted as active membership.
