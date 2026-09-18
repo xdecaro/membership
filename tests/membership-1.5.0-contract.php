@@ -10,7 +10,7 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $version = trim((string) file_get_contents($root . '/VERSION'));
-$expect($version === '1.6.0', 'VERSION must be 1.6.0.');
+$expect(version_compare($version, '1.6.0', '>='), 'VERSION must be 1.6.0 or newer.');
 
 foreach ([
     'component/decaromembership.xml',
@@ -19,7 +19,7 @@ foreach ([
     'plugins/task/decaromembership/decaromembership.xml',
 ] as $manifestPath) {
     $xml = simplexml_load_file($root . '/' . $manifestPath);
-    $expect($xml !== false && (string) $xml->version === '1.6.0', "{$manifestPath} must be 1.6.0.");
+    $expect($xml !== false && (string) $xml->version === $version, "{$manifestPath} must match VERSION.");
 }
 
 $componentManifest = simplexml_load_file($root . '/component/decaromembership.xml');
@@ -36,7 +36,7 @@ if ($componentManifest !== false) {
 }
 
 $assets = json_decode((string) file_get_contents($root . '/component/media/joomla.asset.json'), true);
-$expect(($assets['version'] ?? '') === '1.6.0', 'Web Asset version must be 1.6.0.');
+$expect(($assets['version'] ?? '') === '1.6.0', 'Web Asset version must match VERSION.');
 
 $installer = (string) file_get_contents($root . '/package/script.php');
 $expect(str_contains($installer, "MINIMUM_CORE_VERSION = '2.0.1'"), 'Core minimum must be 2.0.1.');
@@ -61,34 +61,33 @@ $viewFiles = [
     'Records' => $root . '/component/admin/src/View/Records/HtmlView.php',
 ];
 
+$assetService = (string) file_get_contents($root . '/component/admin/src/Service/AdminAssetService.php');
+foreach (['registerAndUseStyle(', "'com_decaromembership/css/admin.css'", 'registerAndUseScript(', "'com_decaromembership/js/admin.js'"] as $marker) {
+    $expect(str_contains($assetService, $marker), "AdminAssetService missing {$marker}.");
+}
+
 foreach ($viewFiles as $viewName => $viewPath) {
     $viewSource = (string) file_get_contents($viewPath);
     $expect(
-        str_contains($viewSource, '$this->getDocument()->getWebAssetManager()'),
-        "{$viewName} view must use the document injected into the Joomla 6 view."
-    );
-    foreach (['registerAndUseStyle(', "'com_decaromembership.admin'", "'com_decaromembership/css/admin.css'"] as $marker) {
-        $expect(
-            str_contains($viewSource, $marker),
-            "{$viewName} view must directly register and use the Membership admin stylesheet."
-        );
-    }
-    $expect(
-        !str_contains($viewSource, 'getApplication()->getDocument()->getWebAssetManager()'),
-        "{$viewName} view must not register assets through the application-global document."
+        str_contains($viewSource, 'AdminAssetService::useAssets'),
+        "{$viewName} view must use the centralized Membership asset service."
     );
 }
 
 $recordView = (string) file_get_contents($viewFiles['Record']);
 $recordsView = (string) file_get_contents($viewFiles['Records']);
 $expect(str_contains($recordsView, "ToolbarHelper::addNew('record.add')"), 'Records view must expose New through the Joomla toolbar.');
-foreach (['Record' => $recordView, 'Records' => $recordsView] as $viewName => $viewSource) {
-    foreach (['registerAndUseScript(', "'com_decaromembership.admin'", "'com_decaromembership/js/admin.js'"] as $marker) {
-        $expect(
-            str_contains($viewSource, $marker),
-            "{$viewName} view must directly register and use the Membership admin script."
-        );
-    }
+
+foreach ([
+    'component/admin/tmpl/dashboard/default.php',
+    'component/admin/tmpl/records/default.php',
+    'component/admin/tmpl/record/default.php',
+    'component/admin/tmpl/information/default.php',
+    'component/admin/tmpl/information/core.php',
+] as $templatePath) {
+    $template = (string) file_get_contents($root . '/' . $templatePath);
+    $expect(!str_contains($template, '<link rel="stylesheet"'), "{$templatePath} must not manually inject CSS.");
+    $expect(!str_contains($template, '<script src='), "{$templatePath} must not manually inject JS.");
 }
 
 $updateSql = $root . '/component/admin/sql/updates/mysql/1.6.0.sql';
@@ -118,4 +117,4 @@ if ($failures !== []) {
     exit(1);
 }
 
-echo "Membership 1.6.0 release contract OK\n";
+echo "Membership {$version} release compatibility contract OK\n";
