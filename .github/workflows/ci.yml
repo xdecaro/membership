@@ -163,6 +163,49 @@ jobs:
           grep -Fq '.dm-grid-kpi' media/com_decaromembership/css/admin.css
           MEMBERSHIP_JOOMLA_ROOT="$GITHUB_WORKSPACE/joomla" MEMBERSHIP_PEOPLE_RUNTIME_MODE=upgrade MEMBERSHIP_EXPECTED_PERSON_UUID='550e8400-e29b-41d4-a716-446655440042' MEMBERSHIP_EXPECTED_MEMBER_NUMBER='CI-UPGRADE-001' php "$GITHUB_WORKSPACE/tests/people-runtime.php"
 
+
+  organizations-integration:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    needs: validate
+    services:
+      mysql:
+        image: mysql:8.0
+        env: {MYSQL_ALLOW_EMPTY_PASSWORD: 'yes', MYSQL_DATABASE: joomla}
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost" --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with: {php-version: '8.3', extensions: 'mysqli,zip,simplexml', coverage: none}
+      - run: python3 build/build.py
+      - name: Install Joomla 6.1.3
+        run: |
+          curl -fL --retry 3 https://github.com/joomla/joomla-cms/releases/download/6.1.3/Joomla_6.1.3-Stable-Full_Package.zip -o /tmp/j.zip
+          echo 'a49305652503f9344d046d55471f324a07882996132ed967c3b0fe34707ae4a1  /tmp/j.zip' | sha256sum -c -
+          mkdir joomla && unzip -q /tmp/j.zip -d joomla
+          cd joomla && php installation/joomla.php install --site-name='Membership Organizations CI' --admin-user='Admin' --admin-username=admin --admin-password="Membership-${GITHUB_RUN_ID}!" --admin-email=admin@example.invalid --db-type=mysqli --db-host=127.0.0.1 --db-user=root --db-pass='' --db-name=joomla --db-prefix=mem_ --db-encryption=0 --no-interaction
+      - name: Fetch pinned People and Organizations packages
+        run: |
+          curl -fL --retry 3 https://github.com/xdecaro/core/releases/download/v2.0.1/pkg_xdecarocore_2.0.1.zip -o /tmp/pkg_xdecarocore_2.0.1.zip
+          echo 'cec892dafeea4a0499ad1851ab0f9d0b111495c2248e0147076ad4bb648f64a9  /tmp/pkg_xdecarocore_2.0.1.zip' | sha256sum -c -
+          curl -fL --retry 3 https://github.com/xdecaro/people/releases/download/v1.2.15/pkg_xdecaropeople_1.2.15.zip -o /tmp/pkg_xdecaropeople_1.2.15.zip
+          echo 'ff48acc440042f74435ac1814d795b4c54d473b7ac3761e1fe4e7a911adcb0f7  /tmp/pkg_xdecaropeople_1.2.15.zip' | sha256sum -c -
+          curl -fL --retry 3 https://github.com/xdecaro/organizations/releases/download/v1.0.25/pkg_xdecaroorganizations_1.0.25.zip -o /tmp/pkg_xdecaroorganizations_1.0.25.zip
+          echo '03af975adecfde2c5fc419d4d5a25856ddc22318cb0585885bc9f832c7e236f5  /tmp/pkg_xdecaroorganizations_1.0.25.zip' | sha256sum -c -
+      - name: Verify optional Organizations runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(cat VERSION)"
+          cd joomla
+          php cli/joomla.php extension:install --path="/tmp/pkg_xdecarocore_2.0.1.zip" -vvv
+          php cli/joomla.php extension:install --path="/tmp/pkg_xdecaropeople_1.2.15.zip" -vvv
+          php cli/joomla.php extension:install --path="/tmp/pkg_xdecaroorganizations_1.0.25.zip" -vvv
+          php cli/joomla.php extension:install --path="$GITHUB_WORKSPACE/dist/pkg_decaromembership_${VERSION}.zip" -vvv
+          MEMBERSHIP_JOOMLA_ROOT="$GITHUB_WORKSPACE/joomla" php "$GITHUB_WORKSPACE/tests/organizations-runtime.php"
+
   dependency-preflight:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
