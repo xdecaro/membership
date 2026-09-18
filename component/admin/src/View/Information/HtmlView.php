@@ -7,43 +7,18 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\ToolbarHelper;
-use Throwable;
+use Xdecaro\Component\Decaromembership\Administrator\Service\AdminAssetService;
 
 final class HtmlView extends BaseHtmlView
 {
-    private const MINIMUM_CORE_UI_VERSION = '1.3.0';
-
     public array $info = [];
     public bool $coreUi = false;
 
     public function display($tpl = null): void
     {
         $this->info = $this->get('Information');
-        $webAssets = $this->getDocument()->getWebAssetManager();
-        $webAssets->registerAndUseStyle(
-            'com_decaromembership.admin',
-            'com_decaromembership/css/admin.css',
-            ['version' => 'auto']
-        );
-
-        if (class_exists(\xdecaro\Core\Version::class)
-            && version_compare((string) \xdecaro\Core\Version::VERSION, self::MINIMUM_CORE_UI_VERSION, '>=')
-            && class_exists(\xdecaro\Core\Asset\AssetService::class)) {
-            try {
-                $this->coreUi = (new \xdecaro\Core\Asset\AssetService())->useComponents($webAssets);
-            } catch (Throwable) {
-                $this->coreUi = false;
-            }
-        }
-
+        $this->coreUi = AdminAssetService::useAssets($this->getDocument(), true);
         if ($this->coreUi) {
-            $webAssets->registerAndUseStyle(
-                'com_decaromembership.core-bridge',
-                'com_decaromembership/css/core-bridge.css',
-                ['version' => 'auto'],
-                [],
-                ['com_decaromembership.admin']
-            );
             $this->setLayout('core');
         }
 
