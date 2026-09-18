@@ -22,7 +22,7 @@ $renderField=function(string $name,array $field,mixed $value) use($esc){
 $linkedUuid=strtolower(trim((string)($this->item->person_uuid??'')));
 $isMember=$this->entity==='members';
 ?>
-<link rel="stylesheet" href="<?= $esc($membershipAssetBase.'/css/admin.css?v='.$membershipCssVersion) ?>">
+
 <form action="<?= Route::_('index.php?option=com_decaromembership&entity='.$this->entity.'&id='.(int)($this->item->id??0)) ?>" method="post" name="adminForm" id="adminForm" class="dm-page">
 <?php if($isMember): ?>
   <section class="dm-card dm-person-card">
