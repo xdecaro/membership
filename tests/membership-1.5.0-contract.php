@@ -36,7 +36,7 @@ if ($componentManifest !== false) {
 }
 
 $assets = json_decode((string) file_get_contents($root . '/component/media/joomla.asset.json'), true);
-$expect(($assets['version'] ?? '') === '1.6.0', 'Web Asset version must match VERSION.');
+$expect(($assets['version'] ?? '') === $version, 'Web Asset version must match VERSION.');
 
 $installer = (string) file_get_contents($root . '/package/script.php');
 $expect(str_contains($installer, "MINIMUM_CORE_VERSION = '2.0.1'"), 'Core minimum must be 2.0.1.');
