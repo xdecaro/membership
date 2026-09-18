@@ -5,6 +5,7 @@ use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\ToolbarHelper;
+use Xdecaro\Component\Decaromembership\Administrator\Service\AdminAssetService;
 final class HtmlView extends BaseHtmlView
 {
     public array $items = [];
@@ -25,19 +26,7 @@ final class HtmlView extends BaseHtmlView
         if ($this->entity === 'members') {
             $this->peopleMap = $this->getModel()->resolvePeopleForItems($this->items);
         }
-        $wa = $this->getDocument()->getWebAssetManager();
-        $wa->registerAndUseStyle(
-            'com_decaromembership.admin',
-            'com_decaromembership/css/admin.css',
-            ['version' => 'auto']
-        );
-        $wa->registerAndUseScript(
-            'com_decaromembership.admin',
-            'com_decaromembership/js/admin.js',
-            ['version' => 'auto'],
-            ['defer' => true],
-            ['core']
-        );
+        AdminAssetService::useAssets($this->getDocument());
         ToolbarHelper::title(Text::_($this->config['label']), 'users');
         $user = Factory::getApplication()->getIdentity();
         if ($user->authorise('core.create', 'com_decaromembership')) ToolbarHelper::addNew('record.add');

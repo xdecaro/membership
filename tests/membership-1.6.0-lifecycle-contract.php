@@ -12,7 +12,7 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $version = trim((string) file_get_contents($root . '/VERSION'));
-$expect($version === '1.6.0', 'VERSION must be 1.6.0.');
+$expect(version_compare($version, '1.6.0', '>='), 'VERSION must be 1.6.0 or newer.');
 
 $install = (string) file_get_contents($root . '/component/admin/sql/install.mysql.utf8mb4.sql');
 $update = (string) file_get_contents($root . '/component/admin/sql/updates/mysql/1.6.0.sql');
@@ -59,4 +59,4 @@ if ($failures !== []) {
     exit(1);
 }
 
-echo "Membership 1.6.0 lifecycle contract OK\n";
+echo "Membership 1.6.0+ lifecycle compatibility contract OK\n";

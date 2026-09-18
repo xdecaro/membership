@@ -3,10 +3,6 @@ defined('_JEXEC') or die;
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
-use Joomla\CMS\Uri\Uri;
-$membershipAssetBase=rtrim(Uri::root(true),'/').'/media/com_decaromembership';
-$membershipCssVersion=@filemtime(JPATH_ROOT.'/media/com_decaromembership/css/admin.css')?:'1.5.0';
-$membershipJsVersion=@filemtime(JPATH_ROOT.'/media/com_decaromembership/js/admin.js')?:'1.5.0';
 $esc=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
 $peopleOwnedFields=['person_uuid','first_name','last_name','birth_date','birth_place','tax_code','address','city','province','postal_code','country','email','phone','user_id'];
 $renderField=function(string $name,array $field,mixed $value) use($esc){
@@ -26,7 +22,7 @@ $renderField=function(string $name,array $field,mixed $value) use($esc){
 $linkedUuid=strtolower(trim((string)($this->item->person_uuid??'')));
 $isMember=$this->entity==='members';
 ?>
-<link rel="stylesheet" href="<?= $esc($membershipAssetBase.'/css/admin.css?v='.$membershipCssVersion) ?>">
+
 <form action="<?= Route::_('index.php?option=com_decaromembership&entity='.$this->entity.'&id='.(int)($this->item->id??0)) ?>" method="post" name="adminForm" id="adminForm" class="dm-page">
 <?php if($isMember): ?>
   <section class="dm-card dm-person-card">
@@ -77,4 +73,3 @@ $isMember=$this->entity==='members';
 <?php endforeach; ?>
 </div>
 <input type="hidden" name="id" value="<?= (int)($this->item->id??0) ?>"><input type="hidden" name="entity" value="<?= $esc($this->entity) ?>"><input type="hidden" name="task" value=""><?= HTMLHelper::_('form.token') ?></form>
-<script src="<?= $esc($membershipAssetBase.'/js/admin.js?v='.$membershipJsVersion) ?>"></script>
