@@ -17,7 +17,7 @@ foreach (($this->info['extensions'] ?? []) as $extension) {
     }
 }
 ?>
-<link rel="stylesheet" href="<?= $escape($membershipAssetBase.'/css/admin.css?v='.$membershipCssVersion) ?>">
+
 <div class="xdecaro-scope membership-core-scope dm-page dm-info">
     <div class="dm-grid dm-grid-2">
         <section class="dm-card xdecaro-card">
