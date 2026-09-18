@@ -45,6 +45,8 @@ def validate_private_boundaries():
                 fail(f'Membership runtime accesses Organizations private table: {path.relative_to(ROOT)}')
             if re.search(r'People\\Administrator\\(?:Model|Table)\\', text, re.I):
                 fail(f'Membership runtime depends on private People Model/Table: {path.relative_to(ROOT)}')
+            if re.search(r'Organizations\\Administrator\\(?:Model|Table)\\', text, re.I):
+                fail(f'Membership runtime depends on private Organizations Model/Table: {path.relative_to(ROOT)}')
 
 
 def validate_finance_boundary():
