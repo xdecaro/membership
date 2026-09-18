@@ -5,16 +5,16 @@ declare(strict_types=1);
 $root = dirname(__DIR__);
 
 $templates = [
-    'dashboard'        => ['component/admin/tmpl/dashboard/default.php', false],
-    'information'      => ['component/admin/tmpl/information/default.php', false],
-    'information-core' => ['component/admin/tmpl/information/core.php', false],
-    'record'           => ['component/admin/tmpl/record/default.php', true],
-    'records'          => ['component/admin/tmpl/records/default.php', true],
+    'dashboard'        => 'component/admin/tmpl/dashboard/default.php',
+    'information'      => 'component/admin/tmpl/information/default.php',
+    'information-core' => 'component/admin/tmpl/information/core.php',
+    'record'           => 'component/admin/tmpl/record/default.php',
+    'records'          => 'component/admin/tmpl/records/default.php',
 ];
 
 $errors = [];
 
-foreach ($templates as $name => [$relativePath, $needsScript]) {
+foreach ($templates as $name => $relativePath) {
     $path = $root . '/' . $relativePath;
     $code = is_file($path) ? (string) file_get_contents($path) : '';
 
@@ -23,16 +23,19 @@ foreach ($templates as $name => [$relativePath, $needsScript]) {
         continue;
     }
 
-    if (!str_contains($code, '/media/com_decaromembership/css/admin.css')) {
-        $errors[] = "$name template must render the external Membership admin.css link directly";
+    if (str_contains($code, '<link rel="stylesheet"') || str_contains($code, '<script src=')) {
+        $errors[] = "$name template must not inject Membership CSS/JS manually";
     }
 
-    if ($needsScript && !str_contains($code, '/media/com_decaromembership/js/admin.js')) {
-        $errors[] = "$name template must render the external Membership admin.js script directly";
-    }
-
-    if (preg_match('/<style\b/i', $code)) {
+    if (preg_match('/<style\\b/i', $code)) {
         $errors[] = "$name template must not introduce inline CSS";
+    }
+}
+
+$assetService = (string) file_get_contents($root . '/component/admin/src/Service/AdminAssetService.php');
+foreach (['com_decaromembership/css/admin.css', 'com_decaromembership/js/admin.js'] as $asset) {
+    if (!str_contains($assetService, $asset)) {
+        $errors[] = "AdminAssetService missing {$asset}";
     }
 }
 
@@ -46,4 +49,4 @@ if ($errors !== []) {
     exit(1);
 }
 
-fwrite(STDOUT, "Template direct asset contract OK\n");
+fwrite(STDOUT, "Template centralized asset contract OK\n");
