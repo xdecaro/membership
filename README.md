@@ -6,7 +6,7 @@ Membership è il componente Joomla 6 per la gestione del dominio associativo: so
 
 - Componente: `com_decaromembership`
 - Pacchetto: `pkg_decaromembership`
-- Versione corrente: **1.6.3**
+- Versione corrente: **1.7.0**
 - Joomla: `6.*`
 - PHP: `8.3+`
 - Core richiesto: **2.0.1+**
@@ -23,9 +23,19 @@ L'upgrade 1.4.0 → 1.6.0 è non distruttivo: i campi anagrafici legacy restano 
 
 Le liste soci risolvono le identità People in batch per evitare N+1. Se People o una persona collegata non è temporaneamente disponibile, Membership mantiene accessibile il record associativo e mostra uno stato controllato invece di interrogare direttamente i dati People.
 
+## Organizations opzionale
+
+Da Membership 1.7.0 il collegamento a **Organizations by xdecaro** è facoltativo. La creazione base di un socio resta semplice: si seleziona la persona People e si compilano i dati associativi essenziali; il socio può essere salvato anche senza alcuna organizzazione.
+
+Quando Organizations è installato e il suo provider pubblico è disponibile, Membership mostra un selettore opzionale e salva soltanto l'UUID stabile dell'organizzazione. Membership non legge le tabelle private di Organizations e non duplica nome, gerarchia, contatti o altri dati organizzativi.
+
+Le vecchie `locations` Membership restano disponibili come sede interna standalone/legacy per compatibilità e storico. Non vengono eliminate né migrate automaticamente. Se un socio ha `organization_uuid`, Organizations è la fonte autorevole per la struttura; `location_id` resta un eventuale dato interno/storico.
+
+Le variazioni del collegamento a Organizations sono tracciate nello storico Membership senza rendere Organizations una dipendenza obbligatoria.
+
 ## Xdecaro Core
 
-Membership 1.6.3 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
+Membership 1.7.0 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
 
 La pagina **Informazioni/Diagnostica** mostra le versioni installate e minime richieste di Core e People e lo stato di compatibilità/disponibilità delle relative API.
 
@@ -53,10 +63,11 @@ Il package registra l'update server Joomla `updates/pkg_decaromembership.xml`. I
 
 ## Test di integrazione
 
-La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.6.3 copre:
+La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.7.0 copre:
 
 - installazione pulita con Core 2.0.1 e People 1.2.15 pubblicati e fissati per SHA-256;
 - collegamento socio ↔ persona People e risoluzione batch dell'identità;
+- creazione socio semplice senza Organizations e integrazione opzionale con Organizations 1.0.25 tramite provider pubblico;
 - upgrade non distruttivo 1.4.0 → 1.6.0 con conservazione di socio e record figli;
 - backfill deterministico e idempotente tramite `user_id` univoco;
 - rifiuto preflight quando mancano Core o People richiesti;
