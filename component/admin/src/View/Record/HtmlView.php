@@ -7,6 +7,7 @@ use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\ToolbarHelper;
 use Throwable;
 use Xdecaro\Component\Decaromembership\Administrator\Helper\EntityRegistry;
+use Xdecaro\Component\Decaromembership\Administrator\Service\AdminAssetService;
 final class HtmlView extends BaseHtmlView
 {
     public object $item;
@@ -47,19 +48,7 @@ final class HtmlView extends BaseHtmlView
             }
         }
 
-        $wa = $this->getDocument()->getWebAssetManager();
-        $wa->registerAndUseStyle(
-            'com_decaromembership.admin',
-            'com_decaromembership/css/admin.css',
-            ['version' => 'auto']
-        );
-        $wa->registerAndUseScript(
-            'com_decaromembership.admin',
-            'com_decaromembership/js/admin.js',
-            ['version' => 'auto'],
-            ['defer' => true],
-            ['core']
-        );
+        AdminAssetService::useAssets($this->getDocument());
         ToolbarHelper::title(Text::_($this->config['singular']), 'pencil');
         ToolbarHelper::apply('record.apply');
         ToolbarHelper::save('record.save');
