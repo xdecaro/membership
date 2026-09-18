@@ -2,10 +2,6 @@
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Language\Text;
-use Joomla\CMS\Uri\Uri;
-
-$membershipAssetBase=rtrim(Uri::root(true),'/').'/media/com_decaromembership';
-$membershipCssVersion=@filemtime(JPATH_ROOT.'/media/com_decaromembership/css/admin.css')?:'1.5.0';
 
 $escape = static fn (mixed $value): string => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 $core = (array) ($this->info['core'] ?? []);
@@ -13,7 +9,7 @@ $coreInstalled = !empty($core['installed']);
 $coreApi = !empty($core['api_available']);
 $coreUi = !empty($core['ui_available']);
 $coreVersion = (string) ($core['version'] ?? '');
-$componentVersion = '1.5.0';
+$componentVersion = '1.6.1';
 foreach (($this->info['extensions'] ?? []) as $extension) {
     if (($extension['element'] ?? '') === 'com_decaromembership' && ($extension['version'] ?? '') !== '') {
         $componentVersion = (string) $extension['version'];
