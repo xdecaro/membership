@@ -6,7 +6,7 @@ final class MemberCoreEntities
     public static function definitions(): array
     {
         return [
-            'members'=>['table'=>'#__decaromembership_members','label'=>'COM_DECAROMEMBERSHIP_MEMBERS','singular'=>'COM_DECAROMEMBERSHIP_MEMBER','title_field'=>'last_name','search'=>['first_name','last_name','tax_code','member_number','card_number','email'],'list'=>['member_number','last_name','first_name','category_id','location_id','status','card_number','email'],'fields'=>[
+            'members'=>['table'=>'#__decaromembership_members','label'=>'COM_DECAROMEMBERSHIP_MEMBERS','singular'=>'COM_DECAROMEMBERSHIP_MEMBER','title_field'=>'last_name','search'=>['first_name','last_name','tax_code','member_number','card_number','email'],'list'=>['member_number','last_name','first_name','category_id','status','card_number','email'],'fields'=>[
                 'person_uuid'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PERSON','type'=>'people'],
                 'first_name'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_FIRST_NAME','type'=>'text'],
                 'last_name'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_LAST_NAME','type'=>'text'],
