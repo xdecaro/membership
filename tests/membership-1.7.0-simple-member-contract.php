@@ -52,6 +52,9 @@ $expect(str_contains($model, 'validateOptionalUuid'), 'Member save must validate
 $expect(str_contains($model, "!array_key_exists('organization_uuid', \$input)"), 'Existing organization link must be preserved if Organizations is temporarily unavailable.');
 $expect(str_contains($history, "'organization_uuid'"), 'Organization changes must be included in Membership history.');
 $expect(str_contains($history, "'organization_uuid' => 'organization_change'"), 'Organization-only changes must have a dedicated history event.');
+$expect(!preg_match('/->bind\\([^\\n]+\\$old\\?->/', $history), 'Membership history must not bind nullsafe property expressions by reference.');
+$expect(!preg_match('/->bind\\([^\\n]+\\$new->/', $history), 'Membership history must not bind object property expressions by reference.');
+$expect(str_contains($history, '$oldOrganizationUuid') && str_contains($history, '$newOrganizationUuid'), 'Organization history bindings must use stable local variables.');
 
 $expect(str_contains($peopleLink, 'People person is required for a new member.'), 'People must remain required for a new member.');
 
