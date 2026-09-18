@@ -12,7 +12,7 @@ $nextDir=fn($col)=>$order===$col&&$dir==='ASC'?'DESC':'ASC';
 $esc=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
 $base='index.php?option=com_decaromembership&view=records&entity='.$this->entity;
 ?>
-<link rel="stylesheet" href="<?= $esc($membershipAssetBase.'/css/admin.css?v='.$membershipCssVersion) ?>">
+
 <form action="<?= Route::_($base) ?>" method="post" name="adminForm" id="adminForm">
 <div class="dm-page">
   <div class="dm-listbar">
