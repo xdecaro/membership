@@ -13,6 +13,8 @@ final class MembershipHelper
     public static function integrations(): array
     {
         $components = [
+            'com_xdecaropeople' => 'People by xdecaro',
+            'com_xdecaroorganizations' => 'Organizations by xdecaro',
             'com_decaroforms' => 'Forms by xdecaro',
             'com_decarodocuments' => 'Documents by xdecaro',
             'com_decarocourses' => 'Courses by xdecaro',
