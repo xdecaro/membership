@@ -65,6 +65,17 @@ final class MembershipHistoryService
             'new_seniority_credit_days' => $new->seniority_credit_days ?? null,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
+        // DatabaseQuery::bind() binds by reference: never pass nullsafe/property
+        // expressions directly because PHP cannot pass those expressions by reference.
+        $oldStatus = $old?->status;
+        $newStatus = $new->status ?? null;
+        $oldCategoryId = $old?->category_id;
+        $newCategoryId = $new->category_id ?? null;
+        $oldLocationId = $old?->location_id;
+        $newLocationId = $new->location_id ?? null;
+        $oldOrganizationUuid = $old?->organization_uuid;
+        $newOrganizationUuid = $new->organization_uuid ?? null;
+
         $query = $this->db->getQuery(true)
             ->insert($this->db->quoteName('#__decaromembership_member_history'))
             ->columns([
@@ -88,14 +99,14 @@ final class MembershipHistoryService
             ->values(':member_id,:event_type,:old_status,:new_status,:old_category,:new_category,:old_location,:new_location,:old_organization_uuid,:new_organization_uuid,:effective_date,:source_type,:source_id,:metadata,:user_id,:created')
             ->bind(':member_id', $memberId, ParameterType::INTEGER)
             ->bind(':event_type', $eventType)
-            ->bind(':old_status', $old?->status)
-            ->bind(':new_status', $new->status)
-            ->bind(':old_category', $old?->category_id, $old?->category_id === null ? ParameterType::NULL : ParameterType::INTEGER)
-            ->bind(':new_category', $new->category_id, $new->category_id === null ? ParameterType::NULL : ParameterType::INTEGER)
-            ->bind(':old_location', $old?->location_id, $old?->location_id === null ? ParameterType::NULL : ParameterType::INTEGER)
-            ->bind(':new_location', $new->location_id, $new->location_id === null ? ParameterType::NULL : ParameterType::INTEGER)
-            ->bind(':old_organization_uuid', $old?->organization_uuid)
-            ->bind(':new_organization_uuid', $new->organization_uuid)
+            ->bind(':old_status', $oldStatus)
+            ->bind(':new_status', $newStatus)
+            ->bind(':old_category', $oldCategoryId, $oldCategoryId === null ? ParameterType::NULL : ParameterType::INTEGER)
+            ->bind(':new_category', $newCategoryId, $newCategoryId === null ? ParameterType::NULL : ParameterType::INTEGER)
+            ->bind(':old_location', $oldLocationId, $oldLocationId === null ? ParameterType::NULL : ParameterType::INTEGER)
+            ->bind(':new_location', $newLocationId, $newLocationId === null ? ParameterType::NULL : ParameterType::INTEGER)
+            ->bind(':old_organization_uuid', $oldOrganizationUuid)
+            ->bind(':new_organization_uuid', $newOrganizationUuid)
             ->bind(':effective_date', $effectiveDate)
             ->bind(':source_type', $sourceEntityType)
             ->bind(':source_id', $sourceEntityId, $sourceEntityId === null ? ParameterType::NULL : ParameterType::INTEGER)
