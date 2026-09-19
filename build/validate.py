@@ -185,8 +185,26 @@ def validate_ordering_defaults():
         fail('Membership 1.9.1 schema marker must be non-destructive')
 
 
+def validate_published_defaults():
+    marker = "'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1]"
+    for path in (
+        'component/admin/src/Config/MemberCoreEntities.php',
+        'component/admin/src/Config/CaseEntities.php',
+        'component/admin/src/Config/OperationsEntities.php',
+        'component/admin/src/Config/OrganizationEntities.php',
+        'component/admin/src/Config/FinanceEntities.php',
+    ):
+        require(path, marker)
+    require('component/admin/tmpl/records/default.php', "'JPUBLISHED'", "'JUNPUBLISHED'", "==='published'")
+    schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.2.sql'
+    if not schema_marker.is_file():
+        fail('Membership 1.9.2 schema marker missing')
+    if re.search(r'\\b(?:DROP\\s+TABLE|TRUNCATE\\s+TABLE)\\b', schema_marker.read_text(), re.I):
+        fail('Membership 1.9.2 schema marker must be non-destructive')
+
+
 def validate():
-    if VERSION != '1.9.1':
+    if VERSION != '1.9.2':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -236,6 +254,8 @@ def validate():
     validate_people_boundary()
     validate_organizations_boundary()
     validate_member_lifecycle_basics()
+    validate_ordering_defaults()
+    validate_published_defaults()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',
