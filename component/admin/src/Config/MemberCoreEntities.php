@@ -65,7 +65,7 @@ final class MemberCoreEntities
                 'rules'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_RULES','type'=>'textarea'],
                 'benefits'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_BENEFITS','type'=>'textarea'],
                 'language'=>['label'=>'JFIELD_LANGUAGE_LABEL','type'=>'text','default'=>'*'],
-                'ordering'=>['label'=>'JFIELD_ORDERING_LABEL','type'=>'number'],
+                'ordering'=>['label'=>'JFIELD_ORDERING_LABEL','type'=>'number','default'=>0],
                 'published'=>['label'=>'JSTATUS','type'=>'published'],
             ]],
         ];

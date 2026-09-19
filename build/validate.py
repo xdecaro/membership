@@ -173,8 +173,20 @@ def validate_member_lifecycle_basics():
     require('tests/membership-1.9.0-member-lifecycle-contract.php', 'member lifecycle basics contract')
 
 
+def validate_ordering_defaults():
+    marker = "'ordering'=>['label'=>'JFIELD_ORDERING_LABEL','type'=>'number','default'=>0]"
+    require('component/admin/src/Config/MemberCoreEntities.php', marker)
+    require('component/admin/src/Config/CaseEntities.php', marker)
+    require('component/admin/src/Config/OperationsEntities.php', marker)
+    schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.1.sql'
+    if not schema_marker.is_file():
+        fail('Membership 1.9.1 schema marker missing')
+    if re.search(r'\\b(?:DROP\\s+TABLE|TRUNCATE\\s+TABLE)\\b', schema_marker.read_text(), re.I):
+        fail('Membership 1.9.1 schema marker must be non-destructive')
+
+
 def validate():
-    if VERSION != '1.9.0':
+    if VERSION != '1.9.1':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [

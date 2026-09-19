@@ -9,7 +9,7 @@ final class CaseEntities
             'case_statuses'=>['table'=>'#__decaromembership_case_statuses','label'=>'COM_DECAROMEMBERSHIP_CASE_STATUSES','singular'=>'COM_DECAROMEMBERSHIP_CASE_STATUS','title_field'=>'name','search'=>['name','code'],'list'=>['name','code','ordering','language','published'],'fields'=>[
                 'name'=>['label'=>'JGLOBAL_TITLE','type'=>'text','required'=>true],
                 'code'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CODE','type'=>'text','required'=>true,'unique'=>true],
-                'ordering'=>['label'=>'JFIELD_ORDERING_LABEL','type'=>'number'],
+                'ordering'=>['label'=>'JFIELD_ORDERING_LABEL','type'=>'number','default'=>0],
                 'language'=>['label'=>'JFIELD_LANGUAGE_LABEL','type'=>'text','default'=>'*'],
                 'published'=>['label'=>'JSTATUS','type'=>'published'],
             ]],
