@@ -32,7 +32,7 @@ foreach ([
     $expect(str_contains($config, $marker), "Member/category config missing {$marker}.");
 }
 
-foreach (['member_number_mode','member_number_padding','member_default_status','value="automatic"','value="manual"'] as $marker) {
+foreach (['member_number_mode','member_number_padding','member_default_status','default="manual"','value="automatic"','value="manual"'] as $marker) {
     $expect(str_contains($configXml, $marker), "Membership options missing {$marker}.");
 }
 
