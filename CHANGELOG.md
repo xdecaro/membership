@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.9.0 - 2026-09-19
+- Made member category mandatory and added an optional stable category code without hardcoding association-specific categories.
+- Added direct Categories access to the Membership administrator submenu.
+- Added configurable new-member default status (Pending, Under review or Active).
+- Added manual member numbering as the safe default and optional automatic numbering with configurable prefix and padding.
+- Added conservative lifecycle date defaults for admission/activation, status changes and terminal statuses.
+- Added clear form guidance when no published categories exist and an action to configure them.
+- Added Joomla 6.1.3 runtime coverage for category enforcement, automatic numbering and lifecycle dates.
+- Preserved People as the authoritative identity source, Organizations as optional, and all existing Finance/lifecycle history behavior.
+
+
+
 ## 1.8.0 - 2026-09-19
 - Added a hierarchical Organizations selector based on the public `parent_id` relationship, preserving root/child order such as ENS → ENS Lazio → ENS Roma.
 - Added live filtering by organization name, hierarchy path and type.
