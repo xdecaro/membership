@@ -21,7 +21,7 @@ final class OperationsEntities
                 'destination_confirmed'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_DESTINATION_CONFIRMED','type'=>'boolean'],
                 'completed_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_COMPLETED_AT','type'=>'date'],
                 'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
-                'published'=>['label'=>'JSTATUS','type'=>'published'],
+                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
             ]],
             'documents'=>['table'=>'#__decaromembership_documents','label'=>'COM_DECAROMEMBERSHIP_DOCUMENTS','singular'=>'COM_DECAROMEMBERSHIP_DOCUMENT','title_field'=>'title','search'=>['title','document_type','status'],'list'=>['title','member_id','case_id','document_type','status','issued_at','expires_at','external_document_id'],'fields'=>[
                 'title'=>['label'=>'JGLOBAL_TITLE','type'=>'text','required'=>true],
@@ -35,14 +35,14 @@ final class OperationsEntities
                 'external_document_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_EXTERNAL_DOCUMENT_ID','type'=>'number'],
                 'fallback_path'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_FALLBACK_PATH','type'=>'text'],
                 'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
-                'published'=>['label'=>'JSTATUS','type'=>'published'],
+                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
             ]],
             'checklist_templates'=>['table'=>'#__decaromembership_checklist_templates','label'=>'COM_DECAROMEMBERSHIP_CHECKLISTS','singular'=>'COM_DECAROMEMBERSHIP_CHECKLIST','title_field'=>'name','search'=>['name','case_type'],'list'=>['name','case_type','language','ordering','published'],'fields'=>[
                 'name'=>['label'=>'JGLOBAL_TITLE','type'=>'text','required'=>true],
                 'case_type'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CASE_TYPE','type'=>'text','required'=>true],
                 'language'=>['label'=>'JFIELD_LANGUAGE_LABEL','type'=>'text','default'=>'*'],
                 'ordering'=>['label'=>'JFIELD_ORDERING_LABEL','type'=>'number','default'=>0],
-                'published'=>['label'=>'JSTATUS','type'=>'published'],
+                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
             ]],
             'notifications'=>['table'=>'#__decaromembership_notifications','label'=>'COM_DECAROMEMBERSHIP_NOTIFICATIONS','singular'=>'COM_DECAROMEMBERSHIP_NOTIFICATION','title_field'=>'subject','search'=>['subject','type','status'],'list'=>['subject','member_id','type','channel','status','scheduled_at','sent_at'],'fields'=>[
                 'member_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_MEMBER','type'=>'relation','relation'=>'members'],
@@ -53,7 +53,7 @@ final class OperationsEntities
                 'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STATUS','type'=>'select','options'=>['pending'=>'COM_DECAROMEMBERSHIP_STATUS_PENDING','sent'=>'COM_DECAROMEMBERSHIP_NOTIFICATION_SENT','failed'=>'COM_DECAROMEMBERSHIP_NOTIFICATION_FAILED','cancelled'=>'COM_DECAROMEMBERSHIP_NOTIFICATION_CANCELLED']],
                 'scheduled_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_SCHEDULED_AT','type'=>'date'],
                 'sent_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_SENT_AT','type'=>'date'],
-                'published'=>['label'=>'JSTATUS','type'=>'published'],
+                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
             ]],
         ];
     }

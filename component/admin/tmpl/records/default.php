@@ -50,6 +50,7 @@ $base='index.php?option=com_decaromembership&view=records&entity='.$this->entity
       ?>
         <tr><td><?= HTMLHelper::_('grid.id',$i,(int)$item->id) ?></td>
         <?php foreach($this->config['list'] as $column):
+            $field=$this->config['fields'][$column]??[];
             $value=$item->$column??'';
             $identityBadge='';
             if($this->entity==='members'&&in_array($column,['first_name','last_name','email'],true)) {
@@ -68,6 +69,7 @@ $base='index.php?option=com_decaromembership&view=records&entity='.$this->entity
           <?php if($column===$this->config['title_field']): ?>
             <a href="<?= Route::_('index.php?option=com_decaromembership&view=record&entity='.$this->entity.'&id='.(int)$item->id) ?>"<?= $person?' title="'.$esc($person['display_name']??'').'"':'' ?>><?= $esc($value) ?></a><?= $identityBadge ?>
           <?php elseif(isset($this->relationMaps[$column][(int)$value])): ?><?= $esc($this->relationMaps[$column][(int)$value]) ?>
+          <?php elseif(($field['type']??'')==='published'): ?><span class="badge <?= (int)$value===1?'text-bg-success':'text-bg-secondary' ?>"><?= Text::_((int)$value===1?'JPUBLISHED':'JUNPUBLISHED') ?></span>
           <?php else: ?><?= $esc($value) ?><?= $identityBadge ?><?php endif; ?>
           </td>
         <?php endforeach; ?><td class="text-end"><?= (int)$item->id ?></td></tr>

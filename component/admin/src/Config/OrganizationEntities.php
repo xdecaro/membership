@@ -20,7 +20,7 @@ final class OrganizationEntities
                 'manager'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_MANAGER','type'=>'text'],
                 'parent_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PARENT_LOCATION','type'=>'relation','relation'=>'locations'],
                 'language'=>['label'=>'JFIELD_LANGUAGE_LABEL','type'=>'text','default'=>'*'],
-                'published'=>['label'=>'JSTATUS','type'=>'published'],
+                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
             ]],
             'relations'=>['table'=>'#__decaromembership_relations','label'=>'COM_DECAROMEMBERSHIP_RELATIONS','singular'=>'COM_DECAROMEMBERSHIP_RELATION','title_field'=>'relation_type','search'=>['relation_type'],'list'=>['member_id','related_member_id','relation_type','valid_from','valid_to','published'],'fields'=>[
                 'member_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_MEMBER','type'=>'relation','relation'=>'members','required'=>true],
@@ -29,7 +29,7 @@ final class OrganizationEntities
                 'valid_from'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_VALID_FROM','type'=>'date'],
                 'valid_to'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_VALID_TO','type'=>'date'],
                 'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
-                'published'=>['label'=>'JSTATUS','type'=>'published'],
+                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
             ]],
         ];
     }

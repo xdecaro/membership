@@ -11,7 +11,7 @@ final class CaseEntities
                 'code'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CODE','type'=>'text','required'=>true,'unique'=>true],
                 'ordering'=>['label'=>'JFIELD_ORDERING_LABEL','type'=>'number','default'=>0],
                 'language'=>['label'=>'JFIELD_LANGUAGE_LABEL','type'=>'text','default'=>'*'],
-                'published'=>['label'=>'JSTATUS','type'=>'published'],
+                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
             ]],
             'cases'=>['table'=>'#__decaromembership_cases','label'=>'COM_DECAROMEMBERSHIP_CASES','singular'=>'COM_DECAROMEMBERSHIP_CASE','title_field'=>'reference','search'=>['reference','type','notes'],'list'=>['reference','member_id','type','status_id','assigned_to','received_at','completed_at'],'fields'=>[
                 'reference'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_REFERENCE','type'=>'text','required'=>true,'unique'=>true],
@@ -24,7 +24,7 @@ final class CaseEntities
                 'received_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_RECEIVED_AT','type'=>'date'],
                 'completed_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_COMPLETED_AT','type'=>'date'],
                 'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
-                'published'=>['label'=>'JSTATUS','type'=>'published'],
+                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
             ]],
             'renewals'=>['table'=>'#__decaromembership_renewals','label'=>'COM_DECAROMEMBERSHIP_RENEWALS','singular'=>'COM_DECAROMEMBERSHIP_RENEWAL','title_field'=>'association_year','search'=>['association_year','status'],'list'=>['member_id','association_year','status','renewal_date','expiry_date','amount','payment_status'],'fields'=>[
                 'member_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_MEMBER','type'=>'relation','relation'=>'members','required'=>true],
@@ -35,7 +35,7 @@ final class CaseEntities
                 'amount'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_AMOUNT','type'=>'money'],
                 'payment_status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PAYMENT_STATUS','type'=>'select','options'=>['unpaid'=>'COM_DECAROMEMBERSHIP_PAYMENT_UNPAID','partial'=>'COM_DECAROMEMBERSHIP_PAYMENT_PARTIAL','paid'=>'COM_DECAROMEMBERSHIP_PAYMENT_PAID','refunded'=>'COM_DECAROMEMBERSHIP_PAYMENT_REFUNDED']],
                 'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
-                'published'=>['label'=>'JSTATUS','type'=>'published'],
+                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
             ]],
             'cards'=>['table'=>'#__decaromembership_cards','label'=>'COM_DECAROMEMBERSHIP_CARDS','singular'=>'COM_DECAROMEMBERSHIP_CARD','title_field'=>'card_number','search'=>['card_number','type','status'],'list'=>['card_number','member_id','type','status','issued_at','activated_at','expires_at','annual_mark'],'fields'=>[
                 'member_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_MEMBER','type'=>'relation','relation'=>'members','required'=>true],
@@ -48,7 +48,7 @@ final class CaseEntities
                 'annual_mark'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_ANNUAL_MARK','type'=>'text'],
                 'qr_token'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_QR_TOKEN','type'=>'text','unique'=>true],
                 'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
-                'published'=>['label'=>'JSTATUS','type'=>'published'],
+                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
             ]],
         ];
     }

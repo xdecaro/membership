@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.2 - 2026-09-19
+- Fixed the default publication state for new configurable records: publishable entities now explicitly default to `published = 1` in the form configuration.
+- Categories therefore start published instead of submitting `0` from a blank new-record form.
+- Administrator lists now render Published/Unpublished badges instead of raw `1/0` values.
+- Existing unpublished records are deliberately preserved and are not re-enabled during upgrade.
+- Added a non-destructive 1.9.2 schema marker and regression coverage.
+
 ## 1.9.1 - 2026-09-19
 - Fixed creation of categories when Ordering is left at its default: new ordered records now start from `0` instead of attempting to save `NULL` into `NOT NULL` columns.
 - Applied the same safe default to case statuses and checklist templates, which use the same ordered-record pattern.
