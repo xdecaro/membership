@@ -60,6 +60,9 @@ $query = $db->getQuery(true)
     ->bind(':params', $paramsJson);
 $db->setQuery($query)->execute();
 
+$componentRecord = \Joomla\CMS\Component\ComponentHelper::getComponent('com_decaromembership');
+$componentRecord->setParams(new \Joomla\Registry\Registry($paramsJson));
+
 $membership = $app->bootComponent('com_decaromembership');
 $model = $membership->getMVCFactory()->createModel('Record', 'Administrator', ['ignore_request' => true]);
 if (!is_object($model) || !method_exists($model, 'saveEntity')) {
