@@ -132,8 +132,49 @@ def validate_organizations_boundary():
     require('tests/organizations-runtime.php', 'getOrganizationsIntegrationService', 'CI-SIMPLE-001', 'CI-ORG-001')
 
 
+def validate_member_lifecycle_basics():
+    require(
+        'component/admin/src/Service/MemberLifecycleService.php',
+        'prepareForSave',
+        'isAutomaticNumbering',
+        'generateNumber',
+        'ACTIVE_STATUSES',
+        'TERMINAL_STATUSES',
+        'member_number_mode',
+        'member_number_padding',
+        'member_default_status',
+    )
+    require(
+        'component/admin/src/Config/MemberCoreEntities.php',
+        "'category_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CATEGORY','type'=>'relation','relation'=>'categories','required'=>true]",
+        "'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STATUS','type'=>'select','required'=>true,'default'=>'pending'",
+        "'code'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CODE','type'=>'text','unique'=>true]",
+    )
+    require(
+        'component/admin/src/Model/RecordModel.php',
+        'MemberLifecycleService',
+        'prepareForSave',
+        'generateNumber',
+        'updateMemberNumber',
+    )
+    require(
+        'component/admin/tmpl/record/default.php',
+        'COM_DECAROMEMBERSHIP_MEMBER_CATEGORY_MISSING',
+        'COM_DECAROMEMBERSHIP_MEMBER_CATEGORY_MANAGE',
+        'COM_DECAROMEMBERSHIP_MEMBER_NUMBER_AUTOMATIC_PLACEHOLDER',
+        'COM_DECAROMEMBERSHIP_FIRST_REGISTRATION_HELP',
+    )
+    require(
+        'component/admin/config.xml',
+        'member_number_mode',
+        'member_number_padding',
+        'member_default_status',
+    )
+    require('tests/membership-1.9.0-member-lifecycle-contract.php', 'member lifecycle basics contract')
+
+
 def validate():
-    if VERSION != '1.8.0':
+    if VERSION != '1.9.0':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -182,6 +223,7 @@ def validate():
     validate_finance_boundary()
     validate_people_boundary()
     validate_organizations_boundary()
+    validate_member_lifecycle_basics()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',
@@ -264,6 +306,14 @@ def validate():
     if not organization_picker_marker.is_file():
         fail('Membership 1.8.0 schema marker missing')
 
+    lifecycle_basics_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.0.sql'
+    if not lifecycle_basics_marker.is_file():
+        fail('Membership 1.9.0 schema update missing')
+    lifecycle_basics_sql = lifecycle_basics_marker.read_text(encoding='utf-8')
+    for marker in ('code', 'uq_category_code'):
+        if marker not in lifecycle_basics_sql:
+            fail(f'1.9.0 schema missing {marker}')
+
     for media_path in (
         ROOT / 'component/media/css/admin.css',
         ROOT / 'component/media/css/core-bridge.css',
@@ -301,7 +351,7 @@ def validate():
             fail(f'duplicate manual asset tag remains in {template_path}')
 
     install = (ROOT / 'component/admin/sql/install.mysql.utf8mb4.sql').read_text()
-    for marker in ('#__decaromembership_notifications', '`person_uuid` CHAR(36) NULL', 'uq_member_person_uuid', '`organization_uuid` CHAR(36) NULL', 'idx_member_organization_uuid'):
+    for marker in ('#__decaromembership_notifications', '`person_uuid` CHAR(36) NULL', 'uq_member_person_uuid', '`organization_uuid` CHAR(36) NULL', 'idx_member_organization_uuid', '`code` VARCHAR(100) NULL', 'uq_category_code'):
         if marker not in install:
             fail(f'clean install schema missing {marker}')
     for sql in (ROOT / 'component/admin/sql').rglob('*.sql'):
