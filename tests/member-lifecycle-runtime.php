@@ -45,6 +45,21 @@ if (!$admin || !$admin->authorise('core.admin')) {
 $app->loadIdentity($admin);
 
 $db = $container->get(\Joomla\Database\DatabaseInterface::class);
+
+$paramsJson = json_encode([
+    'member_number_mode' => 'automatic',
+    'member_number_prefix' => 'CI-',
+    'member_number_padding' => 5,
+    'member_default_status' => 'pending',
+], JSON_UNESCAPED_SLASHES);
+$query = $db->getQuery(true)
+    ->update($db->quoteName('#__extensions'))
+    ->set($db->quoteName('params') . ' = :params')
+    ->where($db->quoteName('type') . " = 'component'")
+    ->where($db->quoteName('element') . " = 'com_decaromembership'")
+    ->bind(':params', $paramsJson);
+$db->setQuery($query)->execute();
+
 $membership = $app->bootComponent('com_decaromembership');
 $model = $membership->getMVCFactory()->createModel('Record', 'Administrator', ['ignore_request' => true]);
 if (!is_object($model) || !method_exists($model, 'saveEntity')) {
@@ -104,7 +119,7 @@ if (!$member) {
     $fail('Created Membership member cannot be loaded.');
 }
 
-$expectedNumber = str_pad((string) $memberId, 6, '0', STR_PAD_LEFT);
+$expectedNumber = 'CI-' . str_pad((string) $memberId, 5, '0', STR_PAD_LEFT);
 if ((string) $member->member_number !== $expectedNumber) {
     $fail('Automatic member number mismatch: expected ' . $expectedNumber . ', got ' . (string) $member->member_number);
 }
