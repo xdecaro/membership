@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.6 - 2026-09-19
+- Improved the Member → Card flow: when no current card exists, the member profile now opens a new card record with that member preselected.
+- Member relation labels now resolve through People display names, with legacy/member-number fallbacks.
+- Selected relation records remain visible in edit/create flows even when unpublished, preserving historical references.
+- Card list member labels now use People-backed names instead of blank legacy first/last-name fields.
+- Added non-destructive 1.9.6 schema marker and regression coverage.
+
 ## 1.9.5 - 2026-09-19
 - Fixed the administrator member page fatal error `Call to undefined method ... HtmlView::getDatabase()` introduced in 1.9.4.
 - Current-card lookup now goes through `RecordModel`, which owns database access, instead of constructing a repository inside the view.
