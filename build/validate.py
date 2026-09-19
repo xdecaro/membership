@@ -108,12 +108,32 @@ def validate_organizations_boundary():
         'COM_DECAROMEMBERSHIP_ORGANIZATION_NONE',
         'COM_DECAROMEMBERSHIP_MEMBER_ADVANCED',
         'COM_DECAROMEMBERSHIP_LOCATION_LEGACY_HELP',
+        'data-membership-organization-search',
+        'data-membership-organization-select',
+        'organizationTypeLabel',
+        "organization['depth']",
+        "organization['path']",
+    )
+    require(
+        'component/admin/src/View/Record/HtmlView.php',
+        'buildOrganizationOptions',
+        "organization['parent_id']",
+        "organization['depth']",
+        "organization['path']",
+    )
+    require(
+        'component/media/js/admin.js',
+        'initOrganizationPicker',
+        'data-membership-organization-search',
+        'data-membership-organization-select',
+        'option.hidden',
+        'option.disabled',
     )
     require('tests/organizations-runtime.php', 'getOrganizationsIntegrationService', 'CI-SIMPLE-001', 'CI-ORG-001')
 
 
 def validate():
-    if VERSION != '1.7.0':
+    if VERSION != '1.8.0':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -239,6 +259,10 @@ def validate():
     for marker in ('organization_uuid', 'old_organization_uuid', 'new_organization_uuid'):
         if marker not in simple_member_sql:
             fail(f'1.7.0 schema missing {marker}')
+
+    organization_picker_marker = ROOT / 'component/admin/sql/updates/mysql/1.8.0.sql'
+    if not organization_picker_marker.is_file():
+        fail('Membership 1.8.0 schema marker missing')
 
     for media_path in (
         ROOT / 'component/media/css/admin.css',
