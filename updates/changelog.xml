@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+  <changelog version="1.9.3" date="2026-09-19">
+    <change type="fix">Legacy members with a blank prior status no longer receive invented lifecycle dates when their current status is first set.</change>
+    <change type="fix">New members still receive normal automatic lifecycle dates and member records explicitly default to Published.</change>
+    <change type="fix">Existing historical data is preserved without automatic rewriting.</change>
+  </changelog>
+
   <changelog version="1.9.2" date="2026-09-19">
     <change type="fix">New publishable Membership records now default to Published.</change>
     <change type="fix">Category creation no longer starts with state 0 by default.</change>
