@@ -70,6 +70,68 @@ $organizationRow = (object) [
 ];
 $db->insertObject('#__xdecaroorganizations_organizations', $organizationRow);
 
+$hierarchyRows = [
+    [
+        'uuid' => '550e8400-e29b-41d4-a716-446655440120',
+        'name' => 'ENS',
+        'code' => 'ENS',
+        'type' => 'association',
+        'parent_id' => null,
+    ],
+    [
+        'uuid' => '550e8400-e29b-41d4-a716-446655440121',
+        'name' => 'ENS Lazio',
+        'code' => 'ENS-LAZIO',
+        'type' => 'association',
+        'parent_id' => '__ROOT__',
+    ],
+    [
+        'uuid' => '550e8400-e29b-41d4-a716-446655440122',
+        'name' => 'ENS Roma',
+        'code' => 'ENS-ROMA',
+        'type' => 'association',
+        'parent_id' => '__REGION__',
+    ],
+];
+
+$rootId = 0;
+$regionId = 0;
+foreach ($hierarchyRows as $index => $row) {
+    if ($row['parent_id'] === '__ROOT__') {
+        $row['parent_id'] = $rootId;
+    } elseif ($row['parent_id'] === '__REGION__') {
+        $row['parent_id'] = $regionId;
+    }
+
+    $object = (object) array_merge($row, [
+        'state' => 1,
+        'access' => 1,
+        'created' => '2026-09-19 02:00:00',
+        'created_by' => (int) $admin->id,
+        'modified_by' => 0,
+    ]);
+    $db->insertObject('#__xdecaroorganizations_organizations', $object);
+    $insertedId = (int) $db->insertid();
+
+    if ($index === 0) {
+        $rootId = $insertedId;
+    } elseif ($index === 1) {
+        $regionId = $insertedId;
+    }
+}
+
+$hierarchy = [];
+foreach ($organizations->searchOrganizations('ENS', 20) as $organization) {
+    $hierarchy[(string) ($organization['name'] ?? '')] = $organization;
+}
+
+if ((int) ($hierarchy['ENS Lazio']['parent_id'] ?? 0) !== $rootId) {
+    $fail('Organizations provider did not expose the ENS Lazio parent relationship.');
+}
+if ((int) ($hierarchy['ENS Roma']['parent_id'] ?? 0) !== $regionId) {
+    $fail('Organizations provider did not expose the ENS Roma parent relationship.');
+}
+
 $found = $organizations->getOrganization($organizationUuid);
 if (($found['name'] ?? '') !== 'CI Optional Organization') {
     $fail('Membership cannot resolve an Organizations record through the public provider.');
