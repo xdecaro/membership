@@ -76,11 +76,7 @@ final class HtmlView extends BaseHtmlView
                         }
                     }
 
-                    uasort($options, static fn(array $a, array $b): int => strcasecmp(
-                        (string) ($a['name'] ?? ''),
-                        (string) ($b['name'] ?? '')
-                    ));
-                    $this->organizationOptions = array_values($options);
+                    $this->organizationOptions = $this->buildOrganizationOptions(array_values($options));
                 }
             } catch (Throwable) {
                 $this->organizationsAvailable = false;
@@ -96,4 +92,82 @@ final class HtmlView extends BaseHtmlView
         ToolbarHelper::cancel('record.cancel');
         parent::display($tpl);
     }
+
+    private function buildOrganizationOptions(array $organizations): array
+    {
+        $byId = [];
+        foreach ($organizations as $organization) {
+            $id = (int) ($organization['id'] ?? 0);
+            if ($id < 1) {
+                continue;
+            }
+
+            $byId[$id] = $organization;
+        }
+
+        $children = [];
+        $roots = [];
+
+        foreach ($byId as $id => $organization) {
+            $parentId = (int) ($organization['parent_id'] ?? 0);
+
+            if ($parentId > 0 && isset($byId[$parentId]) && $parentId !== $id) {
+                $children[$parentId][] = $id;
+            } else {
+                $roots[] = $id;
+            }
+        }
+
+        $sortIds = static function (array &$ids) use ($byId): void {
+            usort($ids, static fn(int $a, int $b): int => strcasecmp(
+                (string) ($byId[$a]['name'] ?? ''),
+                (string) ($byId[$b]['name'] ?? '')
+            ));
+        };
+
+        $sortIds($roots);
+        foreach ($children as &$ids) {
+            $sortIds($ids);
+        }
+        unset($ids);
+
+        $result = [];
+        $visited = [];
+
+        $walk = function (int $id, int $depth, array $path) use (&$walk, &$result, &$visited, $byId, $children): void {
+            if (isset($visited[$id]) || !isset($byId[$id])) {
+                return;
+            }
+
+            $visited[$id] = true;
+            $organization = $byId[$id];
+            $name = trim((string) ($organization['name'] ?? ''));
+            $currentPath = $path;
+            if ($name !== '') {
+                $currentPath[] = $name;
+            }
+
+            $organization['depth'] = min(12, max(0, $depth));
+            $organization['path'] = implode(' › ', $currentPath);
+            $result[] = $organization;
+
+            foreach ($children[$id] ?? [] as $childId) {
+                $walk($childId, $depth + 1, $currentPath);
+            }
+        };
+
+        foreach ($roots as $rootId) {
+            $walk($rootId, 0, []);
+        }
+
+        // Orphans/cycles must remain selectable instead of disappearing.
+        $remaining = array_values(array_diff(array_keys($byId), array_keys($visited)));
+        $sortIds($remaining);
+        foreach ($remaining as $id) {
+            $walk($id, 0, []);
+        }
+
+        return $result;
+    }
+
 }

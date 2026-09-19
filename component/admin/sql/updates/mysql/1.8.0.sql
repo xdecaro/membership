@@ -1,0 +1,1 @@
+-- Membership 1.8.0: hierarchical searchable Organizations picker; no schema changes.\nSELECT 1;\n

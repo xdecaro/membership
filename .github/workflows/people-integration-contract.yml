@@ -40,7 +40,7 @@ jobs:
         run: php tests/record-repository-bindings.php
       - name: AuditService stable binding contract
         run: php tests/audit-bindings.php
-      - name: Membership 1.7.0 release contract
+      - name: Membership 1.8.0 release contract
         run: php tests/membership-1.5.0-contract.php
       - name: Membership 1.6.0+ lifecycle contract
         run: php tests/membership-1.6.0-lifecycle-contract.php
@@ -50,6 +50,8 @@ jobs:
         run: php tests/membership-1.6.2-webasset-registry-contract.php
       - name: Membership 1.6.3 direct admin asset contract
         run: php tests/membership-1.6.3-direct-admin-assets-contract.php
-      - name: Membership 1.7.0 simple member contract
+      - name: Membership 1.7.0+ simple member contract
         run: php tests/membership-1.7.0-simple-member-contract.php
+      - name: Membership 1.8.0 Organizations picker contract
+        run: php tests/membership-1.8.0-organization-picker-contract.php
 

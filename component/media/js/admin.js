@@ -103,6 +103,71 @@
     });
   };
 
+  const initOrganizationPicker = (picker) => {
+    const search = picker.querySelector('[data-membership-organization-search]');
+    const select = picker.querySelector('[data-membership-organization-select]');
+    const empty = picker.querySelector('[data-membership-organization-empty]');
+    const path = picker.querySelector('[data-membership-organization-path]');
+
+    if (!search || !select) return;
+
+    const normalize = (value) => String(value || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLocaleLowerCase()
+      .trim();
+
+    const updatePath = () => {
+      if (!path) return;
+      const option = select.options[select.selectedIndex];
+      path.textContent = option?.dataset?.path || '';
+      path.hidden = path.textContent === '';
+    };
+
+    const filter = () => {
+      const term = normalize(search.value);
+      let matches = 0;
+
+      [...select.options].forEach((option, index) => {
+        if (index === 0) {
+          option.hidden = false;
+          option.disabled = false;
+          return;
+        }
+
+        const haystack = normalize(option.dataset.search || option.textContent);
+        const matched = term === '' || haystack.includes(term);
+        const keepVisible = matched || option.selected;
+
+        option.hidden = !keepVisible;
+        option.disabled = !keepVisible;
+
+        if (matched) matches += 1;
+      });
+
+      if (empty) {
+        empty.hidden = term === '' || matches > 0;
+      }
+    };
+
+    search.addEventListener('input', filter);
+    search.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        select.focus();
+      }
+    });
+
+    select.addEventListener('change', () => {
+      search.value = '';
+      filter();
+      updatePath();
+    });
+
+    filter();
+    updatePath();
+  };
+
   const initPeopleRelink = () => {
     document.querySelectorAll('[data-membership-person-relink]').forEach((toggle) => {
       toggle.addEventListener('click', () => {
@@ -160,6 +225,7 @@
     });
 
     document.querySelectorAll('[data-membership-people-picker]').forEach(membershipPeopleSearch);
+    document.querySelectorAll('[data-membership-organization-picker]').forEach(initOrganizationPicker);
     initPeopleRelink();
   });
 })();
