@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+  <changelog version="1.9.5" date="2026-09-19">
+    <change type="fix">Fixed the administrator member page crash caused by an undefined HtmlView getDatabase() call.</change>
+    <change type="fix">Current-card lookup now runs through RecordModel while Cards remains the authoritative source.</change>
+    <change type="fix">No membership or card data is rewritten by this patch.</change>
+  </changelog>
+
   <changelog version="1.9.4" date="2026-09-19">
     <change type="feature">Cards is now the authoritative source for card numbers and card lifecycle data.</change>
     <change type="fix">The member form no longer duplicates an editable card number.</change>
