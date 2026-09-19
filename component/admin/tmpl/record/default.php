@@ -89,17 +89,49 @@ $organizationTypeLabel=static function(string $type): string {
           $field=$this->config['fields'][$name]??null;
           if(!$field) continue;
           $value=$this->item->$name??($field['default']??'');
-          if(($field['type']??'')==='relation'): ?>
+
+          if($name==='member_number' && $this->memberNumberAutomatic): ?>
             <div class="dm-field">
-              <label for="jform_<?= $esc($name) ?>"><?= Text::_($field['label']) ?></label>
-              <select id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]">
+              <label for="membership_member_number_preview"><?= Text::_($field['label']) ?></label>
+              <input
+                type="text"
+                id="membership_member_number_preview"
+                value="<?= $esc($value) ?>"
+                placeholder="<?= $esc(Text::_('COM_DECAROMEMBERSHIP_MEMBER_NUMBER_AUTOMATIC_PLACEHOLDER')) ?>"
+                readonly
+              >
+              <small class="dm-muted">
+                <?= Text::sprintf(
+                    'COM_DECAROMEMBERSHIP_MEMBER_NUMBER_AUTOMATIC_HELP',
+                    $esc($this->memberNumberPrefix !== '' ? $this->memberNumberPrefix : '—'),
+                    (int)$this->memberNumberPadding
+                ) ?>
+              </small>
+            </div>
+          <?php elseif(($field['type']??'')==='relation'): ?>
+            <div class="dm-field">
+              <label for="jform_<?= $esc($name) ?>"><?= Text::_($field['label']) ?><?= ($field['required']??false)?' *':'' ?></label>
+              <?php if($name==='category_id' && empty($this->relations[$name]??[])): ?>
+                <div class="alert alert-warning mb-2" role="status">
+                  <?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_CATEGORY_MISSING') ?>
+                </div>
+                <a class="btn btn-sm btn-outline-primary mb-2" href="<?= Route::_('index.php?option=com_decaromembership&view=records&entity=categories') ?>">
+                  <?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_CATEGORY_MANAGE') ?>
+                </a>
+              <?php endif; ?>
+              <select id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]"<?= ($field['required']??false)?' required':'' ?>>
                 <option value="">-</option>
                 <?php foreach($this->relations[$name]??[] as $opt): ?>
                   <option value="<?= (int)$opt->id ?>"<?= (int)$value===(int)$opt->id?' selected':'' ?>><?= $esc($opt->title) ?></option>
                 <?php endforeach; ?>
               </select>
             </div>
-          <?php else: echo $renderField($name,$field,$value); endif;
+          <?php else:
+              echo $renderField($name,$field,$value);
+              if($name==='first_registration_date'): ?>
+                <small class="dm-muted dm-field-help"><?= Text::_('COM_DECAROMEMBERSHIP_FIRST_REGISTRATION_HELP') ?></small>
+              <?php endif;
+          endif;
       endforeach; ?>
 
       <?php if($this->organizationsAvailable): ?>
