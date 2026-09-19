@@ -174,8 +174,22 @@ if (!is_object($model) || !method_exists($model, 'saveEntity')) {
     $fail('Membership Record model is unavailable.');
 }
 
+$category = (object) [
+    'name' => 'CI Organizations Member',
+    'code' => 'CI-ORG-MEMBER',
+    'language' => '*',
+    'ordering' => 1,
+    'published' => 1,
+    'created' => '2026-09-19 02:10:00',
+    'created_by' => (int) $admin->id,
+    'modified_by' => 0,
+];
+$db->insertObject('#__decaromembership_categories', $category);
+$categoryId = (int) $db->insertid();
+
 $standaloneId = $model->saveEntity('members', 0, [
     'person_uuid' => $peopleRows[0]['uuid'],
+    'category_id' => $categoryId,
     'member_number' => 'CI-SIMPLE-001',
     'status' => 'active',
     'first_registration_date' => '2026-09-18',
@@ -190,6 +204,7 @@ if (!$standalone || $standalone->organization_uuid !== null) {
 
 $linkedId = $model->saveEntity('members', 0, [
     'person_uuid' => $peopleRows[1]['uuid'],
+    'category_id' => $categoryId,
     'member_number' => 'CI-ORG-001',
     'status' => 'active',
     'first_registration_date' => '2026-09-18',
