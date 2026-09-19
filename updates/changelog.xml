@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+  <changelog version="1.9.6" date="2026-09-19">
+    <change type="feature">Member profiles can create a new card with the member already selected.</change>
+    <change type="fix">Member relation labels resolve through People instead of blank legacy identity fields.</change>
+    <change type="fix">Selected unpublished relations remain visible so historical references are preserved.</change>
+    <change type="feature">Card lists display People-backed member names.</change>
+  </changelog>
+
   <changelog version="1.9.5" date="2026-09-19">
     <change type="fix">Fixed the administrator member page crash caused by an undefined HtmlView getDatabase() call.</change>
     <change type="fix">Current-card lookup now runs through RecordModel while Cards remains the authoritative source.</change>
