@@ -6,15 +6,15 @@
     <element>pkg_decaromembership</element>
     <type>package</type>
     <client>site</client>
-    <version>1.7.0</version>
+    <version>1.8.0</version>
     <downloads>
-      <downloadurl type="full" format="zip">https://github.com/xdecaro/membership/releases/download/v1.7.0/pkg_decaromembership_1.7.0.zip</downloadurl>
+      <downloadurl type="full" format="zip">https://github.com/xdecaro/membership/releases/download/v1.8.0/pkg_decaromembership_1.8.0.zip</downloadurl>
     </downloads>
     <changelogurl>https://raw.githubusercontent.com/xdecaro/membership/main/updates/changelog.xml</changelogurl>
     <tags>
       <tag>stable</tag>
     </tags>
-    <sha256>f2de30e133bb91757f142d2c491f24f71271b5deaefefebcb7bcf11e2401073f</sha256>
+    <sha256>95e07fd7e8a9528789cd2b0fcfd2da0966d1be7653a514d25dc0bf0e96e82214</sha256>
     <maintainer>Luca De Caro</maintainer>
     <maintainerurl>https://github.com/xdecaro/membership</maintainerurl>
     <targetplatform name="joomla" version="6\.[0-9]+" />
