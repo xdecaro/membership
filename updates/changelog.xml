@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+  <changelog version="1.9.0" date="2026-09-19">
+    <change type="feature">Required configurable member categories with optional stable category code.</change>
+    <change type="feature">Configurable default member status and safe manual/optional automatic member numbering.</change>
+    <change type="feature">Lifecycle date defaults for admission, activation, status changes and cessation.</change>
+    <change type="feature">Categories added to the administrator submenu with missing-category guidance in the member form.</change>
+  </changelog>
+
   <changelog version="1.8.0" date="2026-09-19">
     <change type="feature">Organizations picker with parent-child hierarchy and readable indentation.</change>
     <change type="feature">Live search by organization name, hierarchy path and translated type.</change>
