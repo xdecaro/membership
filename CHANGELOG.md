@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.8.0 - 2026-09-19
+- Added a hierarchical Organizations selector based on the public `parent_id` relationship, preserving root/child order such as ENS → ENS Lazio → ENS Roma.
+- Added live filtering by organization name, hierarchy path and type.
+- Added Joomla language translations for all current Organizations types in Italian, English and French.
+- Kept the selected organization visible while filtering and preserved standalone Membership behavior when Organizations is absent.
+- Added UI, language, build and regression contracts without changing the Membership database schema.
+
+
+
 ## 1.7.0 - 2026-09-18
 - Simplified member creation around the required People identity and a compact essential membership section.
 - Added optional `organization_uuid` on members without making Organizations a package dependency.
