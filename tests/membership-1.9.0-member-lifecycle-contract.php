@@ -58,6 +58,7 @@ foreach (['code VARCHAR(100) NULL', 'uq_category_code'] as $marker) {
     $expect(str_contains($install, $marker), "Clean schema missing {$marker}.");
     $expect(str_contains($update, $marker), "1.9.0 migration missing {$marker}.");
 }
+$expect(str_contains($update, "SET status = 'pending'") || str_contains($update, "SET `status` = 'pending'"), '1.9.0 migration must normalize legacy blank member status.');
 $expect(!preg_match('/\\b(?:DROP\\s+TABLE|TRUNCATE\\s+TABLE)\\b/i', $update), '1.9.0 migration must be non-destructive.');
 
 if ($failures !== []) {
