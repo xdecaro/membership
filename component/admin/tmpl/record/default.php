@@ -131,7 +131,7 @@ $organizationTypeLabel=static function(string $type): string {
             ?>
               <option
                 value="<?= $esc($uuid) ?>"
-                data-search="<?= $esc(mb_strtolower($searchText,'UTF-8')) ?>"
+                data-search="<?= $esc($searchText) ?>"
                 data-path="<?= $esc($path) ?>"
                 <?= $organizationUuid===$uuid?' selected':'' ?>
               ><?= $esc($label) ?></option>
