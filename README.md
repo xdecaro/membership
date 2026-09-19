@@ -6,7 +6,7 @@ Membership è il componente Joomla 6 per la gestione del dominio associativo: so
 
 - Componente: `com_decaromembership`
 - Pacchetto: `pkg_decaromembership`
-- Versione corrente: **1.7.0**
+- Versione corrente: **1.8.0**
 - Joomla: `6.*`
 - PHP: `8.3+`
 - Core richiesto: **2.0.1+**
@@ -33,9 +33,15 @@ Le vecchie `locations` Membership restano disponibili come sede interna standalo
 
 Le variazioni del collegamento a Organizations sono tracciate nello storico Membership senza rendere Organizations una dipendenza obbligatoria.
 
+## Selettore Organizations 1.8.0
+
+Membership 1.8.0 mantiene Organizations opzionale ma migliora il selettore nella scheda socio. Le organizzazioni vengono ordinate secondo la gerarchia `parent_id` fornita dal provider pubblico Organizations, così una struttura come ENS → ENS Lazio → ENS Roma è leggibile senza appiattire tutte le voci.
+
+Il campo include ricerca in tempo reale per nome, percorso gerarchico e tipo. I tipi `organization`, `association`, `club`, `federation`, `company`, `public_body`, `school`, `sponsor` e `supplier` vengono tradotti tramite il sistema lingua Joomla in IT/EN/FR. Membership continua a salvare soltanto `organization_uuid` e non replica la struttura Organizations.
+
 ## Xdecaro Core
 
-Membership 1.7.0 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
+Membership 1.8.0 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
 
 La pagina **Informazioni/Diagnostica** mostra le versioni installate e minime richieste di Core e People e lo stato di compatibilità/disponibilità delle relative API.
 
@@ -63,11 +69,12 @@ Il package registra l'update server Joomla `updates/pkg_decaromembership.xml`. I
 
 ## Test di integrazione
 
-La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.7.0 copre:
+La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.8.0 copre:
 
 - installazione pulita con Core 2.0.1 e People 1.2.15 pubblicati e fissati per SHA-256;
 - collegamento socio ↔ persona People e risoluzione batch dell'identità;
 - creazione socio semplice senza Organizations e integrazione opzionale con Organizations 1.0.25 tramite provider pubblico;
+- selettore Organizations gerarchico e ricercabile per nome, percorso e tipo, con traduzioni IT/EN/FR;
 - upgrade non distruttivo 1.4.0 → 1.6.0 con conservazione di socio e record figli;
 - backfill deterministico e idempotente tramite `user_id` univoco;
 - rifiuto preflight quando mancano Core o People richiesti;
