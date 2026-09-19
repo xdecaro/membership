@@ -9,6 +9,7 @@ use Xdecaro\Component\Decaromembership\Administrator\Helper\EntityRegistry;
 use Xdecaro\Component\Decaromembership\Administrator\Service\AuditService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\MemberPeopleLinkService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\MembershipHistoryService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\MemberLifecycleService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\OrganizationsIntegrationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\PeopleIntegrationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\RecordRepository;
@@ -91,6 +92,14 @@ final class RecordModel extends BaseDatabaseModel
                     $data['organization_uuid'] = $organizations->validateOptionalUuid($organizationUuid);
                 }
             }
+
+            $data = (new MemberLifecycleService())->prepareForSave(
+                $id,
+                $old,
+                $data,
+                $input,
+                Factory::getDate()->format('Y-m-d')
+            );
         }
 
         foreach ($config['fields'] as $name => $field) {
@@ -108,7 +117,25 @@ final class RecordModel extends BaseDatabaseModel
             $data['created'] = $now;
             $data['created_by'] = $userId;
         }
+        $wasNew = $id < 1;
         $id = $repository->save($config['table'], $id, $data);
+
+        if ($entity === 'members') {
+            $lifecycle = new MemberLifecycleService();
+            $current = $repository->load($config['table'], $id);
+            $currentNumber = trim((string) ($current->member_number ?? ''));
+
+            if ($lifecycle->isAutomaticNumbering() && $currentNumber === '') {
+                $generatedNumber = $lifecycle->generateNumber($id);
+
+                if ($repository->duplicateExists($config['table'], 'member_number', $generatedNumber, $id)) {
+                    throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_MEMBER_NUMBER_COLLISION'));
+                }
+
+                $repository->updateMemberNumber($id, $generatedNumber, $now, $userId);
+            }
+        }
+
         $new = $repository->load($config['table'], $id);
         $audit->record($entity, $id, $old ? 'update' : 'create', $userId, $old, $new, $now);
 
