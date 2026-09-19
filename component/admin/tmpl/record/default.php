@@ -25,7 +25,7 @@ $organizationTypeLabel=static function(string $type): string {
     $type=trim($type);
     if($type==='') return '';
 
-    $key='COM_DECAROMEMBERSHIP_ORGANIZATION_TYPE_'.strtoupper(preg_replace('/[^a-z0-9]+/i','_',$type));
+    $key=sprintf('COM_%s_%s','DECAROMEMBERSHIP','ORGANIZATION_TYPE_'.strtoupper(preg_replace('/[^a-z0-9]+/i','_',$type)));
     $label=Text::_($key);
 
     return $label===$key ? $type : $label;
