@@ -16,6 +16,7 @@ $expect(version_compare($version, '1.9.4', '>='), 'VERSION must be 1.9.4 or newe
 $config = (string) file_get_contents($root . '/component/admin/src/Config/MemberCoreEntities.php');
 $repository = (string) file_get_contents($root . '/component/admin/src/Service/RecordRepository.php');
 $view = (string) file_get_contents($root . '/component/admin/src/View/Record/HtmlView.php');
+$model = (string) file_get_contents($root . '/component/admin/src/Model/RecordModel.php');
 $template = (string) file_get_contents($root . '/component/admin/tmpl/record/default.php');
 $install = (string) file_get_contents($root . '/component/admin/sql/install.mysql.utf8mb4.sql');
 $update = (string) file_get_contents($root . '/component/admin/sql/updates/mysql/1.9.4.sql');
@@ -30,9 +31,10 @@ $expect(str_contains($config, "'list'=>['member_number','last_name','first_name'
 foreach (['loadCurrentMemberCard', '#__decaromembership_cards', "status') . \" = 'active'"] as $marker) {
     $expect(str_contains($repository, $marker), "RecordRepository current-card lookup missing {$marker}.");
 }
-foreach (['currentMemberCard', 'legacyCardNumber', 'loadCurrentMemberCard'] as $marker) {
+foreach (['currentMemberCard', 'legacyCardNumber'] as $marker) {
     $expect(str_contains($view, $marker), "Member view current-card integration missing {$marker}.");
 }
+$expect(str_contains($model, 'getCurrentMemberCard'), 'RecordModel must expose the current-card lookup to the view.');
 foreach ([
     'COM_DECAROMEMBERSHIP_MEMBER_CARD_SUMMARY',
     'COM_DECAROMEMBERSHIP_MEMBER_CARD_MANAGE',
