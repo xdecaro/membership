@@ -11,6 +11,7 @@ use RuntimeException;
 final class MemberLifecycleService
 {
     private const AUTO_NUMBER = 'automatic';
+    private const DEFAULT_NUMBER_MODE = 'manual';
     private const ALLOWED_DEFAULT_STATUSES = ['pending', 'in_review', 'active'];
     private const ACTIVE_STATUSES = ['admitted', 'active'];
     private const TERMINAL_STATUSES = ['lapsed', 'resigned', 'expelled', 'deceased', 'ceased'];
@@ -63,7 +64,7 @@ final class MemberLifecycleService
 
     public function isAutomaticNumbering(): bool
     {
-        return (string) ComponentHelper::getParams('com_decaromembership')->get('member_number_mode', self::AUTO_NUMBER) === self::AUTO_NUMBER;
+        return (string) ComponentHelper::getParams('com_decaromembership')->get('member_number_mode', self::DEFAULT_NUMBER_MODE) === self::AUTO_NUMBER;
     }
 
     public function generateNumber(int $memberId): string
