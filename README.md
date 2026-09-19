@@ -47,6 +47,8 @@ La **categoria** diventa obbligatoria per il socio ed è configurabile dall'ammi
 
 Lo **stato** del nuovo socio è obbligatorio e il valore predefinito è configurabile tra `pending`, `in_review` e `active`. Il valore prudenziale predefinito resta `pending`.
 
+I record legacy con stato vuoto vengono normalizzati a **Pending** durante l'aggiornamento, senza inferire categorie o altri dati mancanti.
+
 Il **numero socio** è manuale per impostazione predefinita, perché molte organizzazioni ricevono numeri ufficiali da sistemi esterni. Se l'amministratore abilita la numerazione automatica, Membership genera il numero dopo il primo salvataggio usando ID stabile, prefisso opzionale e padding configurabile, senza rinumerare i soci esistenti.
 
 Le date del ciclo di vita vengono completate in modo conservativo: quando un socio entra per la prima volta in stato Ammesso/Attivo, Membership valorizza le date mancanti di ammissione, inizio periodo associativo e prima iscrizione; ogni variazione di stato può valorizzare la decorrenza; gli stati terminali Decaduto, Receduto, Espulso, Deceduto e Cessato valorizzano la data di cessazione se mancante. I valori inseriti esplicitamente dall'operatore restano prioritari.
