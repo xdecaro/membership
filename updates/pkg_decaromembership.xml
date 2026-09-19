@@ -14,7 +14,7 @@
     <tags>
       <tag>stable</tag>
     </tags>
-    <sha256>c348f44733735d29889294b68d1fc52b2c626cbe718d461ab0bdad87dba287ce</sha256>
+    <sha256>42a6c4627c8eb4246a279edf6eee859c09f2458cf5afd23bf066e63e96d2be24</sha256>
     <maintainer>Luca De Caro</maintainer>
     <maintainerurl>https://github.com/xdecaro/membership</maintainerurl>
     <targetplatform name="joomla" version="6\.[0-9]+" />
