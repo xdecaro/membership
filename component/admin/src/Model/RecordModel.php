@@ -37,6 +37,11 @@ final class RecordModel extends BaseDatabaseModel
         );
     }
 
+    public function getCurrentMemberCard(int $memberId): ?object
+    {
+        return $this->repository()->loadCurrentMemberCard($memberId);
+    }
+
     public function getItem(int $id = 0): object
     {
         $id = $id ?: Factory::getApplication()->input->getInt('id');
