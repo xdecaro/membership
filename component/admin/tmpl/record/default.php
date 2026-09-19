@@ -208,9 +208,15 @@ $organizationTypeLabel=static function(string $type): string {
         <h2><?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_CARD_SUMMARY') ?></h2>
         <p class="dm-muted mb-0"><?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_CARD_SUMMARY_DESC') ?></p>
       </div>
-      <a class="btn btn-sm btn-outline-primary" href="<?= Route::_('index.php?option=com_decaromembership&view=records&entity=cards'.($this->currentMemberCard?'&filter_search='.rawurlencode((string)$this->currentMemberCard->card_number):'')) ?>">
-        <?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_CARD_MANAGE') ?>
-      </a>
+      <?php if($this->currentMemberCard): ?>
+        <a class="btn btn-sm btn-outline-primary" href="<?= Route::_('index.php?option=com_decaromembership&view=records&entity=cards&filter_search='.rawurlencode((string)$this->currentMemberCard->card_number)) ?>">
+          <?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_CARD_MANAGE') ?>
+        </a>
+      <?php else: ?>
+        <a class="btn btn-sm btn-outline-primary" href="<?= Route::_('index.php?option=com_decaromembership&view=record&entity=cards&id=0&member_id='.(int)($this->item->id??0)) ?>">
+          <?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_CARD_CREATE') ?>
+        </a>
+      <?php endif; ?>
     </div>
     <?php if($this->currentMemberCard):
         $cardStatus=trim((string)($this->currentMemberCard->status??''));

@@ -160,11 +160,52 @@ final class RecordsModel extends ListModel
             if (!$field || ($field['type'] ?? '') !== 'relation' || !EntityRegistry::has($field['relation'])) { continue; }
             $rel = EntityRegistry::get($field['relation']);
             if ($field['relation'] === 'members') {
-                $query = $db->getQuery(true)->select([$db->quoteName('id'), "CONCAT(".$db->quoteName('last_name').", ' ', ".$db->quoteName('first_name').") AS ".$db->quoteName('title')])->from($db->quoteName($rel['table']));
+                $query = $db->getQuery(true)
+                    ->select([
+                        $db->quoteName('id'),
+                        $db->quoteName('person_uuid'),
+                        $db->quoteName('first_name'),
+                        $db->quoteName('last_name'),
+                        $db->quoteName('member_number'),
+                    ])
+                    ->from($db->quoteName($rel['table']));
+                $rows = $db->setQuery($query)->loadObjectList();
+
+                $uuids = [];
+                foreach ($rows as $row) {
+                    $uuid = strtolower(trim((string) ($row->person_uuid ?? '')));
+                    if ($uuid !== '') { $uuids[$uuid] = $uuid; }
+                }
+
+                $people = [];
+                if ($uuids !== []) {
+                    try {
+                        $people = $this->people()->getPeopleByUuids(array_values($uuids));
+                    } catch (Throwable) {
+                        $people = [];
+                    }
+                }
+
+                foreach ($rows as $row) {
+                    $uuid = strtolower(trim((string) ($row->person_uuid ?? '')));
+                    $person = $uuid !== '' ? ($people[$uuid] ?? null) : null;
+                    $title = trim((string) ($person['display_name'] ?? ''));
+                    if ($title === '' && is_array($person)) {
+                        $title = trim((string) (($person['first_name'] ?? '') . ' ' . ($person['last_name'] ?? '')));
+                    }
+                    if ($title === '') {
+                        $title = trim((string) (($row->last_name ?? '') . ' ' . ($row->first_name ?? '')));
+                    }
+                    if ($title === '') {
+                        $memberNumber = trim((string) ($row->member_number ?? ''));
+                        $title = $memberNumber !== '' ? $memberNumber : '#' . (int) $row->id;
+                    }
+                    $maps[$column][(int) $row->id] = $title;
+                }
             } else {
                 $query = $db->getQuery(true)->select([$db->quoteName('id'), $db->quoteName($rel['title_field'], 'title')])->from($db->quoteName($rel['table']));
+                foreach ($db->setQuery($query)->loadObjectList() as $row) { $maps[$column][(int)$row->id] = $row->title; }
             }
-            foreach ($db->setQuery($query)->loadObjectList() as $row) { $maps[$column][(int)$row->id] = $row->title; }
         }
         return $maps;
     }

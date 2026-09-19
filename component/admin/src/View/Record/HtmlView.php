@@ -35,11 +35,22 @@ final class HtmlView extends BaseHtmlView
         $this->entity = $model->getEntityFromRequest();
         $this->config = EntityRegistry::get($this->entity);
         $this->item = $model->getItem();
-        foreach ($this->config['fields'] as $name => $field) {
-            if (($field['type'] ?? '') === 'relation') $this->relations[$name] = $model->getRelationOptions($field['relation']);
-        }
 
         $app = Factory::getApplication();
+        if ($this->entity === 'cards' && (int) ($this->item->id ?? 0) < 1) {
+            $memberId = $app->input->getInt('member_id');
+            if ($memberId > 0) {
+                $this->item->member_id = $memberId;
+            }
+        }
+
+        foreach ($this->config['fields'] as $name => $field) {
+            if (($field['type'] ?? '') === 'relation') {
+                $selectedId = (int) ($this->item->{$name} ?? 0);
+                $this->relations[$name] = $model->getRelationOptions($field['relation'], $selectedId);
+            }
+        }
+
         $user = $app->getIdentity();
         if ($this->entity === 'members') {
             $params = ComponentHelper::getParams('com_decaromembership');
