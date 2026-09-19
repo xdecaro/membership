@@ -22,7 +22,7 @@ $update = (string) file_get_contents($root . '/component/admin/sql/updates/mysql
 
 foreach ([
     'getRelationOptions(string $entity, int $includeId = 0)',
-    "new PeopleIntegrationService($db)",
+    'new PeopleIntegrationService($db)',
     "COM_DECAROMEMBERSHIP_MEMBER_FALLBACK_LABEL",
 ] as $marker) {
     $expect(str_contains($model, $marker), "RecordModel member relation flow missing {$marker}.");
