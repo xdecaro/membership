@@ -231,8 +231,46 @@ def validate_legacy_lifecycle_safety():
         fail('Membership 1.9.3 schema marker must be non-destructive')
 
 
+def validate_card_source():
+    require(
+        'component/admin/src/Config/MemberCoreEntities.php',
+        "'search'=>['first_name','last_name','tax_code','member_number','email']",
+        "'list'=>['member_number','last_name','first_name','category_id','status','email']",
+    )
+    member_config = (ROOT / 'component/admin/src/Config/MemberCoreEntities.php').read_text()
+    if "'card_number'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CARD_NUMBER','type'=>'text','unique'=>true]" in member_config:
+        fail('Member record must not expose legacy card_number as an editable field')
+    require(
+        'component/admin/src/Service/RecordRepository.php',
+        'loadCurrentMemberCard',
+        '#__decaromembership_cards',
+    )
+    require(
+        'component/admin/src/View/Record/HtmlView.php',
+        'currentMemberCard',
+        'legacyCardNumber',
+        'loadCurrentMemberCard',
+    )
+    require(
+        'component/admin/tmpl/record/default.php',
+        'COM_DECAROMEMBERSHIP_MEMBER_CARD_SUMMARY',
+        'COM_DECAROMEMBERSHIP_MEMBER_CARD_MANAGE',
+        'COM_DECAROMEMBERSHIP_MEMBER_CARD_LEGACY',
+        'entity=cards',
+    )
+    require(
+        'tests/membership-1.9.4-card-source-contract.php',
+        'card source contract',
+    )
+    schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.4.sql'
+    if not schema_marker.is_file():
+        fail('Membership 1.9.4 schema marker missing')
+    if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE|DROP\s+COLUMN)\b', schema_marker.read_text(), re.I):
+        fail('Membership 1.9.4 schema marker must be non-destructive')
+
+
 def validate():
-    if VERSION != '1.9.3':
+    if VERSION != '1.9.4':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -285,6 +323,7 @@ def validate():
     validate_ordering_defaults()
     validate_published_defaults()
     validate_legacy_lifecycle_safety()
+    validate_card_source()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',
