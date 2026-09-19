@@ -126,11 +126,14 @@ $organizationTypeLabel=static function(string $type): string {
                 <?php endforeach; ?>
               </select>
             </div>
+          <?php elseif($name==='first_registration_date'): ?>
+            <div class="dm-field">
+              <label for="jform_first_registration_date"><?= Text::_($field['label']) ?></label>
+              <input type="date" id="jform_first_registration_date" name="jform[first_registration_date]" value="<?= $esc($value) ?>">
+              <small class="dm-muted dm-field-help"><?= Text::_('COM_DECAROMEMBERSHIP_FIRST_REGISTRATION_HELP') ?></small>
+            </div>
           <?php else:
               echo $renderField($name,$field,$value);
-              if($name==='first_registration_date'): ?>
-                <small class="dm-muted dm-field-help"><?= Text::_('COM_DECAROMEMBERSHIP_FIRST_REGISTRATION_HELP') ?></small>
-              <?php endif;
           endif;
       endforeach; ?>
 
