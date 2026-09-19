@@ -34,7 +34,8 @@ $expect(!preg_match('/\\b(?:DROP\\s+TABLE|TRUNCATE\\s+TABLE)\\b/i', $update), '1
 
 $expect(str_contains($config, "'organization_uuid'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_ORGANIZATION','type'=>'organization']"), 'Member organization field must exist and stay optional.');
 $expect(!str_contains($config, "'organization_uuid'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_ORGANIZATION','type'=>'organization','required'=>true"), 'Organizations must never be required to create a member.');
-$expect(str_contains($config, "'list'=>['member_number','last_name','first_name','category_id','status','card_number','email']"), 'Primary member list must not depend on a legacy location.');
+$expect(str_contains($config, "'list'=>['member_number','last_name','first_name','category_id','status','email']"), 'Primary member list must keep the simplified organization-aware layout.');
+$expect(!preg_match("/'list'=>\\[[^\\]]*'location_id'/", $config), 'Primary member list must not depend on a legacy location.');
 
 foreach (["bootComponent('com_xdecaroorganizations')",'getOrganizationProviderService','searchOrganizations','validateOptionalUuid'] as $marker) {
     $expect(str_contains($organizations, $marker), "Organizations public integration missing {$marker}.");
