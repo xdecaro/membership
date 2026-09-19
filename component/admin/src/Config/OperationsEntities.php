@@ -41,7 +41,7 @@ final class OperationsEntities
                 'name'=>['label'=>'JGLOBAL_TITLE','type'=>'text','required'=>true],
                 'case_type'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CASE_TYPE','type'=>'text','required'=>true],
                 'language'=>['label'=>'JFIELD_LANGUAGE_LABEL','type'=>'text','default'=>'*'],
-                'ordering'=>['label'=>'JFIELD_ORDERING_LABEL','type'=>'number'],
+                'ordering'=>['label'=>'JFIELD_ORDERING_LABEL','type'=>'number','default'=>0],
                 'published'=>['label'=>'JSTATUS','type'=>'published'],
             ]],
             'notifications'=>['table'=>'#__decaromembership_notifications','label'=>'COM_DECAROMEMBERSHIP_NOTIFICATIONS','singular'=>'COM_DECAROMEMBERSHIP_NOTIFICATION','title_field'=>'subject','search'=>['subject','type','status'],'list'=>['subject','member_id','type','channel','status','scheduled_at','sent_at'],'fields'=>[
