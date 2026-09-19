@@ -16,7 +16,7 @@ final class FinanceEntities
                 'due_date'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_DUE_DATE','type'=>'date'],
                 'reference'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_REFERENCE','type'=>'text'],
                 'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
-                'published'=>['label'=>'JSTATUS','type'=>'published'],
+                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
             ]],
             'payments'=>['table'=>'#__decaromembership_payments','label'=>'COM_DECAROMEMBERSHIP_PAYMENTS','singular'=>'COM_DECAROMEMBERSHIP_PAYMENT','title_field'=>'reference','search'=>['reference','method','status'],'list'=>['reference','member_id','due_id','amount','method','status','paid_at','receipt_number'],'fields'=>[
                 'member_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_MEMBER','type'=>'relation','relation'=>'members','required'=>true],
@@ -28,7 +28,7 @@ final class FinanceEntities
                 'reference'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_REFERENCE','type'=>'text','unique'=>true],
                 'receipt_number'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_RECEIPT_NUMBER','type'=>'text','unique'=>true],
                 'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
-                'published'=>['label'=>'JSTATUS','type'=>'published'],
+                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
             ]],
         ];
     }
