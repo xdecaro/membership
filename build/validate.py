@@ -249,7 +249,10 @@ def validate_card_source():
         'component/admin/src/View/Record/HtmlView.php',
         'currentMemberCard',
         'legacyCardNumber',
-        'loadCurrentMemberCard',
+    )
+    require(
+        'component/admin/src/Model/RecordModel.php',
+        'getCurrentMemberCard',
     )
     require(
         'component/admin/tmpl/record/default.php',
