@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.9.4 - 2026-09-19
+- Made `#__decaromembership_cards` the authoritative source for card numbers and card lifecycle data.
+- Removed duplicate editable `card_number` from the member form/list while preserving the legacy database column for compatibility.
+- Added a read-only current-card summary to the member profile with a direct link to Cards management.
+- Current-card lookup prefers an active published card, then the most recent published card.
+- Preserved legacy `members.card_number` values as a visible warning/fallback when no Cards record exists; no destructive migration is performed.
+- Added runtime and contract regression coverage for the card source boundary.
+
 ## 1.9.3 - 2026-09-19
 - Prevented existing legacy members with a blank prior status from receiving invented lifecycle dates when their current status is first set.
 - New members still receive automatic lifecycle dates when created as Admitted/Active, and later real status transitions retain the existing automation.
