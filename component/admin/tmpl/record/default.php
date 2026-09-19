@@ -21,6 +21,18 @@ $renderField=function(string $name,array $field,mixed $value) use($esc){
 };
 $linkedUuid=strtolower(trim((string)($this->item->person_uuid??'')));
 $isMember=$this->entity==='members';
+$cardStatusKey=[
+    'pending'=>'COM_DECAROMEMBERSHIP_STATUS_PENDING',
+    'active'=>'COM_DECAROMEMBERSHIP_STATUS_ACTIVE',
+    'expired'=>'COM_DECAROMEMBERSHIP_STATUS_EXPIRED',
+    'lost'=>'COM_DECAROMEMBERSHIP_STATUS_LOST',
+    'revoked'=>'COM_DECAROMEMBERSHIP_STATUS_REVOKED',
+    'replaced'=>'COM_DECAROMEMBERSHIP_STATUS_REPLACED',
+];
+$cardTypeKey=[
+    'physical'=>'COM_DECAROMEMBERSHIP_CARD_PHYSICAL',
+    'electronic'=>'COM_DECAROMEMBERSHIP_CARD_ELECTRONIC',
+];
 $organizationTypeLabel=static function(string $type): string {
     $type=trim($type);
     if($type==='') return '';
@@ -188,6 +200,41 @@ $organizationTypeLabel=static function(string $type): string {
       <?php endif; ?>
     </div>
   </section>
+
+  <?php if((int)($this->item->id??0)>0): ?>
+  <section class="dm-card dm-member-card-summary">
+    <div class="dm-section-head">
+      <div>
+        <h2><?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_CARD_SUMMARY') ?></h2>
+        <p class="dm-muted mb-0"><?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_CARD_SUMMARY_DESC') ?></p>
+      </div>
+      <a class="btn btn-sm btn-outline-primary" href="<?= Route::_('index.php?option=com_decaromembership&view=records&entity=cards'.($this->currentMemberCard?'&filter_search='.rawurlencode((string)$this->currentMemberCard->card_number):'')) ?>">
+        <?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_CARD_MANAGE') ?>
+      </a>
+    </div>
+    <?php if($this->currentMemberCard):
+        $cardStatus=trim((string)($this->currentMemberCard->status??''));
+        $cardType=trim((string)($this->currentMemberCard->type??''));
+        $statusLabel=Text::_($cardStatusKey[$cardStatus]??$cardStatus);
+        $typeLabel=Text::_($cardTypeKey[$cardType]??$cardType);
+    ?>
+      <div class="dm-person-summary">
+        <strong><?= $esc($this->currentMemberCard->card_number??'') ?></strong>
+        <div class="dm-person-meta">
+          <?php if($typeLabel!==''): ?><span><?= $esc($typeLabel) ?></span><?php endif; ?>
+          <?php if($statusLabel!==''): ?><span><?= $esc($statusLabel) ?></span><?php endif; ?>
+          <?php if(!empty($this->currentMemberCard->annual_mark)): ?><span><?= Text::_('COM_DECAROMEMBERSHIP_FIELD_ANNUAL_MARK') ?>: <?= $esc($this->currentMemberCard->annual_mark) ?></span><?php endif; ?>
+        </div>
+      </div>
+    <?php elseif($this->legacyCardNumber!==''): ?>
+      <div class="alert alert-warning mb-0">
+        <?= Text::sprintf('COM_DECAROMEMBERSHIP_MEMBER_CARD_LEGACY', $esc($this->legacyCardNumber)) ?>
+      </div>
+    <?php else: ?>
+      <p class="dm-muted mb-0"><?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_CARD_NONE') ?></p>
+    <?php endif; ?>
+  </section>
+  <?php endif; ?>
 
   <details class="dm-card dm-member-advanced">
     <summary><?= Text::_('COM_DECAROMEMBERSHIP_MEMBER_ADVANCED') ?></summary>
