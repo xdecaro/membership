@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+  <changelog version="1.9.4" date="2026-09-19">
+    <change type="feature">Cards is now the authoritative source for card numbers and card lifecycle data.</change>
+    <change type="fix">The member form no longer duplicates an editable card number.</change>
+    <change type="feature">Member profiles show the current card in read-only form and link to Cards management.</change>
+    <change type="fix">Legacy member card-number data is preserved without destructive migration.</change>
+  </changelog>
+
   <changelog version="1.9.3" date="2026-09-19">
     <change type="fix">Legacy members with a blank prior status no longer receive invented lifecycle dates when their current status is first set.</change>
     <change type="fix">New members still receive normal automatic lifecycle dates and member records explicitly default to Published.</change>
