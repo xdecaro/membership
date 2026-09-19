@@ -4,3 +4,7 @@ ALTER TABLE `#__decaromembership_categories`
 
 -- Membership 1.9.0 adds category identity and lifecycle defaults.
 -- Existing member/category data is preserved unchanged.
+
+UPDATE `#__decaromembership_members`
+SET `status` = 'pending'
+WHERE `status` IS NULL OR `status` = '';
