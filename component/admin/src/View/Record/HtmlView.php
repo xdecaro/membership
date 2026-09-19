@@ -21,7 +21,7 @@ final class HtmlView extends BaseHtmlView
     public bool $organizationsAvailable = false;
     public array $organizationOptions = [];
     public ?array $selectedOrganization = null;
-    public bool $memberNumberAutomatic = true;
+    public bool $memberNumberAutomatic = false;
     public string $memberNumberPrefix = '';
     public int $memberNumberPadding = 6;
     public string $memberDefaultStatus = 'pending';
@@ -41,7 +41,7 @@ final class HtmlView extends BaseHtmlView
         $user = $app->getIdentity();
         if ($this->entity === 'members') {
             $params = ComponentHelper::getParams('com_decaromembership');
-            $this->memberNumberAutomatic = (string) $params->get('member_number_mode', 'automatic') === 'automatic';
+            $this->memberNumberAutomatic = (string) $params->get('member_number_mode', 'manual') === 'automatic';
             $this->memberNumberPrefix = trim((string) $params->get('member_number_prefix', ''));
             $this->memberNumberPadding = max(1, min(12, (int) $params->get('member_number_padding', 6)));
             $configuredStatus = (string) $params->get('member_default_status', 'pending');
