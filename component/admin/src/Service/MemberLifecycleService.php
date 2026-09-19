@@ -43,7 +43,10 @@ final class MemberLifecycleService
             }
         }
 
-        if ($id < 1 && in_array($status, self::ACTIVE_STATUSES, true)) {
+        $becameActive = in_array($status, self::ACTIVE_STATUSES, true)
+            && !in_array($oldStatus, self::ACTIVE_STATUSES, true);
+
+        if ($becameActive) {
             if (empty($data['admission_date'])) {
                 $data['admission_date'] = $today;
             }
