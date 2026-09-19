@@ -89,6 +89,7 @@ if ($categoryId < 1) {
 $people = [
     ['uuid' => '550e8400-e29b-41d4-a716-446655440191', 'display_name' => 'CI Lifecycle Member', 'email' => 'ci-lifecycle@example.invalid'],
     ['uuid' => '550e8400-e29b-41d4-a716-446655440192', 'display_name' => 'CI Missing Category', 'email' => 'ci-missing-category@example.invalid'],
+    ['uuid' => '550e8400-e29b-41d4-a716-446655440193', 'display_name' => 'CI Legacy Blank Status', 'email' => 'ci-legacy-blank@example.invalid'],
 ];
 
 foreach ($people as $row) {
@@ -113,7 +114,6 @@ $memberId = $model->saveEntity('members', 0, [
     'category_id' => $categoryId,
     'status' => 'active',
     'organization_uuid' => '',
-    'published' => 1,
 ]);
 
 $repository = new \Xdecaro\Component\Decaromembership\Administrator\Service\RecordRepository($db);
@@ -132,6 +132,11 @@ if ((int) $member->category_id !== $categoryId) {
 if ((string) $member->status !== 'active') {
     $fail('Member status was not persisted.');
 }
+
+if ((int) $member->published !== 1) {
+    $fail('New member did not default to published=1.');
+}
+
 
 $today = \Joomla\CMS\Factory::getDate()->format('Y-m-d');
 foreach (['first_registration_date','admission_date','current_membership_start_date','status_effective_date'] as $field) {
@@ -153,6 +158,39 @@ try {
 }
 if (!$missingCategoryRejected) {
     $fail('Member creation without category must be rejected.');
+}
+
+$legacy = (object) [
+    'person_uuid' => $people[2]['uuid'],
+    'category_id' => $categoryId,
+    'status' => '',
+    'published' => 1,
+    'created' => '2026-09-19 03:02:00',
+    'created_by' => (int) $admin->id,
+    'modified_by' => 0,
+];
+$db->insertObject('#__decaromembership_members', $legacy);
+$legacyId = (int) $db->insertid();
+if ($legacyId < 1) {
+    $fail('Cannot create legacy blank-status member.');
+}
+
+$model->saveEntity('members', $legacyId, [
+    'person_uuid' => $people[2]['uuid'],
+    'category_id' => $categoryId,
+    'status' => 'active',
+    'organization_uuid' => '',
+    'published' => 1,
+]);
+
+$legacyUpdated = $repository->load('#__decaromembership_members', $legacyId);
+if (!$legacyUpdated || (string) $legacyUpdated->status !== 'active') {
+    $fail('Legacy blank-status member was not updated to active.');
+}
+foreach (['first_registration_date','admission_date','current_membership_start_date','status_effective_date'] as $field) {
+    if (!empty($legacyUpdated->{$field})) {
+        $fail("Legacy blank-status bootstrap invented lifecycle date {$field}.");
+    }
 }
 
 $model->saveEntity('members', $memberId, [

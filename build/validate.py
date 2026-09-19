@@ -203,8 +203,36 @@ def validate_published_defaults():
         fail('Membership 1.9.2 schema marker must be non-destructive')
 
 
+def validate_legacy_lifecycle_safety():
+    require(
+        'component/admin/src/Config/MemberCoreEntities.php',
+        "'published'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PUBLISHED','type'=>'published','default'=>1]",
+    )
+    require(
+        'component/admin/src/Service/MemberLifecycleService.php',
+        '$legacyBootstrap',
+        "oldStatus === ''",
+        '!$legacyBootstrap',
+    )
+    require(
+        'tests/member-lifecycle-runtime.php',
+        'CI Legacy Blank Status',
+        'Legacy blank-status bootstrap invented lifecycle date',
+        'New member did not default to published=1.',
+    )
+    require(
+        'tests/membership-1.9.3-legacy-lifecycle-contract.php',
+        'legacy lifecycle contract',
+    )
+    schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.3.sql'
+    if not schema_marker.is_file():
+        fail('Membership 1.9.3 schema marker missing')
+    if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE)\b', schema_marker.read_text(), re.I):
+        fail('Membership 1.9.3 schema marker must be non-destructive')
+
+
 def validate():
-    if VERSION != '1.9.2':
+    if VERSION != '1.9.3':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -256,6 +284,7 @@ def validate():
     validate_member_lifecycle_basics()
     validate_ordering_defaults()
     validate_published_defaults()
+    validate_legacy_lifecycle_safety()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',

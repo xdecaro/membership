@@ -11,7 +11,7 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $version = trim((string) file_get_contents($root . '/VERSION'));
-$expect($version === '1.9.2', 'VERSION must be 1.9.2.');
+$expect(version_compare($version, '1.9.2', '>='), 'VERSION must be 1.9.2 or newer.');
 
 $configFiles = [
     'component/admin/src/Config/MemberCoreEntities.php',
@@ -21,15 +21,20 @@ $configFiles = [
     'component/admin/src/Config/FinanceEntities.php',
 ];
 
-$publishedMarker = "'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1]";
+$totalPublishedFields = 0;
 $totalPublishedDefaults = 0;
 foreach ($configFiles as $relativePath) {
     $content = (string) file_get_contents($root . '/' . $relativePath);
-    $count = substr_count($content, $publishedMarker);
-    $expect($count > 0, "{$relativePath} must explicitly default published records to 1.");
-    $totalPublishedDefaults += $count;
+    preg_match_all("/'published'=>\\[[^\\]]*'type'=>'published'[^\\]]*\\]/", $content, $publishedFields);
+    preg_match_all("/'published'=>\\[[^\\]]*'type'=>'published'[^\\]]*'default'=>1[^\\]]*\\]/", $content, $publishedDefaults);
+    $countFields = count($publishedFields[0]);
+    $countDefaults = count($publishedDefaults[0]);
+    $expect($countFields > 0, "{$relativePath} must contain publishable entities.");
+    $expect($countDefaults === $countFields, "{$relativePath} must explicitly default every published field to 1.");
+    $totalPublishedFields += $countFields;
+    $totalPublishedDefaults += $countDefaults;
 }
-$expect($totalPublishedDefaults === 13, 'All 13 publishable Membership entity definitions must default to published=1.');
+$expect($totalPublishedDefaults === $totalPublishedFields, 'All publishable Membership entity definitions must default to published=1.');
 
 $template = (string) file_get_contents($root . '/component/admin/tmpl/records/default.php');
 foreach (["'JPUBLISHED'", "'JUNPUBLISHED'", "'type']??'')==='published'"] as $marker) {
