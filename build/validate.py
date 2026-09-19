@@ -269,8 +269,34 @@ def validate_card_source():
         fail('Membership 1.9.4 schema marker must be non-destructive')
 
 
+def validate_member_card_view():
+    require(
+        'component/admin/src/Model/RecordModel.php',
+        'public function getCurrentMemberCard(int $memberId): ?object',
+        'return $this->repository()->loadCurrentMemberCard($memberId);',
+    )
+    require(
+        'component/admin/src/View/Record/HtmlView.php',
+        '$model->getCurrentMemberCard($memberId)',
+    )
+    view = (ROOT / 'component/admin/src/View/Record/HtmlView.php').read_text()
+    if '$this->getDatabase()' in view:
+        fail('Record HtmlView must not call undefined getDatabase()')
+    if 'new RecordRepository(' in view:
+        fail('Record HtmlView must not construct RecordRepository directly')
+    require(
+        'tests/membership-1.9.5-member-card-view-contract.php',
+        'member card view contract',
+    )
+    schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.5.sql'
+    if not schema_marker.is_file():
+        fail('Membership 1.9.5 schema marker missing')
+    if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE|DROP\s+COLUMN)\b', schema_marker.read_text(), re.I):
+        fail('Membership 1.9.5 schema marker must be non-destructive')
+
+
 def validate():
-    if VERSION != '1.9.4':
+    if VERSION != '1.9.5':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -324,6 +350,7 @@ def validate():
     validate_published_defaults()
     validate_legacy_lifecycle_safety()
     validate_card_source()
+    validate_member_card_view()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',
