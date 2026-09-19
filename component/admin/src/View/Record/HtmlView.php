@@ -2,6 +2,7 @@
 namespace Xdecaro\Component\Decaromembership\Administrator\View\Record;
 defined('_JEXEC') or die;
 use Joomla\CMS\Factory;
+use Joomla\CMS\Component\ComponentHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
 use Joomla\CMS\Toolbar\ToolbarHelper;
@@ -20,6 +21,11 @@ final class HtmlView extends BaseHtmlView
     public bool $organizationsAvailable = false;
     public array $organizationOptions = [];
     public ?array $selectedOrganization = null;
+    public bool $memberNumberAutomatic = false;
+    public string $memberNumberPrefix = '';
+    public int $memberNumberPadding = 6;
+    public string $memberDefaultStatus = 'pending';
+    public bool $hasMemberCategories = false;
 
     public function display($tpl = null): void
     {
@@ -34,6 +40,18 @@ final class HtmlView extends BaseHtmlView
         $app = Factory::getApplication();
         $user = $app->getIdentity();
         if ($this->entity === 'members') {
+            $params = ComponentHelper::getParams('com_decaromembership');
+            $this->memberNumberAutomatic = (string) $params->get('member_number_mode', 'manual') === 'automatic';
+            $this->memberNumberPrefix = trim((string) $params->get('member_number_prefix', ''));
+            $this->memberNumberPadding = max(1, min(12, (int) $params->get('member_number_padding', 6)));
+            $configuredStatus = (string) $params->get('member_default_status', 'pending');
+            $this->memberDefaultStatus = in_array($configuredStatus, ['pending', 'in_review', 'active'], true) ? $configuredStatus : 'pending';
+            $this->hasMemberCategories = !empty($this->relations['category_id']);
+
+            if ((int) ($this->item->id ?? 0) < 1 && trim((string) ($this->item->status ?? '')) === '') {
+                $this->item->status = $this->memberDefaultStatus;
+            }
+
             $uuid = strtolower(trim((string) ($this->item->person_uuid ?? '')));
             $this->canRelinkPerson = $user->authorise('membership.relink_person', 'com_decaromembership');
             if ($uuid !== '') {

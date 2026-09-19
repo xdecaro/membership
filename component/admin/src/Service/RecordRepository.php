@@ -117,6 +117,25 @@ final class RecordRepository
         return (array) $this->db->setQuery($q)->loadObjectList();
     }
 
+    public function updateMemberNumber(int $memberId, string $memberNumber, string $modified, int $userId): void
+    {
+        if ($memberId < 1 || trim($memberNumber) === '') {
+            return;
+        }
+
+        $q = $this->db->getQuery(true)
+            ->update($this->db->quoteName('#__decaromembership_members'))
+            ->set($this->db->quoteName('member_number') . ' = :member_number')
+            ->set($this->db->quoteName('modified') . ' = :modified')
+            ->set($this->db->quoteName('modified_by') . ' = :user_id')
+            ->where($this->db->quoteName('id') . ' = :member_id')
+            ->bind(':member_number', $memberNumber)
+            ->bind(':modified', $modified)
+            ->bind(':user_id', $userId, ParameterType::INTEGER)
+            ->bind(':member_id', $memberId, ParameterType::INTEGER);
+        $this->db->setQuery($q)->execute();
+    }
+
     public function updateMemberLocation(int $memberId, int $locationId, string $modified, int $userId): void
     {
         if ($memberId < 1 || $locationId < 1) {

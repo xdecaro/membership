@@ -7,3 +7,5 @@
 .dm-member-primary{display:grid;gap:1rem}.dm-member-primary .dm-section-head>div{display:grid;gap:.25rem}.dm-member-advanced{padding:0}.dm-member-advanced>summary{cursor:pointer;font-weight:700;padding:1rem;list-style-position:inside}.dm-member-advanced[open]>summary{border-bottom:1px solid var(--dm-border)}.dm-member-advanced>p{margin:1rem 1rem 0}.dm-member-advanced>.dm-form-grid{padding:1rem}.dm-field small{line-height:1.35}.dm-field .alert{width:100%}
 
 .dm-organization-picker{gap:.5rem}.dm-organization-picker [data-membership-organization-search]{margin-bottom:.25rem}.dm-organization-picker [data-membership-organization-path]{display:block;font-weight:600}.dm-organization-picker [data-membership-organization-path][hidden],.dm-organization-picker [data-membership-organization-empty][hidden]{display:none}
+
+.dm-field-help{display:block;margin-top:-.35rem;line-height:1.35}.dm-member-primary .alert{margin-top:.25rem}

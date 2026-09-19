@@ -36,7 +36,7 @@ final class MemberCoreEntities
                 'voting_active'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_VOTING_ACTIVE','type'=>'boolean'],
                 'voting_passive'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_VOTING_PASSIVE','type'=>'boolean'],
                 'organization_uuid'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_ORGANIZATION','type'=>'organization'],
-                'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STATUS','type'=>'select','options'=>[
+                'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STATUS','type'=>'select','required'=>true,'default'=>'pending','options'=>[
                     'pending'=>'COM_DECAROMEMBERSHIP_STATUS_PENDING',
                     'in_review'=>'COM_DECAROMEMBERSHIP_STATUS_IN_REVIEW',
                     'admitted'=>'COM_DECAROMEMBERSHIP_STATUS_ADMITTED',
@@ -51,12 +51,13 @@ final class MemberCoreEntities
                     'ceased'=>'COM_DECAROMEMBERSHIP_STATUS_CEASED',
                 ]],
                 'location_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_LOCATION','type'=>'relation','relation'=>'locations'],
-                'category_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CATEGORY','type'=>'relation','relation'=>'categories'],
+                'category_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CATEGORY','type'=>'relation','relation'=>'categories','required'=>true],
                 'user_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_JOOMLA_USER','type'=>'number'],
                 'published'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PUBLISHED','type'=>'published'],
             ]],
-            'categories'=>['table'=>'#__decaromembership_categories','label'=>'COM_DECAROMEMBERSHIP_CATEGORIES','singular'=>'COM_DECAROMEMBERSHIP_CATEGORY','title_field'=>'name','search'=>['name','description'],'list'=>['name','fee','duration_months','language','published'],'fields'=>[
+            'categories'=>['table'=>'#__decaromembership_categories','label'=>'COM_DECAROMEMBERSHIP_CATEGORIES','singular'=>'COM_DECAROMEMBERSHIP_CATEGORY','title_field'=>'name','search'=>['name','code','description'],'list'=>['name','code','fee','duration_months','language','published'],'fields'=>[
                 'name'=>['label'=>'JGLOBAL_TITLE','type'=>'text','required'=>true,'unique'=>true],
+                'code'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CODE','type'=>'text','unique'=>true],
                 'description'=>['label'=>'JGLOBAL_DESCRIPTION','type'=>'textarea'],
                 'fee'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_FEE','type'=>'money'],
                 'duration_months'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_DURATION_MONTHS','type'=>'number'],

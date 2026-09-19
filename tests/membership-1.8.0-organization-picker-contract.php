@@ -12,7 +12,7 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $version = trim((string) file_get_contents($root . '/VERSION'));
-$expect($version === '1.8.0', 'VERSION must be 1.8.0.');
+$expect(version_compare($version, '1.8.0', '>='), 'VERSION must be 1.8.0 or newer.');
 
 $view = (string) file_get_contents($root . '/component/admin/src/View/Record/HtmlView.php');
 $template = (string) file_get_contents($root . '/component/admin/tmpl/record/default.php');
@@ -82,4 +82,4 @@ if ($failures !== []) {
     exit(1);
 }
 
-echo "Membership 1.8.0 hierarchical Organizations picker contract OK\n";
+echo "Membership 1.8.0+ hierarchical Organizations picker compatibility contract OK\n";
