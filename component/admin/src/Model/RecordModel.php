@@ -52,7 +52,16 @@ final class RecordModel extends BaseDatabaseModel
         $select = $entity === 'members'
             ? [$db->quoteName('id'), "CONCAT(" . $db->quoteName('last_name') . ", ' ', " . $db->quoteName('first_name') . ") AS " . $db->quoteName('title')]
             : [$db->quoteName('id'), $db->quoteName($config['title_field'], 'title')];
-        return $db->setQuery($db->getQuery(true)->select($select)->from($db->quoteName($config['table']))->order($db->quoteName('title') . ' ASC'))->loadObjectList();
+        $query = $db->getQuery(true)
+            ->select($select)
+            ->from($db->quoteName($config['table']))
+            ->order($db->quoteName('title') . ' ASC');
+
+        if (isset($config['fields']['published'])) {
+            $query->where($db->quoteName('published') . ' = 1');
+        }
+
+        return $db->setQuery($query)->loadObjectList();
     }
 
     public function saveEntity(string $entity, int $id, array $input): int
@@ -117,7 +126,6 @@ final class RecordModel extends BaseDatabaseModel
             $data['created'] = $now;
             $data['created_by'] = $userId;
         }
-        $wasNew = $id < 1;
         $id = $repository->save($config['table'], $id, $data);
 
         if ($entity === 'members') {
