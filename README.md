@@ -6,7 +6,7 @@ Membership è il componente Joomla 6 per la gestione del dominio associativo: so
 
 - Componente: `com_decaromembership`
 - Pacchetto: `pkg_decaromembership`
-- Versione corrente: **1.9.0**
+- Versione corrente: **1.9.1**
 - Joomla: `6.*`
 - PHP: `8.3+`
 - Core richiesto: **2.0.1+**
@@ -53,9 +53,13 @@ Il **numero socio** è manuale per impostazione predefinita, perché molte organ
 
 Le date del ciclo di vita vengono completate in modo conservativo: quando un socio entra per la prima volta in stato Ammesso/Attivo, Membership valorizza le date mancanti di ammissione, inizio periodo associativo e prima iscrizione; ogni variazione di stato può valorizzare la decorrenza; gli stati terminali Decaduto, Receduto, Espulso, Deceduto e Cessato valorizzano la data di cessazione se mancante. I valori inseriti esplicitamente dall'operatore restano prioritari.
 
+### Correzione 1.9.1
+
+Membership 1.9.1 corregge il salvataggio delle entità ordinate configurabili: una nuova categoria, uno stato pratica o un modello checklist parte con **Ordinamento = 0** invece di inviare `NULL` a colonne database `NOT NULL`.
+
 ## Xdecaro Core
 
-Membership 1.9.0 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
+Membership 1.9.1 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
 
 La pagina **Informazioni/Diagnostica** mostra le versioni installate e minime richieste di Core e People e lo stato di compatibilità/disponibilità delle relative API.
 
@@ -83,7 +87,7 @@ Il package registra l'update server Joomla `updates/pkg_decaromembership.xml`. I
 
 ## Test di integrazione
 
-La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.9.0 copre:
+La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.9.1 copre:
 
 - installazione pulita con Core 2.0.1 e People 1.2.15 pubblicati e fissati per SHA-256;
 - collegamento socio ↔ persona People e risoluzione batch dell'identità;
