@@ -27,6 +27,7 @@ final class MemberLifecycleService
 
         $status = trim((string) ($data['status'] ?? 'pending'));
         $oldStatus = trim((string) ($old->status ?? ''));
+        $legacyBootstrap = $id > 0 && $oldStatus === '';
 
         if ((int) ($data['category_id'] ?? 0) < 1) {
             throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_MEMBER_CATEGORY_REQUIRED'));
@@ -37,13 +38,14 @@ final class MemberLifecycleService
             $data['member_number'] = $oldNumber !== '' ? $oldNumber : null;
         }
 
-        if ($id < 1 || $status !== $oldStatus) {
+        if (!$legacyBootstrap && ($id < 1 || $status !== $oldStatus)) {
             if (empty($data['status_effective_date'])) {
                 $data['status_effective_date'] = $today;
             }
         }
 
-        $becameActive = in_array($status, self::ACTIVE_STATUSES, true)
+        $becameActive = !$legacyBootstrap
+            && in_array($status, self::ACTIVE_STATUSES, true)
             && !in_array($oldStatus, self::ACTIVE_STATUSES, true);
 
         if ($becameActive) {
@@ -58,7 +60,7 @@ final class MemberLifecycleService
             }
         }
 
-        if ($status !== $oldStatus && in_array($status, self::TERMINAL_STATUSES, true) && empty($data['cessation_date'])) {
+        if (!$legacyBootstrap && $status !== $oldStatus && in_array($status, self::TERMINAL_STATUSES, true) && empty($data['cessation_date'])) {
             $data['cessation_date'] = $today;
         }
 
