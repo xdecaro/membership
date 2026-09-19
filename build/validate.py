@@ -298,8 +298,42 @@ def validate_member_card_view():
         fail('Membership 1.9.5 schema marker must be non-destructive')
 
 
+def validate_card_member_flow():
+    require(
+        'component/admin/src/Model/RecordModel.php',
+        'getRelationOptions(string $entity, int $includeId = 0)',
+        'new PeopleIntegrationService($db)',
+        'COM_DECAROMEMBERSHIP_MEMBER_FALLBACK_LABEL',
+    )
+    require(
+        'component/admin/src/View/Record/HtmlView.php',
+        "$this->entity === 'cards'",
+        "$app->input->getInt('member_id')",
+        "getRelationOptions($field['relation'], $selectedId)",
+    )
+    require(
+        'component/admin/tmpl/record/default.php',
+        'view=record&entity=cards&id=0&member_id=',
+        'COM_DECAROMEMBERSHIP_MEMBER_CARD_CREATE',
+    )
+    require(
+        'component/admin/src/Model/RecordsModel.php',
+        'getPeopleByUuids',
+        'display_name',
+    )
+    require(
+        'tests/membership-1.9.6-card-member-flow-contract.php',
+        'card member flow contract',
+    )
+    schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.6.sql'
+    if not schema_marker.is_file():
+        fail('Membership 1.9.6 schema marker missing')
+    if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE|DROP\s+COLUMN)\b', schema_marker.read_text(), re.I):
+        fail('Membership 1.9.6 schema marker must be non-destructive')
+
+
 def validate():
-    if VERSION != '1.9.5':
+    if VERSION != '1.9.6':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -354,6 +388,7 @@ def validate():
     validate_legacy_lifecycle_safety()
     validate_card_source()
     validate_member_card_view()
+    validate_card_member_flow()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',
