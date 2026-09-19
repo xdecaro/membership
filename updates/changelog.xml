@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
-  <changelog version="1.9.0" date="2026-09-19">
+  <changelog version="1.9.1" date="2026-09-19">\n    <change type="fix">Ordered configurable entities now default to ordering 0 instead of saving NULL.</change>\n    <change type="fix">Category creation works without manually entering an ordering value.</change>\n    <change type="fix">The same safe ordering default applies to case statuses and checklist templates.</change>\n  </changelog>\n\n  <changelog version="1.9.0" date="2026-09-19">
     <change type="feature">Required configurable member categories with optional stable category code.</change>
     <change type="feature">Configurable default member status and safe manual/optional automatic member numbering.</change>
     <change type="feature">Lifecycle date defaults for admission, activation, status changes and cessation.</change>
