@@ -49,21 +49,85 @@ final class RecordModel extends BaseDatabaseModel
         return $this->repository()->load(EntityRegistry::get($this->getEntityFromRequest())['table'], $id) ?: (object) ['id' => 0];
     }
 
-    public function getRelationOptions(string $entity): array
+    public function getRelationOptions(string $entity, int $includeId = 0): array
     {
         if (!EntityRegistry::has($entity)) return [];
         $config = EntityRegistry::get($entity);
         $db = $this->getDatabase();
-        $select = $entity === 'members'
-            ? [$db->quoteName('id'), "CONCAT(" . $db->quoteName('last_name') . ", ' ', " . $db->quoteName('first_name') . ") AS " . $db->quoteName('title')]
-            : [$db->quoteName('id'), $db->quoteName($config['title_field'], 'title')];
+
+        if ($entity === 'members') {
+            $query = $db->getQuery(true)
+                ->select([
+                    $db->quoteName('id'),
+                    $db->quoteName('person_uuid'),
+                    $db->quoteName('first_name'),
+                    $db->quoteName('last_name'),
+                    $db->quoteName('member_number'),
+                ])
+                ->from($db->quoteName($config['table']));
+
+            if (isset($config['fields']['published'])) {
+                if ($includeId > 0) {
+                    $query->where(
+                        '(' . $db->quoteName('published') . ' = 1 OR ' . $db->quoteName('id') . ' = :include_id)'
+                    )->bind(':include_id', $includeId);
+                } else {
+                    $query->where($db->quoteName('published') . ' = 1');
+                }
+            }
+
+            $rows = $db->setQuery($query)->loadObjectList();
+            $uuids = [];
+            foreach ($rows as $row) {
+                $uuid = strtolower(trim((string) ($row->person_uuid ?? '')));
+                if ($uuid !== '') {
+                    $uuids[$uuid] = $uuid;
+                }
+            }
+
+            $people = [];
+            if ($uuids !== []) {
+                try {
+                    $people = (new PeopleIntegrationService($db))->getPeopleByUuids(array_values($uuids));
+                } catch (\Throwable) {
+                    $people = [];
+                }
+            }
+
+            foreach ($rows as $row) {
+                $uuid = strtolower(trim((string) ($row->person_uuid ?? '')));
+                $person = $uuid !== '' ? ($people[$uuid] ?? null) : null;
+                $title = trim((string) ($person['display_name'] ?? ''));
+                if ($title === '' && is_array($person)) {
+                    $title = trim((string) (($person['first_name'] ?? '') . ' ' . ($person['last_name'] ?? '')));
+                }
+                if ($title === '') {
+                    $title = trim((string) (($row->last_name ?? '') . ' ' . ($row->first_name ?? '')));
+                }
+                if ($title === '') {
+                    $memberNumber = trim((string) ($row->member_number ?? ''));
+                    $title = $memberNumber !== '' ? $memberNumber : Text::sprintf('COM_DECAROMEMBERSHIP_MEMBER_FALLBACK_LABEL', (int) $row->id);
+                }
+                $row->title = $title;
+            }
+
+            usort($rows, static fn(object $a, object $b): int => strcasecmp((string) $a->title, (string) $b->title));
+            return $rows;
+        }
+
         $query = $db->getQuery(true)
-            ->select($select)
+            ->select([$db->quoteName('id'), $db->quoteName($config['title_field'], 'title')])
             ->from($db->quoteName($config['table']))
             ->order($db->quoteName('title') . ' ASC');
 
         if (isset($config['fields']['published'])) {
-            $query->where($db->quoteName('published') . ' = 1');
+            if ($includeId > 0) {
+                $query->where(
+                    '(' . $db->quoteName('published') . ' = 1 OR ' . $db->quoteName('id') . ' = :include_id)'
+                )->bind(':include_id', $includeId);
+            } else {
+                $query->where($db->quoteName('published') . ' = 1');
+            }
         }
 
         return $db->setQuery($query)->loadObjectList();
