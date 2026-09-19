@@ -21,6 +21,15 @@ $renderField=function(string $name,array $field,mixed $value) use($esc){
 };
 $linkedUuid=strtolower(trim((string)($this->item->person_uuid??'')));
 $isMember=$this->entity==='members';
+$organizationTypeLabel=static function(string $type): string {
+    $type=trim($type);
+    if($type==='') return '';
+
+    $key='COM_DECAROMEMBERSHIP_ORGANIZATION_TYPE_'.strtoupper(preg_replace('/[^a-z0-9]+/i','_',$type));
+    $label=Text::_($key);
+
+    return $label===$key ? $type : $label;
+};
 ?>
 
 <form action="<?= Route::_('index.php?option=com_decaromembership&entity='.$this->entity.'&id='.(int)($this->item->id??0)) ?>" method="post" name="adminForm" id="adminForm" class="dm-page">
@@ -94,20 +103,42 @@ $isMember=$this->entity==='members';
       endforeach; ?>
 
       <?php if($this->organizationsAvailable): ?>
-        <div class="dm-field dm-field-wide">
+        <div class="dm-field dm-field-wide dm-organization-picker" data-membership-organization-picker>
           <label for="jform_organization_uuid"><?= Text::_('COM_DECAROMEMBERSHIP_FIELD_ORGANIZATION') ?></label>
-          <select id="jform_organization_uuid" name="jform[organization_uuid]">
-            <option value=""><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_NONE') ?></option>
+          <label class="visually-hidden" for="membership_organization_search"><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_SEARCH') ?></label>
+          <input
+            type="search"
+            id="membership_organization_search"
+            data-membership-organization-search
+            autocomplete="off"
+            placeholder="<?= $esc(Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_SEARCH_PLACEHOLDER')) ?>"
+            aria-controls="jform_organization_uuid"
+          >
+          <select id="jform_organization_uuid" name="jform[organization_uuid]" data-membership-organization-select>
+            <option value="" data-search=""><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_NONE') ?></option>
             <?php foreach($this->organizationOptions as $organization):
                 $uuid=strtolower(trim((string)($organization['uuid']??'')));
                 if($uuid==='') continue;
-                $label=trim((string)($organization['name']??''));
+                $name=trim((string)($organization['name']??''));
+                $path=trim((string)($organization['path']??$name));
                 $type=trim((string)($organization['type']??''));
-                if($type!=='') $label.=' · '.$type;
+                $typeLabel=$organizationTypeLabel($type);
+                $depth=max(0,min(12,(int)($organization['depth']??0)));
+                $prefix=$depth>0 ? str_repeat(' ',$depth).'↳ ' : '';
+                $label=$prefix.$name;
+                if($typeLabel!=='') $label.=' · '.$typeLabel;
+                $searchText=trim($path.' '.$name.' '.$typeLabel);
             ?>
-              <option value="<?= $esc($uuid) ?>"<?= $organizationUuid===$uuid?' selected':'' ?>><?= $esc($label) ?></option>
+              <option
+                value="<?= $esc($uuid) ?>"
+                data-search="<?= $esc(mb_strtolower($searchText,'UTF-8')) ?>"
+                data-path="<?= $esc($path) ?>"
+                <?= $organizationUuid===$uuid?' selected':'' ?>
+              ><?= $esc($label) ?></option>
             <?php endforeach; ?>
           </select>
+          <small class="dm-muted" data-membership-organization-path></small>
+          <small class="dm-muted" data-membership-organization-empty hidden><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_SEARCH_EMPTY') ?></small>
           <small class="dm-muted"><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_OPTIONAL_HELP') ?></small>
         </div>
       <?php elseif($organizationUuid!==''): ?>
