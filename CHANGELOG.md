@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.3 - 2026-09-19
+- Prevented existing legacy members with a blank prior status from receiving invented lifecycle dates when their current status is first set.
+- New members still receive automatic lifecycle dates when created as Admitted/Active, and later real status transitions retain the existing automation.
+- Members now explicitly default to `published = 1`, matching the database default and the other publishable Membership entities.
+- Existing records and historical dates are not rewritten automatically.
+- Added a non-destructive 1.9.3 schema marker and runtime regression coverage.
+
 ## 1.9.2 - 2026-09-19
 - Fixed the default publication state for new configurable records: publishable entities now explicitly default to `published = 1` in the form configuration.
 - Categories therefore start published instead of submitting `0` from a blank new-record form.
