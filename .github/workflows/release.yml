@@ -41,6 +41,7 @@ jobs:
           php tests/membership-1.9.2-published-default-contract.php
           php tests/membership-1.9.3-legacy-lifecycle-contract.php
           php tests/membership-1.9.4-card-source-contract.php
+          php tests/membership-1.9.5-member-card-view-contract.php
       - run: python3 build/build.py && python3 build/validate.py --dist
       - run: python3 build/update_feed_checksum.py
       - name: Verify updater metadata
@@ -54,7 +55,7 @@ jobs:
         env: {GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          gh release create "v${VERSION}" dist/*_${VERSION}.zip dist/SHA256SUMS.txt --title "Membership by xdecaro ${VERSION}" --notes "Membership ${VERSION}: makes Cards the authoritative source for card numbers. The member form keeps Member number separate, removes duplicate card-number editing, shows the current card read-only with a link to Cards, and preserves legacy member.card_number data without destructive migration. Joomla 6 only."
+          gh release create "v${VERSION}" dist/*_${VERSION}.zip dist/SHA256SUMS.txt --title "Membership by xdecaro ${VERSION}" --notes "Membership ${VERSION}: fixes the administrator member page crash introduced in 1.9.4 by routing current-card lookup through RecordModel instead of calling an undefined HtmlView database method. Keeps Cards authoritative and preserves all 1.9.4 behavior. Joomla 6 only."
       - name: Publish checksum
         run: |
           VERSION="${{ steps.version.outputs.version }}"; git config user.name github-actions[bot]; git config user.email 41898282+github-actions[bot]@users.noreply.github.com; git add updates/pkg_decaromembership.xml; if git diff --cached --quiet; then exit 0; fi; git commit -m "Publish SHA-256 for Membership ${VERSION}"; git pull --rebase origin main; git push origin HEAD:main

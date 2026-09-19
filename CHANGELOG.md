@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.5 - 2026-09-19
+- Fixed the administrator member page fatal error `Call to undefined method ... HtmlView::getDatabase()` introduced in 1.9.4.
+- Current-card lookup now goes through `RecordModel`, which owns database access, instead of constructing a repository inside the view.
+- Preserves Cards as the authoritative source and does not rewrite membership or card data.
+- Added a non-destructive 1.9.5 schema marker and regression coverage.
+
 ## 1.9.4 - 2026-09-19
 - Made `#__decaromembership_cards` the authoritative source for card numbers and card lifecycle data.
 - Removed duplicate editable `card_number` from the member form/list while preserving the legacy database column for compatibility.

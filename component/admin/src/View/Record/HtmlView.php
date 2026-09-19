@@ -9,7 +9,6 @@ use Joomla\CMS\Toolbar\ToolbarHelper;
 use Throwable;
 use Xdecaro\Component\Decaromembership\Administrator\Helper\EntityRegistry;
 use Xdecaro\Component\Decaromembership\Administrator\Service\AdminAssetService;
-use Xdecaro\Component\Decaromembership\Administrator\Service\RecordRepository;
 final class HtmlView extends BaseHtmlView
 {
     public object $item;
@@ -53,7 +52,7 @@ final class HtmlView extends BaseHtmlView
             $memberId = (int) ($this->item->id ?? 0);
             $this->legacyCardNumber = trim((string) ($this->item->card_number ?? ''));
             if ($memberId > 0) {
-                $this->currentMemberCard = (new RecordRepository($this->getDatabase()))->loadCurrentMemberCard($memberId);
+                $this->currentMemberCard = $model->getCurrentMemberCard($memberId);
             }
 
             if ($memberId < 1 && trim((string) ($this->item->status ?? '')) === '') {
