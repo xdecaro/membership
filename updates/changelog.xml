@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+  <changelog version="1.8.0" date="2026-09-19">
+    <change type="feature">Organizations picker with parent-child hierarchy and readable indentation.</change>
+    <change type="feature">Live search by organization name, hierarchy path and translated type.</change>
+    <change type="feature">Organization type translations added for Italian, English and French.</change>
+  </changelog>
+
   <changelog version="1.6.0" date="2026-09-18">
     <change type="feature">Membership lifecycle dates, rights and non-destructive history.</change>
     <change type="feature">Public person-memberships and eligibility services for People integration.</change>
