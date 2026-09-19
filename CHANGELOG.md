@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.9.1 - 2026-09-19
+- Fixed creation of categories when Ordering is left at its default: new ordered records now start from `0` instead of attempting to save `NULL` into `NOT NULL` columns.
+- Applied the same safe default to case statuses and checklist templates, which use the same ordered-record pattern.
+- Added a non-destructive 1.9.1 schema marker and regression coverage for Joomla 6 package/update validation.
+
 ## 1.9.0 - 2026-09-19
 - Made member category mandatory and added an optional stable category code without hardcoding association-specific categories.
 - Added direct Categories access to the Membership administrator submenu.
