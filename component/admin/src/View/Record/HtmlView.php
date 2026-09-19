@@ -9,6 +9,7 @@ use Joomla\CMS\Toolbar\ToolbarHelper;
 use Throwable;
 use Xdecaro\Component\Decaromembership\Administrator\Helper\EntityRegistry;
 use Xdecaro\Component\Decaromembership\Administrator\Service\AdminAssetService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\RecordRepository;
 final class HtmlView extends BaseHtmlView
 {
     public object $item;
@@ -26,6 +27,8 @@ final class HtmlView extends BaseHtmlView
     public int $memberNumberPadding = 6;
     public string $memberDefaultStatus = 'pending';
     public bool $hasMemberCategories = false;
+    public ?object $currentMemberCard = null;
+    public string $legacyCardNumber = '';
 
     public function display($tpl = null): void
     {
@@ -47,8 +50,13 @@ final class HtmlView extends BaseHtmlView
             $configuredStatus = (string) $params->get('member_default_status', 'pending');
             $this->memberDefaultStatus = in_array($configuredStatus, ['pending', 'in_review', 'active'], true) ? $configuredStatus : 'pending';
             $this->hasMemberCategories = !empty($this->relations['category_id']);
+            $memberId = (int) ($this->item->id ?? 0);
+            $this->legacyCardNumber = trim((string) ($this->item->card_number ?? ''));
+            if ($memberId > 0) {
+                $this->currentMemberCard = (new RecordRepository($this->getDatabase()))->loadCurrentMemberCard($memberId);
+            }
 
-            if ((int) ($this->item->id ?? 0) < 1 && trim((string) ($this->item->status ?? '')) === '') {
+            if ($memberId < 1 && trim((string) ($this->item->status ?? '')) === '') {
                 $this->item->status = $this->memberDefaultStatus;
             }
 

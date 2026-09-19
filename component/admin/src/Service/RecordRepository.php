@@ -136,6 +136,27 @@ final class RecordRepository
         $this->db->setQuery($q)->execute();
     }
 
+    public function loadCurrentMemberCard(int $memberId): ?object
+    {
+        if ($memberId < 1) {
+            return null;
+        }
+
+        $q = $this->db->getQuery(true)
+            ->select('*')
+            ->from($this->db->quoteName('#__decaromembership_cards'))
+            ->where($this->db->quoteName('member_id') . ' = :member_id')
+            ->where($this->db->quoteName('published') . ' = 1')
+            ->order(
+                'CASE WHEN ' . $this->db->quoteName('status') . " = 'active' THEN 0 ELSE 1 END ASC"
+            )
+            ->order('COALESCE(' . $this->db->quoteName('activated_at') . ', ' . $this->db->quoteName('issued_at') . ", '0000-00-00') DESC")
+            ->order($this->db->quoteName('id') . ' DESC')
+            ->bind(':member_id', $memberId, ParameterType::INTEGER);
+
+        return $this->db->setQuery($q, 0, 1)->loadObject() ?: null;
+    }
+
     public function updateMemberLocation(int $memberId, int $locationId, string $modified, int $userId): void
     {
         if ($memberId < 1 || $locationId < 1) {

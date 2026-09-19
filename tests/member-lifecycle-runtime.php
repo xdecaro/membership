@@ -145,6 +145,42 @@ foreach (['first_registration_date','admission_date','current_membership_start_d
     }
 }
 
+$olderCard = (object) [
+    'member_id' => $memberId,
+    'card_number' => 'CI-CARD-OLD-' . $memberId,
+    'type' => 'physical',
+    'status' => 'replaced',
+    'issued_at' => '2025-01-01',
+    'published' => 1,
+    'created' => '2026-09-19 03:03:00',
+    'created_by' => (int) $admin->id,
+    'modified_by' => 0,
+];
+$db->insertObject('#__decaromembership_cards', $olderCard);
+
+$currentCardRow = (object) [
+    'member_id' => $memberId,
+    'card_number' => 'CI-CARD-ACTIVE-' . $memberId,
+    'type' => 'electronic',
+    'status' => 'active',
+    'issued_at' => '2026-01-01',
+    'activated_at' => '2026-01-02',
+    'annual_mark' => '2026',
+    'published' => 1,
+    'created' => '2026-09-19 03:04:00',
+    'created_by' => (int) $admin->id,
+    'modified_by' => 0,
+];
+$db->insertObject('#__decaromembership_cards', $currentCardRow);
+
+$currentCard = $repository->loadCurrentMemberCard($memberId);
+if (!$currentCard || (string) $currentCard->card_number !== 'CI-CARD-ACTIVE-' . $memberId) {
+    $fail('Current member card was not resolved from the Cards table.');
+}
+if ((string) $currentCard->status !== 'active') {
+    $fail('Current member card lookup did not prefer the active card.');
+}
+
 $missingCategoryRejected = false;
 try {
     $model->saveEntity('members', 0, [
@@ -204,6 +240,7 @@ $model->saveEntity('members', $memberId, [
     'status_effective_date' => '',
     'cessation_date' => '',
     'organization_uuid' => '',
+    'card_number' => 'SHOULD-NOT-BE-SAVED-ON-MEMBER',
     'published' => 1,
 ]);
 
@@ -214,5 +251,9 @@ if (!$resigned || (string) $resigned->cessation_date !== $today) {
 if ((string) $resigned->member_number !== $expectedNumber) {
     $fail('Automatic member number changed during update.');
 }
+if (trim((string) ($resigned->card_number ?? '')) !== '') {
+    $fail('Member save must ignore legacy card_number input; Cards is authoritative.');
+}
+
 
 echo "Membership 1.9.0 member lifecycle runtime OK\n";
