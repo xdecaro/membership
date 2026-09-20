@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+  <changelog version="1.9.9" date="2026-09-20">
+    <change type="fix">Submitted form values are preserved after validation errors.</change>
+    <change type="fix">The preselected member is retained in the Card form after a failed save.</change>
+    <change type="fix">Required-field messages identify the missing field by its human label.</change>
+  </changelog>
+
   <changelog version="1.9.8" date="2026-09-20">
     <change type="fix">Card type is now mandatory in the form and server-side validation.</change>
     <change type="fix">Card status is now mandatory in the form and server-side validation.</change>
