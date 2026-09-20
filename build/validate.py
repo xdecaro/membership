@@ -332,8 +332,41 @@ def validate_card_member_flow():
         fail('Membership 1.9.6 schema marker must be non-destructive')
 
 
+def validate_card_labels():
+    require(
+        'component/admin/src/Config/CaseEntities.php',
+        "'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CARD_STATUS'",
+        "'published'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PUBLISHED','type'=>'published','default'=>1]",
+        'COM_DECAROMEMBERSHIP_CARD_STATUS_ACTIVE',
+        'COM_DECAROMEMBERSHIP_CARD_STATUS_EXPIRED',
+        'COM_DECAROMEMBERSHIP_CARD_STATUS_LOST',
+    )
+    require(
+        'component/admin/language/it-IT/com_decaromembership.ini',
+        'COM_DECAROMEMBERSHIP_FIELD_CARD_STATUS="Stato tessera"',
+        'COM_DECAROMEMBERSHIP_CARD_STATUS_ACTIVE="Attiva"',
+        'COM_DECAROMEMBERSHIP_CARD_STATUS_EXPIRED="Scaduta"',
+        'COM_DECAROMEMBERSHIP_CARD_STATUS_LOST="Smarrita"',
+        'COM_DECAROMEMBERSHIP_FIELD_PUBLISHED="Pubblicato"',
+    )
+    require(
+        'component/admin/tmpl/records/default.php',
+        "($field['type']??'')==='select'",
+        "Text::_($field['options'][(string)$value])",
+    )
+    require(
+        'tests/membership-1.9.7-card-labels-contract.php',
+        'card labels contract',
+    )
+    schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.7.sql'
+    if not schema_marker.is_file():
+        fail('Membership 1.9.7 schema marker missing')
+    if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE|DROP\s+COLUMN)\b', schema_marker.read_text(), re.I):
+        fail('Membership 1.9.7 schema marker must be non-destructive')
+
+
 def validate():
-    if VERSION != '1.9.6':
+    if VERSION != '1.9.7':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -389,6 +422,7 @@ def validate():
     validate_card_source()
     validate_member_card_view()
     validate_card_member_flow()
+    validate_card_labels()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',
