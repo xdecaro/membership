@@ -78,16 +78,6 @@ final class RecordModel extends BaseDatabaseModel
                 ])
                 ->from($db->quoteName($config['table']));
 
-            if (isset($config['fields']['published'])) {
-                if ($includeId > 0) {
-                    $query->where(
-                        '(' . $db->quoteName('published') . ' = 1 OR ' . $db->quoteName('id') . ' = :include_id)'
-                    )->bind(':include_id', $includeId);
-                } else {
-                    $query->where($db->quoteName('published') . ' = 1');
-                }
-            }
-
             $rows = $db->setQuery($query)->loadObjectList();
             $uuids = [];
             foreach ($rows as $row) {
