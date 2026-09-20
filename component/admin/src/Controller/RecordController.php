@@ -22,8 +22,13 @@ final class RecordController extends BaseController
     {
         $this->checkToken(); $app=Factory::getApplication(); $entity=$this->entity(); $id=$this->input->getInt('id'); $permission=$id>0?'core.edit':'core.create';
         if(!$app->getIdentity()->authorise($permission,'com_decaromembership')) throw new RuntimeException(Text::_('JERROR_ALERTNOAUTHOR'),403);
-        try { $model=$this->getModel('Record'); $data=(array)$this->input->get('jform',[],'array'); $savedId=$model->saveEntity($entity,$id,$data); $app->enqueueMessage(Text::_('COM_DECAROMEMBERSHIP_SAVE_SUCCESS'),'success'); $url='index.php?option=com_decaromembership&view='.($apply?'record':'records').'&entity='.$entity; if($apply)$url.='&id='.$savedId; $this->setRedirect(Route::_($url,false)); }
-        catch(Throwable $e){ $app->enqueueMessage($e->getMessage(),'error'); $this->setRedirect(Route::_('index.php?option=com_decaromembership&view=record&entity='.$entity.'&id='.$id,false)); }
+        $data=(array)$this->input->get('jform',[],'array');
+        try { $model=$this->getModel('Record'); $savedId=$model->saveEntity($entity,$id,$data); $app->enqueueMessage(Text::_('COM_DECAROMEMBERSHIP_SAVE_SUCCESS'),'success'); $url='index.php?option=com_decaromembership&view='.($apply?'record':'records').'&entity='.$entity; if($apply)$url.='&id='.$savedId; $this->setRedirect(Route::_($url,false)); }
+        catch(Throwable $e){
+            $app->setUserState('com_decaromembership.record.'.$entity.'.'.$id.'.data',$data);
+            $app->enqueueMessage($e->getMessage(),'error');
+            $this->setRedirect(Route::_('index.php?option=com_decaromembership&view=record&entity='.$entity.'&id='.$id,false));
+        }
     }
     public function cancel(): void { $entity=$this->entity(); $this->setRedirect(Route::_('index.php?option=com_decaromembership&view=records&entity='.$entity,false)); }
 }
