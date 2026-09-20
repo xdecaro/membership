@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.9 - 2026-09-20
+- Preserved submitted form values after validation errors instead of reopening a blank record.
+- Preserved the preselected member in the Member → Card flow after a failed save.
+- Required-field errors now report the human field label, e.g. `Campo obbligatorio mancante: Numero tessera.`.
+- Form state is consumed once on redisplay to avoid stale data leaking into later edits.
+- No schema or existing-data rewrite is performed.
+
 ## 1.9.8 - 2026-09-20
 - Made Card type mandatory in both the administrator form metadata and server-side record validation.
 - Made Card status mandatory in both the administrator form metadata and server-side record validation.
