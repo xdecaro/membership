@@ -6,7 +6,7 @@ Membership è il componente Joomla 6 per la gestione del dominio associativo: so
 
 - Componente: `com_decaromembership`
 - Pacchetto: `pkg_decaromembership`
-- Versione corrente: **1.9.6**
+- Versione corrente: **1.9.7**
 - Joomla: `6.*`
 - PHP: `8.3+`
 - Core richiesto: **2.0.1+**
@@ -77,9 +77,13 @@ Membership 1.9.5 corregge il crash della scheda socio introdotto nella 1.9.4: la
 
 Membership 1.9.6 rende coerente il passaggio **Socio → Tessera**. Se il socio non ha ancora una tessera, la scheda socio propone **Crea tessera** e apre direttamente il nuovo record con il socio già preselezionato. Le relazioni verso i soci usano il nome proveniente da People, con fallback ai dati legacy o al numero/ID socio. Il socio selezionato resta inoltre visibile anche se il record è non pubblicato, così le relazioni esistenti e i dati storici non spariscono dal form.
 
+### Rifinitura Tessere 1.9.7
+
+Membership 1.9.7 completa la pulizia dell'interfaccia **Tessere**: il primo campo ora è **Stato tessera** e usa etichette specifiche al femminile (**Attiva, Scaduta, Smarrita, Revocata, Sostituita**), mentre il campo Joomla finale è chiaramente **Pubblicato**. Le liste amministrative traducono inoltre i valori dei campi select invece di mostrare i codici tecnici. La release include integralmente il flusso Socio → Tessera introdotto nella 1.9.6.
+
 ## Xdecaro Core
 
-Membership 1.9.6 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
+Membership 1.9.7 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
 
 La pagina **Informazioni/Diagnostica** mostra le versioni installate e minime richieste di Core e People e lo stato di compatibilità/disponibilità delle relative API.
 
@@ -107,7 +111,7 @@ Il package registra l'update server Joomla `updates/pkg_decaromembership.xml`. I
 
 ## Test di integrazione
 
-La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.9.6 copre:
+La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.9.7 copre:
 
 - installazione pulita con Core 2.0.1 e People 1.2.15 pubblicati e fissati per SHA-256;
 - collegamento socio ↔ persona People e risoluzione batch dell'identità;
