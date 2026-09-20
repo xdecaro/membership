@@ -18,9 +18,9 @@ $runtime = (string) file_get_contents($root . '/tests/member-lifecycle-runtime.p
 $update = (string) file_get_contents($root . '/component/admin/sql/updates/mysql/1.9.13.sql');
 
 foreach ([
-    "$entity === 'dues'",
-    "($data['paid_amount'] ?? null) === null",
-    "$data['paid_amount'] = 0.0",
+    '$entity === \'dues\'',
+    '($data[\'paid_amount\'] ?? null) === null',
+    '$data[\'paid_amount\'] = 0.0',
 ] as $marker) {
     $expect(str_contains($model, $marker), "Due paid amount normalization marker missing {$marker}.");
 }
