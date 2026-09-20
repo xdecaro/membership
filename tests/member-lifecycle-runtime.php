@@ -145,6 +145,36 @@ foreach (['first_registration_date','admission_date','current_membership_start_d
     }
 }
 
+$missingCardTypeRejected = false;
+try {
+    $model->saveEntity('cards', 0, [
+        'member_id' => $memberId,
+        'card_number' => 'CI-CARD-MISSING-TYPE-' . $memberId,
+        'status' => 'pending',
+        'published' => 1,
+    ]);
+} catch (\RuntimeException $e) {
+    $missingCardTypeRejected = true;
+}
+if (!$missingCardTypeRejected) {
+    $fail('Card creation without type must be rejected.');
+}
+
+$missingCardStatusRejected = false;
+try {
+    $model->saveEntity('cards', 0, [
+        'member_id' => $memberId,
+        'card_number' => 'CI-CARD-MISSING-STATUS-' . $memberId,
+        'type' => 'physical',
+        'published' => 1,
+    ]);
+} catch (\RuntimeException $e) {
+    $missingCardStatusRejected = true;
+}
+if (!$missingCardStatusRejected) {
+    $fail('Card creation without status must be rejected.');
+}
+
 $olderCard = (object) [
     'member_id' => $memberId,
     'card_number' => 'CI-CARD-OLD-' . $memberId,
