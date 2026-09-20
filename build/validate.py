@@ -365,8 +365,30 @@ def validate_card_labels():
         fail('Membership 1.9.7 schema marker must be non-destructive')
 
 
+def validate_card_required_fields():
+    require(
+        'component/admin/src/Config/CaseEntities.php',
+        "'type'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CARD_TYPE','type'=>'select','required'=>true",
+        "'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CARD_STATUS','type'=>'select','required'=>true",
+    )
+    require(
+        'tests/member-lifecycle-runtime.php',
+        'Card creation without type must be rejected.',
+        'Card creation without status must be rejected.',
+    )
+    require(
+        'tests/membership-1.9.8-card-required-fields-contract.php',
+        'card required fields contract',
+    )
+    schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.8.sql'
+    if not schema_marker.is_file():
+        fail('Membership 1.9.8 schema marker missing')
+    if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE|DROP\s+COLUMN)\b', schema_marker.read_text(), re.I):
+        fail('Membership 1.9.8 schema marker must be non-destructive')
+
+
 def validate():
-    if VERSION != '1.9.7':
+    if VERSION != '1.9.8':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -423,6 +445,7 @@ def validate():
     validate_member_card_view()
     validate_card_member_flow()
     validate_card_labels()
+    validate_card_required_fields()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',
