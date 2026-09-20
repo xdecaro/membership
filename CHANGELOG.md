@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.11 - 2026-09-20
+- Added an application-level duplicate check for renewals by member and association year.
+- Replaced the raw database unique-key message with a clear user-facing duplicate-renewal message.
+- Kept the existing database uniqueness constraint as the authoritative safeguard.
+- No schema or existing-data rewrite is performed.
+
 ## 1.9.10 - 2026-09-20
 - Administrator member relation selectors no longer hide legacy members solely because `published = 0`.
 - Renewal status is labeled `Stato rinnovo`, is mandatory, and defaults to `Da rinnovare`.

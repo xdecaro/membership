@@ -437,8 +437,31 @@ def validate_renewal_form():
         fail('Membership 1.9.10 schema marker must be non-destructive')
 
 
+def validate_renewal_duplicate_message():
+    require(
+        'component/admin/src/Model/RecordModel.php',
+        'renewalDuplicateExists(',
+        'COM_DECAROMEMBERSHIP_ERROR_RENEWAL_DUPLICATE',
+    )
+    require(
+        'component/admin/src/Service/RecordRepository.php',
+        'public function renewalDuplicateExists',
+        '#__decaromembership_renewals',
+        'association_year',
+    )
+    require(
+        'tests/membership-1.9.11-renewal-duplicate-message-contract.php',
+        'duplicate renewal message contract',
+    )
+    schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.11.sql'
+    if not schema_marker.is_file():
+        fail('Membership 1.9.11 schema marker missing')
+    if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE|DROP\s+COLUMN)\b', schema_marker.read_text(), re.I):
+        fail('Membership 1.9.11 schema marker must be non-destructive')
+
+
 def validate():
-    if VERSION != '1.9.10':
+    if VERSION != '1.9.11':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -498,6 +521,7 @@ def validate():
     validate_card_required_fields()
     validate_validation_preservation()
     validate_renewal_form()
+    validate_renewal_duplicate_message()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',

@@ -188,6 +188,17 @@ final class RecordModel extends BaseDatabaseModel
             }
         }
 
+        if (
+            $entity === 'renewals'
+            && $repository->renewalDuplicateExists(
+                (int) ($data['member_id'] ?? 0),
+                (string) ($data['association_year'] ?? ''),
+                $id
+            )
+        ) {
+            throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_RENEWAL_DUPLICATE'));
+        }
+
         $userId = (int) Factory::getApplication()->getIdentity()->id;
         $now = Factory::getDate()->toSql();
         $oldPersonUuid = $entity === 'members' ? strtolower(trim((string) ($old->person_uuid ?? ''))) : '';
