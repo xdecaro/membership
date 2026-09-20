@@ -142,6 +142,11 @@ final class RecordModel extends BaseDatabaseModel
         $validator = new RecordValidator();
         $data = $validator->filter($config, $input);
         $validator->validateBusinessRules($entity, $data);
+
+        if ($entity === 'dues' && ($data['paid_amount'] ?? null) === null) {
+            $data['paid_amount'] = 0.0;
+        }
+
         $repository = $this->repository();
         $old = $id > 0 ? $repository->load($config['table'], $id) : null;
         $audit = new AuditService($this->getDatabase());

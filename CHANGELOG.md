@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.13 - 2026-09-21
+- Fixed Quote saving when `Importo pagato` is left blank.
+- Blank due `paid_amount` is normalized to `0.00` before persistence, matching the database non-null/default semantics.
+- Added runtime regression coverage for creating a €100 unpaid due with blank paid amount.
+- No schema or existing-data rewrite is performed.
+
 ## 1.9.12 - 2026-09-21
 - Added **Quote / Dues** to the Joomla administrator submenu.
 - Made due amount mandatory.

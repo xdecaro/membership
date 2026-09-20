@@ -11,7 +11,7 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $version = trim((string) file_get_contents($root . '/VERSION'));
-$expect($version === '1.9.12', 'VERSION must be 1.9.12.');
+$expect(version_compare($version, '1.9.12', '>='), 'VERSION must be 1.9.12 or newer.');
 
 $manifest = (string) file_get_contents($root . '/component/decaromembership.xml');
 $finance = (string) file_get_contents($root . '/component/admin/src/Config/FinanceEntities.php');

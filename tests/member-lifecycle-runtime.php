@@ -172,6 +172,26 @@ if ((string) $renewal->payment_status !== 'unpaid') {
     $fail('Renewal did not default to unpaid payment status.');
 }
 
+$dueId = $model->saveEntity('dues', 0, [
+    'member_id' => $memberId,
+    'category_id' => $categoryId,
+    'association_year' => '2026',
+    'amount' => '100',
+    'paid_amount' => '',
+    'status' => 'unpaid',
+    'published' => 1,
+]);
+$due = $repository->load('#__decaromembership_dues', $dueId);
+if (!$due) {
+    $fail('Created due cannot be loaded.');
+}
+if ((float) $due->paid_amount !== 0.0) {
+    $fail('Blank due paid amount did not persist as zero.');
+}
+if ((float) $due->amount !== 100.0) {
+    $fail('Due amount was not persisted.');
+}
+
 $today = \Joomla\CMS\Factory::getDate()->format('Y-m-d');
 foreach (['first_registration_date','admission_date','current_membership_start_date','status_effective_date'] as $field) {
     if ((string) ($member->{$field} ?? '') !== $today) {

@@ -49,6 +49,7 @@ jobs:
           php tests/membership-1.9.10-renewal-form-contract.php
           php tests/membership-1.9.11-renewal-duplicate-message-contract.php
           php tests/membership-1.9.12-dues-menu-contract.php
+          php tests/membership-1.9.13-due-paid-amount-contract.php
       - run: python3 build/build.py && python3 build/validate.py --dist
       - run: python3 build/update_feed_checksum.py
       - name: Verify updater metadata
@@ -62,7 +63,7 @@ jobs:
         env: {GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          gh release create "v${VERSION}" dist/*_${VERSION}.zip dist/SHA256SUMS.txt --title "Membership by xdecaro ${VERSION}" --notes "Membership ${VERSION}: exposes Dues in the Joomla administrator menu and clarifies the Dues form. Amount and Due status are mandatory, Due status defaults to Unpaid, and publication is labeled Published. Joomla 6 only."
+          gh release create "v${VERSION}" dist/*_${VERSION}.zip dist/SHA256SUMS.txt --title "Membership by xdecaro ${VERSION}" --notes "Membership ${VERSION}: fixes Quote saving when Importo pagato is left blank by normalizing it to zero before persistence. Keeps the field optional in the UI and adds runtime regression coverage. Joomla 6 only."
       - name: Publish checksum
         run: |
           VERSION="${{ steps.version.outputs.version }}"; git config user.name github-actions[bot]; git config user.email 41898282+github-actions[bot]@users.noreply.github.com; git add updates/pkg_decaromembership.xml; if git diff --cached --quiet; then exit 0; fi; git commit -m "Publish SHA-256 for Membership ${VERSION}"; git pull --rebase origin main; git push origin HEAD:main
