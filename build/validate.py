@@ -460,8 +460,35 @@ def validate_renewal_duplicate_message():
         fail('Membership 1.9.11 schema marker must be non-destructive')
 
 
+def validate_dues_menu():
+    require(
+        'component/decaromembership.xml',
+        'view=records&amp;entity=dues',
+        'COM_DECAROMEMBERSHIP_DUES',
+    )
+    require(
+        'component/admin/src/Config/FinanceEntities.php',
+        "'amount'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_AMOUNT','type'=>'money','required'=>true]",
+        "'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_DUE_STATUS','type'=>'select','required'=>true,'default'=>'unpaid'",
+        "'published'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PUBLISHED','type'=>'published','default'=>1]",
+    )
+    require(
+        'component/admin/language/it-IT/com_decaromembership.sys.ini',
+        'COM_DECAROMEMBERSHIP_DUES="Quote"',
+    )
+    require(
+        'tests/membership-1.9.12-dues-menu-contract.php',
+        'dues menu contract',
+    )
+    schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.12.sql'
+    if not schema_marker.is_file():
+        fail('Membership 1.9.12 schema marker missing')
+    if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE|DROP\s+COLUMN)\b', schema_marker.read_text(), re.I):
+        fail('Membership 1.9.12 schema marker must be non-destructive')
+
+
 def validate():
-    if VERSION != '1.9.11':
+    if VERSION != '1.9.12':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -522,6 +549,7 @@ def validate():
     validate_validation_preservation()
     validate_renewal_form()
     validate_renewal_duplicate_message()
+    validate_dues_menu()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',
