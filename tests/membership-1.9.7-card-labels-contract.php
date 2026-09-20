@@ -46,8 +46,8 @@ foreach ([
 }
 
 $expect(str_contains($recordTemplate, "'active'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_ACTIVE'"), 'Member card summary must use card-specific status labels.');
-$expect(str_contains($listTemplate, "($field['type']??'')==='select'"), 'Records list must localize select values.');
-$expect(str_contains($listTemplate, "Text::_($field['options'][(string)$value])"), 'Records list must resolve configured select labels.');
+$expect(str_contains($listTemplate, "(\$field['type']??'')==='select'"), 'Records list must localize select values.');
+$expect(str_contains($listTemplate, "Text::_(\$field['options'][(string)\$value])"), 'Records list must resolve configured select labels.');
 $expect(!preg_match('/\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE|DROP\s+COLUMN)\b/i', $update), '1.9.7 migration marker must be non-destructive.');
 
 if ($failures !== []) {
