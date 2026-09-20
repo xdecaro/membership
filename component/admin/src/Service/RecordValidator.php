@@ -13,7 +13,8 @@ final class RecordValidator
             $raw = $input[$name] ?? ($field['default'] ?? null);
             $data[$name] = $this->filterValue($raw, $field);
             if (($field['required'] ?? false) && ($data[$name] === '' || $data[$name] === null)) {
-                throw new RuntimeException(Text::sprintf('COM_DECAROMEMBERSHIP_ERROR_REQUIRED', $name));
+                $label = Text::_((string) ($field['label'] ?? $name));
+                throw new RuntimeException(Text::sprintf('COM_DECAROMEMBERSHIP_ERROR_REQUIRED', $label));
             }
         }
         return $data;

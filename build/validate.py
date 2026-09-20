@@ -387,8 +387,36 @@ def validate_card_required_fields():
         fail('Membership 1.9.8 schema marker must be non-destructive')
 
 
+def validate_validation_preservation():
+    require(
+        'component/admin/src/Controller/RecordController.php',
+        "setUserState('com_decaromembership.record.'",
+        "$data=(array)$this->input->get('jform',[],'array')",
+    )
+    require(
+        'component/admin/src/Model/RecordModel.php',
+        'getUserState($stateKey)',
+        'setUserState($stateKey, null)',
+        '$item = (object) $submitted',
+    )
+    require(
+        'component/admin/src/Service/RecordValidator.php',
+        "Text::_((string) ($field['label'] ?? $name))",
+        "Text::sprintf('COM_DECAROMEMBERSHIP_ERROR_REQUIRED', $label)",
+    )
+    require(
+        'tests/membership-1.9.9-validation-preserve-form-contract.php',
+        'validation preservation contract',
+    )
+    schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.9.sql'
+    if not schema_marker.is_file():
+        fail('Membership 1.9.9 schema marker missing')
+    if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE|DROP\s+COLUMN)\b', schema_marker.read_text(), re.I):
+        fail('Membership 1.9.9 schema marker must be non-destructive')
+
+
 def validate():
-    if VERSION != '1.9.8':
+    if VERSION != '1.9.9':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -446,6 +474,7 @@ def validate():
     validate_card_member_flow()
     validate_card_labels()
     validate_card_required_fields()
+    validate_validation_preservation()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',

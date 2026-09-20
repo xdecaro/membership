@@ -44,9 +44,21 @@ final class RecordModel extends BaseDatabaseModel
 
     public function getItem(int $id = 0): object
     {
-        $id = $id ?: Factory::getApplication()->input->getInt('id');
+        $app = Factory::getApplication();
+        $id = $id ?: $app->input->getInt('id');
+        $entity = $this->getEntityFromRequest();
+        $stateKey = 'com_decaromembership.record.' . $entity . '.' . $id . '.data';
+        $submitted = $app->getUserState($stateKey);
+
+        if (is_array($submitted)) {
+            $app->setUserState($stateKey, null);
+            $item = (object) $submitted;
+            $item->id = $id;
+            return $item;
+        }
+
         if ($id < 1) return (object) ['id' => 0];
-        return $this->repository()->load(EntityRegistry::get($this->getEntityFromRequest())['table'], $id) ?: (object) ['id' => 0];
+        return $this->repository()->load(EntityRegistry::get($entity)['table'], $id) ?: (object) ['id' => 0];
     }
 
     public function getRelationOptions(string $entity, int $includeId = 0): array
