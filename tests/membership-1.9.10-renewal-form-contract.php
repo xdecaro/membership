@@ -28,9 +28,19 @@ foreach ([
 }
 
 $expect(str_contains($it, 'COM_DECAROMEMBERSHIP_FIELD_RENEWAL_STATUS="Stato rinnovo"'), 'Italian renewal-status label missing.');
-$expect(!str_contains(
+$memberStart = strpos($model, "if (\$entity === 'members') {");
+$memberEnd = strpos(
     $model,
-    "$query->where($db->quoteName('published') . ' = 1');"
+    "\n        \$query = \$db->getQuery(true)\n            ->select([\$db->quoteName('id'), \$db->quoteName(\$config['title_field'], 'title')])",
+    $memberStart === false ? 0 : $memberStart
+);
+$memberBlock = ($memberStart !== false && $memberEnd !== false)
+    ? substr($model, $memberStart, $memberEnd - $memberStart)
+    : '';
+$expect($memberBlock !== '', 'Member relation block could not be isolated.');
+$expect(!str_contains(
+    $memberBlock,
+    "\$query->where(\$db->quoteName('published') . ' = 1');"
 ), 'Administrator member relations must not hide unpublished members.');
 
 foreach ([
