@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.7 - 2026-09-20
+- Added a dedicated **Card status** label to distinguish the card lifecycle state from Joomla publication state.
+- Added card-specific localized states; Italian now uses `Attiva`, `Scaduta`, `Smarrita`, `Revocata`, `Sostituita`.
+- Renamed the card publication field label to `Pubblicato` instead of the ambiguous generic `Stato`.
+- Administrator lists now localize configured select values instead of showing raw internal codes.
+- Preserves the complete Member → Card workflow introduced in 1.9.6; no data or schema rewrite.
+
 ## 1.9.6 - 2026-09-19
 - Improved the Member → Card flow: when no current card exists, the member profile now opens a new card record with that member preselected.
 - Member relation labels now resolve through People display names, with legacy/member-number fallbacks.
