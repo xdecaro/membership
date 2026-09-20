@@ -137,6 +137,40 @@ if ((int) $member->published !== 1) {
     $fail('New member did not default to published=1.');
 }
 
+$db->setQuery(
+    $db->getQuery(true)
+        ->update($db->quoteName('#__decaromembership_members'))
+        ->set($db->quoteName('published') . ' = 0')
+        ->where($db->quoteName('id') . ' = ' . (int) $memberId)
+)->execute();
+
+$memberOptions = $model->getRelationOptions('members');
+$memberOptionIds = array_map(static fn(object $row): int => (int) $row->id, $memberOptions);
+if (!in_array($memberId, $memberOptionIds, true)) {
+    $fail('Unpublished member disappeared from administrator relation options.');
+}
+
+$db->setQuery(
+    $db->getQuery(true)
+        ->update($db->quoteName('#__decaromembership_members'))
+        ->set($db->quoteName('published') . ' = 1')
+        ->where($db->quoteName('id') . ' = ' . (int) $memberId)
+)->execute();
+
+$renewalId = $model->saveEntity('renewals', 0, [
+    'member_id' => $memberId,
+    'association_year' => '2026',
+]);
+$renewal = $repository->load('#__decaromembership_renewals', $renewalId);
+if (!$renewal) {
+    $fail('Created renewal cannot be loaded.');
+}
+if ((string) $renewal->status !== 'due') {
+    $fail('Renewal did not default to due.');
+}
+if ((string) $renewal->payment_status !== 'unpaid') {
+    $fail('Renewal did not default to unpaid payment status.');
+}
 
 $today = \Joomla\CMS\Factory::getDate()->format('Y-m-d');
 foreach (['first_registration_date','admission_date','current_membership_start_date','status_effective_date'] as $field) {
