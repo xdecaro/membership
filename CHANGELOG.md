@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.8 - 2026-09-20
+- Made Card type mandatory in both the administrator form metadata and server-side record validation.
+- Made Card status mandatory in both the administrator form metadata and server-side record validation.
+- Added runtime regression checks that reject card creation when either required field is missing.
+- Dates, annual mark, QR token and notes remain optional.
+- No schema or existing-data rewrite is performed.
+
 ## 1.9.7 - 2026-09-20
 - Added a dedicated **Card status** label to distinguish the card lifecycle state from Joomla publication state.
 - Added card-specific localized states; Italian now uses `Attiva`, `Scaduta`, `Smarrita`, `Revocata`, `Sostituita`.
