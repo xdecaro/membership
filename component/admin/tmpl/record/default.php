@@ -22,12 +22,12 @@ $renderField=function(string $name,array $field,mixed $value) use($esc){
 $linkedUuid=strtolower(trim((string)($this->item->person_uuid??'')));
 $isMember=$this->entity==='members';
 $cardStatusKey=[
-    'pending'=>'COM_DECAROMEMBERSHIP_STATUS_PENDING',
-    'active'=>'COM_DECAROMEMBERSHIP_STATUS_ACTIVE',
-    'expired'=>'COM_DECAROMEMBERSHIP_STATUS_EXPIRED',
-    'lost'=>'COM_DECAROMEMBERSHIP_STATUS_LOST',
-    'revoked'=>'COM_DECAROMEMBERSHIP_STATUS_REVOKED',
-    'replaced'=>'COM_DECAROMEMBERSHIP_STATUS_REPLACED',
+    'pending'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_PENDING',
+    'active'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_ACTIVE',
+    'expired'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_EXPIRED',
+    'lost'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_LOST',
+    'revoked'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_REVOKED',
+    'replaced'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_REPLACED',
 ];
 $cardTypeKey=[
     'physical'=>'COM_DECAROMEMBERSHIP_CARD_PHYSICAL',
