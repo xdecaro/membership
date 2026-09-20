@@ -11,7 +11,7 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $version = trim((string) file_get_contents($root . '/VERSION'));
-$expect($version === '1.9.6', 'VERSION must be 1.9.6.');
+$expect(version_compare($version, '1.9.6', '>='), 'VERSION must be 1.9.6 or newer.');
 
 $model = (string) file_get_contents($root . '/component/admin/src/Model/RecordModel.php');
 $listModel = (string) file_get_contents($root . '/component/admin/src/Model/RecordsModel.php');

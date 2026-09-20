@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+  <changelog version="1.9.7" date="2026-09-20">
+    <change type="fix">Cards now use a dedicated card-status label instead of an ambiguous generic status label.</change>
+    <change type="fix">Italian card statuses use Attiva, Scaduta, Smarrita, Revocata and Sostituita.</change>
+    <change type="fix">The Joomla publication field is labeled Pubblicato in the card form.</change>
+    <change type="fix">Administrator lists localize configured select values instead of exposing raw codes.</change>
+  </changelog>
+
   <changelog version="1.9.6" date="2026-09-19">
     <change type="feature">Member profiles can create a new card with the member already selected.</change>
     <change type="fix">Member relation labels resolve through People instead of blank legacy identity fields.</change>

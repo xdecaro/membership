@@ -41,14 +41,14 @@ final class CaseEntities
                 'member_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_MEMBER','type'=>'relation','relation'=>'members','required'=>true],
                 'card_number'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CARD_NUMBER','type'=>'text','required'=>true,'unique'=>true],
                 'type'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CARD_TYPE','type'=>'select','options'=>['physical'=>'COM_DECAROMEMBERSHIP_CARD_PHYSICAL','electronic'=>'COM_DECAROMEMBERSHIP_CARD_ELECTRONIC']],
-                'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STATUS','type'=>'select','options'=>['pending'=>'COM_DECAROMEMBERSHIP_STATUS_PENDING','active'=>'COM_DECAROMEMBERSHIP_STATUS_ACTIVE','expired'=>'COM_DECAROMEMBERSHIP_STATUS_EXPIRED','lost'=>'COM_DECAROMEMBERSHIP_STATUS_LOST','revoked'=>'COM_DECAROMEMBERSHIP_STATUS_REVOKED','replaced'=>'COM_DECAROMEMBERSHIP_STATUS_REPLACED']],
+                'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CARD_STATUS','type'=>'select','options'=>['pending'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_PENDING','active'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_ACTIVE','expired'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_EXPIRED','lost'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_LOST','revoked'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_REVOKED','replaced'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_REPLACED']],
                 'issued_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_ISSUED_AT','type'=>'date'],
                 'activated_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_ACTIVATED_AT','type'=>'date'],
                 'expires_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_EXPIRY_DATE','type'=>'date'],
                 'annual_mark'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_ANNUAL_MARK','type'=>'text'],
                 'qr_token'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_QR_TOKEN','type'=>'text','unique'=>true],
                 'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
-                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
+                'published'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PUBLISHED','type'=>'published','default'=>1],
             ]],
         ];
     }
