@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.9.10 - 2026-09-20
+- Administrator member relation selectors no longer hide legacy members solely because `published = 0`.
+- Renewal status is labeled `Stato rinnovo`, is mandatory, and defaults to `Da rinnovare`.
+- Renewal payment status is mandatory and defaults to `Non pagato`.
+- Renewal publication is labeled `Pubblicato` instead of the ambiguous generic `Stato`.
+- Added runtime coverage for unpublished-member relation availability and renewal defaults.
+- No schema or existing-data rewrite is performed.
+
 ## 1.9.9 - 2026-09-20
 - Preserved submitted form values after validation errors instead of reopening a blank record.
 - Preserved the preselected member in the Member → Card flow after a failed save.
