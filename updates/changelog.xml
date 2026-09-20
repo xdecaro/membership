@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+  <changelog version="1.9.12" date="2026-09-21">
+    <change type="feature">Quote / Dues is now available directly from the Membership administrator menu.</change>
+    <change type="fix">Due amount and due status are mandatory; due status defaults to Non pagato.</change>
+    <change type="fix">Due publication is labeled Pubblicato.</change>
+  </changelog>
+
   <changelog version="1.9.11" date="2026-09-20">
     <change type="fix">Duplicate renewals now show a clear user-facing message instead of a raw database key error.</change>
     <change type="info">The database uniqueness constraint remains in place.</change>
