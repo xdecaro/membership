@@ -6,7 +6,7 @@ Membership è il componente Joomla 6 per la gestione del dominio associativo: so
 
 - Componente: `com_decaromembership`
 - Pacchetto: `pkg_decaromembership`
-- Versione corrente: **1.9.7**
+- Versione corrente: **1.9.8**
 - Joomla: `6.*`
 - PHP: `8.3+`
 - Core richiesto: **2.0.1+**
@@ -81,9 +81,13 @@ Membership 1.9.6 rende coerente il passaggio **Socio → Tessera**. Se il socio 
 
 Membership 1.9.7 completa la pulizia dell'interfaccia **Tessere**: il primo campo ora è **Stato tessera** e usa etichette specifiche al femminile (**Attiva, Scaduta, Smarrita, Revocata, Sostituita**), mentre il campo Joomla finale è chiaramente **Pubblicato**. Le liste amministrative traducono inoltre i valori dei campi select invece di mostrare i codici tecnici. La release include integralmente il flusso Socio → Tessera introdotto nella 1.9.6.
 
+### Validazione Tessere 1.9.8
+
+Membership 1.9.8 rende obbligatori **Tipo tessera** e **Stato tessera**, oltre a Socio e Numero tessera già obbligatori. Il controllo è applicato anche lato modello/server, quindi non può essere aggirato inviando il form senza quei valori. Restano facoltativi **Data emissione, Data attivazione, Data scadenza, Bollino annuale, Token QR e Note**.
+
 ## Xdecaro Core
 
-Membership 1.9.7 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
+Membership 1.9.8 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
 
 La pagina **Informazioni/Diagnostica** mostra le versioni installate e minime richieste di Core e People e lo stato di compatibilità/disponibilità delle relative API.
 
@@ -111,7 +115,7 @@ Il package registra l'update server Joomla `updates/pkg_decaromembership.xml`. I
 
 ## Test di integrazione
 
-La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.9.7 copre:
+La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.9.8 copre:
 
 - installazione pulita con Core 2.0.1 e People 1.2.15 pubblicati e fissati per SHA-256;
 - collegamento socio ↔ persona People e risoluzione batch dell'identità;
