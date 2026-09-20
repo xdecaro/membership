@@ -74,6 +74,29 @@ final class RecordRepository
         return (int) $this->db->setQuery($q)->loadResult() > 0;
     }
 
+    public function renewalDuplicateExists(int $memberId, string $associationYear, int $excludeId = 0): bool
+    {
+        if ($memberId < 1 || trim($associationYear) === '') {
+            return false;
+        }
+
+        $year = trim($associationYear);
+        $q = $this->db->getQuery(true)
+            ->select('COUNT(*)')
+            ->from($this->db->quoteName('#__decaromembership_renewals'))
+            ->where($this->db->quoteName('member_id') . ' = :member_id')
+            ->where($this->db->quoteName('association_year') . ' = :association_year')
+            ->bind(':member_id', $memberId, ParameterType::INTEGER)
+            ->bind(':association_year', $year);
+
+        if ($excludeId > 0) {
+            $q->where($this->db->quoteName('id') . ' <> :exclude_id')
+                ->bind(':exclude_id', $excludeId, ParameterType::INTEGER);
+        }
+
+        return (int) $this->db->setQuery($q)->loadResult() > 0;
+    }
+
     public function findMemberIdByPersonUuid(string $uuid, int $excludeId = 0): ?int
     {
         $q = $this->db->getQuery(true)
