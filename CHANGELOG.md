@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.9.12 - 2026-09-21
+- Added **Quote / Dues** to the Joomla administrator submenu.
+- Made due amount mandatory.
+- Renamed generic due `Stato` to `Stato quota`, made it mandatory, and defaulted it to `Non pagato`.
+- Labeled the Joomla publication field explicitly as `Pubblicato`.
+- Added IT/EN/FR submenu and due-status labels.
+- No schema or existing-data rewrite is performed.
+
 ## 1.9.11 - 2026-09-20
 - Added an application-level duplicate check for renewals by member and association year.
 - Replaced the raw database unique-key message with a clear user-facing duplicate-renewal message.
