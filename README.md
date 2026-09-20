@@ -6,7 +6,7 @@ Membership è il componente Joomla 6 per la gestione del dominio associativo: so
 
 - Componente: `com_decaromembership`
 - Pacchetto: `pkg_decaromembership`
-- Versione corrente: **1.9.11**
+- Versione corrente: **1.9.12**
 - Joomla: `6.*`
 - PHP: `8.3+`
 - Core richiesto: **2.0.1+**
@@ -97,9 +97,13 @@ Membership 1.9.10 rifinisce il modulo **Rinnovi**: i selettori amministrativi de
 
 Membership 1.9.11 mantiene il vincolo che impedisce due rinnovi dello stesso socio per lo stesso anno associativo, ma sostituisce l'errore SQL tecnico con un messaggio leggibile: **«Esiste già un rinnovo per questo socio e anno associativo.»**.
 
+### Quote 1.9.12
+
+Membership 1.9.12 espone finalmente **Quote** nel menu amministrativo. La quota registra il dovuto per socio e anno associativo; **Importo** e **Stato quota** sono obbligatori, con stato iniziale **Non pagato**, mentre il campo Joomla finale è chiaramente **Pubblicato**. Categoria, scadenza, riferimento, note e importo pagato restano disponibili come dati amministrativi.
+
 ## Xdecaro Core
 
-Membership 1.9.11 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
+Membership 1.9.12 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
 
 La pagina **Informazioni/Diagnostica** mostra le versioni installate e minime richieste di Core e People e lo stato di compatibilità/disponibilità delle relative API.
 
@@ -127,7 +131,7 @@ Il package registra l'update server Joomla `updates/pkg_decaromembership.xml`. I
 
 ## Test di integrazione
 
-La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.9.11 copre:
+La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.9.12 copre:
 
 - installazione pulita con Core 2.0.1 e People 1.2.15 pubblicati e fissati per SHA-256;
 - collegamento socio ↔ persona People e risoluzione batch dell'identità;
