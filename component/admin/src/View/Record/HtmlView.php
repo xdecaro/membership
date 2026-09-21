@@ -121,6 +121,60 @@ final class HtmlView extends BaseHtmlView
             }
         }
 
+
+        if ($this->entity !== 'members') {
+            $hasOrganizationField = false;
+            foreach ($this->config['fields'] as $field) {
+                if (($field['type'] ?? '') === 'organization') {
+                    $hasOrganizationField = true;
+                    break;
+                }
+            }
+
+            if ($hasOrganizationField) {
+                try {
+                    $membershipComponent = $app->bootComponent('com_decaromembership');
+                    $organizations = $membershipComponent->getOrganizationsIntegrationService();
+                    $this->organizationsAvailable = $organizations->isAvailable();
+
+                    if ($this->organizationsAvailable) {
+                        $options = [];
+                        foreach ($organizations->searchOrganizations('', 200) as $organization) {
+                            $organizationUuid = strtolower(trim((string) ($organization['uuid'] ?? '')));
+                            if ($organizationUuid !== '') {
+                                $options[$organizationUuid] = $organization;
+                            }
+                        }
+
+                        foreach ($this->config['fields'] as $fieldName => $field) {
+                            if (($field['type'] ?? '') !== 'organization') {
+                                continue;
+                            }
+
+                            $selectedUuid = strtolower(trim((string) ($this->item->{$fieldName} ?? '')));
+                            if ($selectedUuid === '') {
+                                continue;
+                            }
+
+                            try {
+                                $selectedOrganization = $organizations->getOrganization($selectedUuid);
+                                if ($selectedOrganization !== null) {
+                                    $options[$selectedUuid] = $selectedOrganization;
+                                }
+                            } catch (Throwable) {
+                                // Keep the stored UUID visible even if lookup fails.
+                            }
+                        }
+
+                        $this->organizationOptions = $this->buildOrganizationOptions(array_values($options));
+                    }
+                } catch (Throwable) {
+                    $this->organizationsAvailable = false;
+                    $this->organizationOptions = [];
+                }
+            }
+        }
+
         AdminAssetService::useAssets($this->getDocument());
         ToolbarHelper::title(Text::_($this->config['singular']), 'pencil');
         ToolbarHelper::apply('record.apply');
