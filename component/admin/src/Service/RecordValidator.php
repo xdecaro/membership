@@ -22,14 +22,29 @@ final class RecordValidator
 
     public function validateBusinessRules(string $entity, array $data): void
     {
-        if ($entity === 'transfers' && ($data['status'] ?? '') === 'completed') {
-            if (
-                empty($data['source_confirmed'])
-                || empty($data['destination_confirmed'])
-                || (float) ($data['arrears_amount'] ?? 0) > 0
-                || empty($data['effective_at'])
-            ) {
-                throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_TRANSFER_INCOMPLETE'));
+        if ($entity === 'transfers') {
+            $fromOrganization = strtolower(trim((string) ($data['from_organization_uuid'] ?? '')));
+            $toOrganization = strtolower(trim((string) ($data['to_organization_uuid'] ?? '')));
+
+            if ($fromOrganization !== '' && $toOrganization !== '' && $fromOrganization === $toOrganization) {
+                throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_TRANSFER_SAME_ORGANIZATION'));
+            }
+
+            if (($data['status'] ?? '') === 'completed') {
+                $delegationStatus = (string) ($data['delegation_status'] ?? '');
+                $stickerStatus = (string) ($data['sticker_status'] ?? '');
+
+                if (
+                    empty($data['source_confirmed'])
+                    || empty($data['destination_confirmed'])
+                    || (float) ($data['arrears_amount'] ?? 0) > 0
+                    || empty($data['effective_at'])
+                    || !in_array($delegationStatus, ['confirmed', 'not_required'], true)
+                    || $stickerStatus === '' || $stickerStatus === 'unchecked'
+                    || trim((string) ($data['card_position'] ?? '')) === ''
+                ) {
+                    throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_TRANSFER_INCOMPLETE'));
+                }
             }
         }
         if ($entity === 'relations' && (int) ($data['member_id'] ?? 0) > 0 && (int) ($data['member_id'] ?? 0) === (int) ($data['related_member_id'] ?? 0)) {
