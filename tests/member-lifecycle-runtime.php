@@ -192,6 +192,66 @@ if ((float) $due->amount !== 100.0) {
     $fail('Due amount was not persisted.');
 }
 
+$paymentDate = \Joomla\CMS\Factory::getDate()->format('Y-m-d');
+$paymentId = $model->saveEntity('payments', 0, [
+    'member_id' => $memberId,
+    'due_id' => $dueId,
+    'amount' => '40',
+    'method' => 'cash',
+    'status' => 'paid',
+    'paid_at' => $paymentDate,
+    'published' => 1,
+]);
+$dueAfterPartialPayment = $repository->load('#__decaromembership_dues', $dueId);
+if (!$dueAfterPartialPayment || (float) $dueAfterPartialPayment->paid_amount !== 40.0) {
+    $fail('Paid payment did not update due paid_amount to 40.00.');
+}
+if ((string) ($dueAfterPartialPayment->status ?? '') !== 'partial') {
+    $fail('Paid payment did not update due status to partial.');
+}
+
+$model->saveEntity('payments', $paymentId, [
+    'member_id' => $memberId,
+    'due_id' => $dueId,
+    'amount' => '100',
+    'method' => 'cash',
+    'status' => 'paid',
+    'paid_at' => $paymentDate,
+    'published' => 1,
+]);
+$dueAfterFullPayment = $repository->load('#__decaromembership_dues', $dueId);
+if (!$dueAfterFullPayment || (float) $dueAfterFullPayment->paid_amount !== 100.0) {
+    $fail('Updated paid payment did not update due paid_amount to 100.00.');
+}
+if ((string) ($dueAfterFullPayment->status ?? '') !== 'paid') {
+    $fail('Updated paid payment did not update due status to paid.');
+}
+
+$model->trashEntities('payments', [$paymentId]);
+$dueAfterPaymentTrash = $repository->load('#__decaromembership_dues', $dueId);
+if (!$dueAfterPaymentTrash || (float) $dueAfterPaymentTrash->paid_amount !== 0.0) {
+    $fail('Trashed payment did not restore due paid_amount to 0.00.');
+}
+if ((string) ($dueAfterPaymentTrash->status ?? '') !== 'unpaid') {
+    $fail('Trashed payment did not restore due status to unpaid.');
+}
+
+$paymentMismatchRejected = false;
+try {
+    $model->saveEntity('payments', 0, [
+        'member_id' => $memberId + 99999,
+        'due_id' => $dueId,
+        'amount' => '10',
+        'status' => 'paid',
+        'published' => 1,
+    ]);
+} catch (\RuntimeException $e) {
+    $paymentMismatchRejected = true;
+}
+if (!$paymentMismatchRejected) {
+    $fail('Payment linked to a due belonging to another member must be rejected.');
+}
+
 $today = \Joomla\CMS\Factory::getDate()->format('Y-m-d');
 foreach (['first_registration_date','admission_date','current_membership_start_date','status_effective_date'] as $field) {
     if ((string) ($member->{$field} ?? '') !== $today) {
