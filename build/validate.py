@@ -186,7 +186,6 @@ def validate_ordering_defaults():
 
 
 def validate_published_defaults():
-    marker = "'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1]"
     for path in (
         'component/admin/src/Config/MemberCoreEntities.php',
         'component/admin/src/Config/CaseEntities.php',
@@ -194,7 +193,13 @@ def validate_published_defaults():
         'component/admin/src/Config/OrganizationEntities.php',
         'component/admin/src/Config/FinanceEntities.php',
     ):
-        require(path, marker)
+        text = (ROOT / path).read_text()
+        fields = re.findall(r"'published'=>\[(.*?)\]", text)
+        if not fields:
+            fail(f'{path} missing published field')
+        for field in fields:
+            if "'type'=>'published'" not in field or "'default'=>1" not in field:
+                fail(f'{path} has invalid published field defaults')
     require('component/admin/tmpl/records/default.php', "'JPUBLISHED'", "'JUNPUBLISHED'", "==='published'")
     schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.2.sql'
     if not schema_marker.is_file():
