@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+  <changelog version="1.9.15" date="2026-09-22">
+    <change type="feature">Transfers now use Organizations-based source and destination pickers.</change>
+    <change type="feature">Completed transfers update the member organization and record history.</change>
+    <change type="fix">Transfer status is mandatory/defaulted and publication is labeled Pubblicato.</change>
+    <change type="feature">Delegation, sticker, card-position, arrears and confirmation checks gate completion.</change>
+    <change type="feature">Request and completion dates default automatically when appropriate.</change>
+  </changelog>
+
   <changelog version="1.9.14" date="2026-09-22">
     <change type="feature">Paid payments now recalculate the linked Quote paid amount and status automatically.</change>
     <change type="fix">Payment status is mandatory and publication is labeled Pubblicato.</change>

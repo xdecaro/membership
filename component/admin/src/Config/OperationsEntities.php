@@ -6,22 +6,23 @@ final class OperationsEntities
     public static function definitions(): array
     {
         return [
-            'transfers'=>['table'=>'#__decaromembership_transfers','label'=>'COM_DECAROMEMBERSHIP_TRANSFERS','singular'=>'COM_DECAROMEMBERSHIP_TRANSFER','title_field'=>'reference','search'=>['reference','status','notes'],'list'=>['reference','member_id','from_location_id','to_location_id','requested_at','status','source_confirmed','destination_confirmed','completed_at'],'fields'=>[
+            'transfers'=>['table'=>'#__decaromembership_transfers','label'=>'COM_DECAROMEMBERSHIP_TRANSFERS','singular'=>'COM_DECAROMEMBERSHIP_TRANSFER','title_field'=>'reference','search'=>['reference','status','notes'],'list'=>['reference','member_id','from_organization_uuid','to_organization_uuid','requested_at','status','delegation_status','sticker_status','source_confirmed','destination_confirmed','completed_at'],'fields'=>[
                 'reference'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_REFERENCE','type'=>'text','required'=>true,'unique'=>true],
                 'member_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_MEMBER','type'=>'relation','relation'=>'members','required'=>true],
-                'from_location_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_FROM_LOCATION','type'=>'relation','relation'=>'locations'],
-                'to_location_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_TO_LOCATION','type'=>'relation','relation'=>'locations','required'=>true],
+                'from_organization_uuid'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_FROM_ORGANIZATION','type'=>'organization'],
+                'to_organization_uuid'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_TO_ORGANIZATION','type'=>'organization','required'=>true],
                 'requested_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_REQUESTED_AT','type'=>'date'],
                 'effective_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_EFFECTIVE_AT','type'=>'date'],
-                'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STATUS','type'=>'select','options'=>['requested'=>'COM_DECAROMEMBERSHIP_TRANSFER_REQUESTED','waiting_source'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_SOURCE','waiting_destination'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_DESTINATION','waiting_documents'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_DOCUMENTS','waiting_arrears'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_ARREARS','completed'=>'COM_DECAROMEMBERSHIP_TRANSFER_COMPLETED','cancelled'=>'COM_DECAROMEMBERSHIP_TRANSFER_CANCELLED']],
-                'delegation_status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_DELEGATION_STATUS','type'=>'text'],
+                'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_TRANSFER_STATUS','type'=>'select','required'=>true,'default'=>'requested','options'=>['requested'=>'COM_DECAROMEMBERSHIP_TRANSFER_REQUESTED','waiting_source'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_SOURCE','waiting_destination'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_DESTINATION','waiting_documents'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_DOCUMENTS','waiting_arrears'=>'COM_DECAROMEMBERSHIP_TRANSFER_WAITING_ARREARS','completed'=>'COM_DECAROMEMBERSHIP_TRANSFER_COMPLETED','cancelled'=>'COM_DECAROMEMBERSHIP_TRANSFER_CANCELLED']],
+                'delegation_status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_DELEGATION_STATUS','type'=>'select','required'=>true,'default'=>'unchecked','options'=>['unchecked'=>'COM_DECAROMEMBERSHIP_TRANSFER_CHECK_UNCHECKED','pending'=>'COM_DECAROMEMBERSHIP_TRANSFER_CHECK_PENDING','confirmed'=>'COM_DECAROMEMBERSHIP_TRANSFER_DELEGATION_CONFIRMED','not_required'=>'COM_DECAROMEMBERSHIP_TRANSFER_CHECK_NOT_REQUIRED']],
                 'card_position'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_CARD_POSITION','type'=>'text'],
-                'arrears_amount'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_ARREARS','type'=>'money'],
+                'sticker_status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STICKER_STATUS','type'=>'select','required'=>true,'default'=>'unchecked','options'=>['unchecked'=>'COM_DECAROMEMBERSHIP_TRANSFER_CHECK_UNCHECKED','active'=>'COM_DECAROMEMBERSHIP_TRANSFER_STICKER_ACTIVE','inactive'=>'COM_DECAROMEMBERSHIP_TRANSFER_STICKER_INACTIVE','not_required'=>'COM_DECAROMEMBERSHIP_TRANSFER_CHECK_NOT_REQUIRED']],
+                'arrears_amount'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_ARREARS','type'=>'money','default'=>0],
                 'source_confirmed'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_SOURCE_CONFIRMED','type'=>'boolean'],
                 'destination_confirmed'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_DESTINATION_CONFIRMED','type'=>'boolean'],
                 'completed_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_COMPLETED_AT','type'=>'date'],
                 'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
-                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
+                'published'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PUBLISHED','type'=>'published','default'=>1],
             ]],
             'documents'=>['table'=>'#__decaromembership_documents','label'=>'COM_DECAROMEMBERSHIP_DOCUMENTS','singular'=>'COM_DECAROMEMBERSHIP_DOCUMENT','title_field'=>'title','search'=>['title','document_type','status'],'list'=>['title','member_id','case_id','document_type','status','issued_at','expires_at','external_document_id'],'fields'=>[
                 'title'=>['label'=>'JGLOBAL_TITLE','type'=>'text','required'=>true],

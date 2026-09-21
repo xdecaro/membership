@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.9.15 - 2026-09-22
+- Modernized Trasferimenti to use Organizations UUIDs for source and destination while preserving legacy location columns.
+- Added reusable Organizations pickers to generic Membership record forms.
+- Transfer source organization is derived from the member organization when omitted; destination organization is mandatory.
+- `Stato trasferimento` is mandatory and defaults to `Richiesto`; publication is explicitly labeled `Pubblicato`.
+- Added structured delegation and sticker checks plus card-position verification before completion.
+- Completion requires source/destination confirmation, no arrears, an effective date, delegation verified/not required, sticker checked, and card position filled.
+- New transfers default Data richiesta to today; completed transfers default Data completamento to today when blank.
+- Completing a transfer updates the member organization to the destination and records membership history.
+- Added runtime and contract regression coverage; migration is non-destructive.
+
 ## 1.9.14 - 2026-09-22
 - Made payment status explicit and mandatory, defaulting to `pending` / `In attesa`.
 - Labeled payment publication explicitly as `Pubblicato`.

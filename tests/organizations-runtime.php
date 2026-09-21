@@ -231,4 +231,84 @@ if (!$history || strtolower((string) ($history['new_organization_uuid'] ?? '')) 
     $fail('Membership history did not preserve the Organizations link.');
 }
 
-echo "Membership optional Organizations runtime contract OK\n";
+$transferDestinationUuid = '550e8400-e29b-41d4-a716-446655440122';
+$today = \Joomla\CMS\Factory::getDate()->format('Y-m-d');
+
+$transferId = $model->saveEntity('transfers', 0, [
+    'reference' => 'CI-TRANSFER-001',
+    'member_id' => $linkedId,
+    'to_organization_uuid' => $transferDestinationUuid,
+    'status' => 'requested',
+    'delegation_status' => 'unchecked',
+    'sticker_status' => 'unchecked',
+    'published' => 1,
+]);
+
+$transfer = $repository->load('#__decaromembership_transfers', $transferId);
+if (!$transfer) {
+    $fail('Organizations-based transfer was not created.');
+}
+if (strtolower((string) ($transfer->from_organization_uuid ?? '')) !== $organizationUuid) {
+    $fail('Transfer source organization was not derived from the member organization.');
+}
+if (strtolower((string) ($transfer->to_organization_uuid ?? '')) !== $transferDestinationUuid) {
+    $fail('Transfer destination organization was not persisted.');
+}
+if ((string) ($transfer->requested_at ?? '') !== $today) {
+    $fail('New transfer did not default Data richiesta to today.');
+}
+
+$incompleteRejected = false;
+try {
+    $model->saveEntity('transfers', $transferId, [
+        'reference' => 'CI-TRANSFER-001',
+        'member_id' => $linkedId,
+        'from_organization_uuid' => $organizationUuid,
+        'to_organization_uuid' => $transferDestinationUuid,
+        'requested_at' => $today,
+        'effective_at' => $today,
+        'status' => 'completed',
+        'delegation_status' => 'unchecked',
+        'card_position' => '',
+        'sticker_status' => 'unchecked',
+        'arrears_amount' => 0,
+        'source_confirmed' => 1,
+        'destination_confirmed' => 1,
+        'published' => 1,
+    ]);
+} catch (\RuntimeException) {
+    $incompleteRejected = true;
+}
+if (!$incompleteRejected) {
+    $fail('Transfer completed without delegation/card/sticker checks must be rejected.');
+}
+
+$model->saveEntity('transfers', $transferId, [
+    'reference' => 'CI-TRANSFER-001',
+    'member_id' => $linkedId,
+    'from_organization_uuid' => $organizationUuid,
+    'to_organization_uuid' => $transferDestinationUuid,
+    'requested_at' => $today,
+    'effective_at' => $today,
+    'status' => 'completed',
+    'delegation_status' => 'confirmed',
+    'card_position' => 'Verified',
+    'sticker_status' => 'active',
+    'arrears_amount' => 0,
+    'source_confirmed' => 1,
+    'destination_confirmed' => 1,
+    'completed_at' => '',
+    'published' => 1,
+]);
+
+$completedTransfer = $repository->load('#__decaromembership_transfers', $transferId);
+if (!$completedTransfer || (string) ($completedTransfer->completed_at ?? '') !== $today) {
+    $fail('Completed transfer did not default Data completamento to today.');
+}
+
+$transferredMember = $repository->load('#__decaromembership_members', $linkedId);
+if (!$transferredMember || strtolower((string) ($transferredMember->organization_uuid ?? '')) !== $transferDestinationUuid) {
+    $fail('Completed transfer did not update member organization.');
+}
+
+echo "Membership optional Organizations and transfer runtime contract OK\n";

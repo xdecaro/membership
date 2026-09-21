@@ -170,8 +170,52 @@ final class RecordModel extends BaseDatabaseModel
     {
         if (!EntityRegistry::has($entity)) throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_INVALID_ENTITY'));
         $config = EntityRegistry::get($entity);
+        $repository = $this->repository();
+        $old = $id > 0 ? $repository->load($config['table'], $id) : null;
+
+        if ($entity === 'transfers') {
+            $today = Factory::getDate()->format('Y-m-d');
+
+            if ($id < 1 && trim((string) ($input['requested_at'] ?? '')) === '') {
+                $input['requested_at'] = $today;
+            }
+
+            if (($input['status'] ?? 'requested') === 'completed' && trim((string) ($input['completed_at'] ?? '')) === '') {
+                $input['completed_at'] = $today;
+            }
+
+            if (trim((string) ($input['from_organization_uuid'] ?? '')) === '' && (int) ($input['member_id'] ?? 0) > 0) {
+                $member = $repository->load('#__decaromembership_members', (int) $input['member_id']);
+                $memberOrganization = strtolower(trim((string) ($member->organization_uuid ?? '')));
+                if ($memberOrganization !== '') {
+                    $input['from_organization_uuid'] = $memberOrganization;
+                }
+            }
+        }
+
         $validator = new RecordValidator();
         $data = $validator->filter($config, $input);
+
+        if ($entity === 'transfers') {
+            $organizations = new OrganizationsIntegrationService();
+
+            foreach (['from_organization_uuid', 'to_organization_uuid'] as $fieldName) {
+                $uuid = strtolower(trim((string) ($data[$fieldName] ?? '')));
+                $data[$fieldName] = $uuid === '' ? null : $uuid;
+
+                if ($uuid !== '') {
+                    if (!$organizations->isAvailable()) {
+                        throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ORGANIZATIONS_UNAVAILABLE'));
+                    }
+                    $data[$fieldName] = $organizations->validateOptionalUuid($uuid);
+                }
+            }
+
+            if (($data['arrears_amount'] ?? null) === null) {
+                $data['arrears_amount'] = 0.0;
+            }
+        }
+
         $validator->validateBusinessRules($entity, $data);
 
         if ($entity === 'dues' && ($data['paid_amount'] ?? null) === null) {
@@ -185,8 +229,6 @@ final class RecordModel extends BaseDatabaseModel
             );
         }
 
-        $repository = $this->repository();
-        $old = $id > 0 ? $repository->load($config['table'], $id) : null;
         $audit = new AuditService($this->getDatabase());
 
         if ($entity === 'members') {
@@ -292,10 +334,20 @@ final class RecordModel extends BaseDatabaseModel
 
         if ($entity === 'transfers' && $new && ($new->status ?? '') === 'completed' && (!$old || ($old->status ?? '') !== 'completed')) {
             $memberId = (int) ($new->member_id ?? 0);
-            $destinationId = (int) ($new->to_location_id ?? 0);
-            if ($memberId > 0 && $destinationId > 0) {
+            $destinationOrganization = strtolower(trim((string) ($new->to_organization_uuid ?? '')));
+            $legacyDestinationId = (int) ($new->to_location_id ?? 0);
+
+            if ($memberId > 0 && ($destinationOrganization !== '' || $legacyDestinationId > 0)) {
                 $beforeMember = $repository->load('#__decaromembership_members', $memberId);
-                $repository->updateMemberLocation($memberId, $destinationId, $now, $userId);
+
+                if ($destinationOrganization !== '') {
+                    $repository->updateMemberOrganization($memberId, $destinationOrganization, $now, $userId);
+                }
+
+                if ($legacyDestinationId > 0) {
+                    $repository->updateMemberLocation($memberId, $legacyDestinationId, $now, $userId);
+                }
+
                 $afterMember = $repository->load('#__decaromembership_members', $memberId);
                 if ($afterMember) {
                     $history->recordMemberChange(
