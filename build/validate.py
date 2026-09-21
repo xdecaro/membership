@@ -537,8 +537,53 @@ def validate_payment_sync():
         fail('Membership 1.9.14 schema marker must be non-destructive')
 
 
+def validate_transfer_workflow():
+    require(
+        'component/admin/src/Config/OperationsEntities.php',
+        "'from_organization_uuid'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_FROM_ORGANIZATION','type'=>'organization']",
+        "'to_organization_uuid'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_TO_ORGANIZATION','type'=>'organization','required'=>true]",
+        "'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_TRANSFER_STATUS','type'=>'select','required'=>true,'default'=>'requested'",
+        "'sticker_status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STICKER_STATUS','type'=>'select','required'=>true,'default'=>'unchecked'",
+    )
+    require(
+        'component/admin/src/Model/RecordModel.php',
+        "$input['requested_at'] = $today",
+        "$input['completed_at'] = $today",
+        'updateMemberOrganization',
+    )
+    require(
+        'component/admin/src/Service/RecordValidator.php',
+        'COM_DECAROMEMBERSHIP_ERROR_TRANSFER_SAME_ORGANIZATION',
+        "in_array($delegationStatus, ['confirmed', 'not_required'], true)",
+        "$stickerStatus === '' || $stickerStatus === 'unchecked'",
+    )
+    require(
+        'component/admin/tmpl/record/default.php',
+        "case 'organization':",
+        'data-membership-organization-picker',
+    )
+    require(
+        'component/admin/src/View/Record/HtmlView.php',
+        "($field['type'] ?? '') === 'organization'",
+        'organizationOptions',
+    )
+    require(
+        'tests/membership-1.9.15-transfer-workflow-contract.php',
+        'transfer workflow contract',
+    )
+    schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.15.sql'
+    if not schema_marker.is_file():
+        fail('Membership 1.9.15 schema update missing')
+    schema_sql = schema_marker.read_text()
+    for marker in ('from_organization_uuid', 'to_organization_uuid', 'sticker_status'):
+        if marker not in schema_sql:
+            fail(f'1.9.15 schema missing {marker}')
+    if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE|DROP\s+COLUMN)\b', schema_sql, re.I):
+        fail('Membership 1.9.15 schema update must be non-destructive')
+
+
 def validate():
-    if VERSION != '1.9.14':
+    if VERSION != '1.9.15':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -602,6 +647,7 @@ def validate():
     validate_dues_menu()
     validate_due_paid_amount()
     validate_payment_sync()
+    validate_transfer_workflow()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',
