@@ -12,6 +12,7 @@ use Xdecaro\Component\Decaromembership\Administrator\Service\MembershipHistorySe
 use Xdecaro\Component\Decaromembership\Administrator\Service\MemberLifecycleService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\OrganizationsIntegrationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\PeopleIntegrationService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\PaymentAllocationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\RecordRepository;
 use Xdecaro\Component\Decaromembership\Administrator\Service\RecordValidator;
 
@@ -40,6 +41,36 @@ final class RecordModel extends BaseDatabaseModel
     public function getCurrentMemberCard(int $memberId): ?object
     {
         return $this->repository()->loadCurrentMemberCard($memberId);
+    }
+
+    private function recalculatePaymentDues(
+        RecordRepository $repository,
+        AuditService $audit,
+        array $dueIds,
+        int $userId,
+        string $now
+    ): void {
+        $service = new PaymentAllocationService($this->getDatabase());
+
+        foreach (array_unique(array_filter(array_map('intval', $dueIds))) as $dueId) {
+            $before = $repository->load('#__decaromembership_dues', $dueId);
+            if (!$before) {
+                continue;
+            }
+
+            $service->recalculateDue($dueId, $userId, $now);
+            $after = $repository->load('#__decaromembership_dues', $dueId);
+
+            if (
+                $after
+                && (
+                    (float) ($before->paid_amount ?? 0) !== (float) ($after->paid_amount ?? 0)
+                    || (string) ($before->status ?? '') !== (string) ($after->status ?? '')
+                )
+            ) {
+                $audit->record('dues', $dueId, 'payment_recalculate', $userId, $before, $after, $now);
+            }
+        }
     }
 
     public function getItem(int $id = 0): object
@@ -147,6 +178,13 @@ final class RecordModel extends BaseDatabaseModel
             $data['paid_amount'] = 0.0;
         }
 
+        if ($entity === 'payments') {
+            (new PaymentAllocationService($this->getDatabase()))->validateDueMember(
+                (int) ($data['due_id'] ?? 0),
+                (int) ($data['member_id'] ?? 0)
+            );
+        }
+
         $repository = $this->repository();
         $old = $id > 0 ? $repository->load($config['table'], $id) : null;
         $audit = new AuditService($this->getDatabase());
@@ -234,6 +272,19 @@ final class RecordModel extends BaseDatabaseModel
         $new = $repository->load($config['table'], $id);
         $audit->record($entity, $id, $old ? 'update' : 'create', $userId, $old, $new, $now);
 
+        if ($entity === 'payments') {
+            $this->recalculatePaymentDues(
+                $repository,
+                $audit,
+                [
+                    (int) ($old->due_id ?? 0),
+                    (int) ($new->due_id ?? 0),
+                ],
+                $userId,
+                $now
+            );
+        }
+
         $history = new MembershipHistoryService($this->getDatabase());
         if ($entity === 'members' && $new) {
             $history->recordMemberChange($id, $old, $new, $userId, $now);
@@ -285,6 +336,15 @@ final class RecordModel extends BaseDatabaseModel
             if (!$old) continue;
             $repository->trash($config['table'], $id, $now, $userId);
             $audit->record($entity, $id, 'trash', $userId, $old, $repository->load($config['table'], $id), $now);
+            if ($entity === 'payments') {
+                $this->recalculatePaymentDues(
+                    $repository,
+                    $audit,
+                    [(int) ($old->due_id ?? 0)],
+                    $userId,
+                    $now
+                );
+            }
         }
     }
 }
