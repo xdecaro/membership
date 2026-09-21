@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+  <changelog version="1.9.14" date="2026-09-22">
+    <change type="feature">Paid payments now recalculate the linked Quote paid amount and status automatically.</change>
+    <change type="fix">Payment status is mandatory and publication is labeled Pubblicato.</change>
+    <change type="fix">A payment cannot be linked to a Quote belonging to a different Socio.</change>
+    <change type="change">Rinnovi no longer duplicates financial amount/payment status in its administrator form.</change>
+  </changelog>
+
   <changelog version="1.9.13" date="2026-09-21">
     <change type="fix">Quote saving no longer fails when Importo pagato is blank; the value is stored as zero.</change>
     <change type="test">Added runtime coverage for unpaid dues with blank paid amount.</change>
