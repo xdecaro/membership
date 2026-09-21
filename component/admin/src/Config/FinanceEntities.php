@@ -23,12 +23,12 @@ final class FinanceEntities
                 'due_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_DUE','type'=>'relation','relation'=>'dues'],
                 'amount'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_AMOUNT','type'=>'money','required'=>true],
                 'method'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PAYMENT_METHOD','type'=>'select','options'=>['cash'=>'COM_DECAROMEMBERSHIP_METHOD_CASH','bank_transfer'=>'COM_DECAROMEMBERSHIP_METHOD_BANK_TRANSFER','card'=>'COM_DECAROMEMBERSHIP_METHOD_CARD','online'=>'COM_DECAROMEMBERSHIP_METHOD_ONLINE','other'=>'COM_DECAROMEMBERSHIP_METHOD_OTHER']],
-                'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_STATUS','type'=>'select','options'=>['pending'=>'COM_DECAROMEMBERSHIP_STATUS_PENDING','paid'=>'COM_DECAROMEMBERSHIP_PAYMENT_PAID','refunded'=>'COM_DECAROMEMBERSHIP_PAYMENT_REFUNDED','void'=>'COM_DECAROMEMBERSHIP_PAYMENT_VOID']],
+                'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PAYMENT_STATUS','type'=>'select','required'=>true,'default'=>'pending','options'=>['pending'=>'COM_DECAROMEMBERSHIP_STATUS_PENDING','paid'=>'COM_DECAROMEMBERSHIP_PAYMENT_PAID','refunded'=>'COM_DECAROMEMBERSHIP_PAYMENT_REFUNDED','void'=>'COM_DECAROMEMBERSHIP_PAYMENT_VOID']],
                 'paid_at'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PAID_AT','type'=>'date'],
                 'reference'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_REFERENCE','type'=>'text','unique'=>true],
                 'receipt_number'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_RECEIPT_NUMBER','type'=>'text','unique'=>true],
                 'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
-                'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
+                'published'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PUBLISHED','type'=>'published','default'=>1],
             ]],
         ];
     }
