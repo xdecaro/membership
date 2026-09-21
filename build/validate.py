@@ -424,7 +424,6 @@ def validate_renewal_form():
     require(
         'component/admin/src/Config/CaseEntities.php',
         "'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_RENEWAL_STATUS','type'=>'select','required'=>true,'default'=>'due'",
-        "'payment_status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PAYMENT_STATUS','type'=>'select','required'=>true,'default'=>'unpaid'",
     )
     require(
         'component/admin/src/Model/RecordModel.php',
