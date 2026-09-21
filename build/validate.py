@@ -505,8 +505,36 @@ def validate_due_paid_amount():
         fail('Membership 1.9.13 schema marker must be non-destructive')
 
 
+def validate_payment_sync():
+    require(
+        'component/admin/src/Config/FinanceEntities.php',
+        "'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PAYMENT_STATUS','type'=>'select','required'=>true,'default'=>'pending'",
+        "'published'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PUBLISHED','type'=>'published','default'=>1]",
+    )
+    require(
+        'component/admin/src/Service/PaymentAllocationService.php',
+        'final class PaymentAllocationService',
+        'validateDueMember',
+        'recalculateDue',
+    )
+    require(
+        'component/admin/src/Model/RecordModel.php',
+        'recalculatePaymentDues',
+        'new PaymentAllocationService',
+    )
+    require(
+        'tests/membership-1.9.14-payment-sync-contract.php',
+        'payment sync contract',
+    )
+    schema_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.14.sql'
+    if not schema_marker.is_file():
+        fail('Membership 1.9.14 schema marker missing')
+    if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE|DROP\s+COLUMN)\b', schema_marker.read_text(), re.I):
+        fail('Membership 1.9.14 schema marker must be non-destructive')
+
+
 def validate():
-    if VERSION != '1.9.13':
+    if VERSION != '1.9.14':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -569,6 +597,7 @@ def validate():
     validate_renewal_duplicate_message()
     validate_dues_menu()
     validate_due_paid_amount()
+    validate_payment_sync()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',
