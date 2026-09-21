@@ -6,7 +6,7 @@ Membership è il componente Joomla 6 per la gestione del dominio associativo: so
 
 - Componente: `com_decaromembership`
 - Pacchetto: `pkg_decaromembership`
-- Versione corrente: **1.9.13**
+- Versione corrente: **1.9.14**
 - Joomla: `6.*`
 - PHP: `8.3+`
 - Core richiesto: **2.0.1+**
@@ -105,9 +105,15 @@ Membership 1.9.12 espone finalmente **Quote** nel menu amministrativo. La quota 
 
 Se **Importo pagato** viene lasciato vuoto, Membership 1.9.13 lo normalizza automaticamente a **0,00** prima del salvataggio. Il campo resta quindi facoltativo e una quota non pagata può essere registrata senza compilare manualmente lo zero.
 
+### Pagamenti 1.9.14
+
+Membership 1.9.14 rende **Quote** e **Pagamenti** la fonte autorevole dei dati economici. **Rinnovi** resta amministrativo e non duplica più importo o stato del pagamento nel modulo.
+
+Nel modulo Pagamento, **Stato pagamento** è obbligatorio e parte prudentemente da **In attesa**; il campo Joomla finale è **Pubblicato**. Quando un pagamento collegato a una quota passa a **Pagato**, Membership ricalcola automaticamente **Importo pagato** e **Stato quota** (`Non pagato`, `Parzialmente pagato`, `Pagato`). Anche modifica, rimborso/annullamento tramite stato e cestinamento del pagamento fanno ricalcolare la quota. Un pagamento non può inoltre essere collegato a una quota appartenente a un socio diverso.
+
 ## Xdecaro Core
 
-Membership 1.9.13 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
+Membership 1.9.14 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
 
 La pagina **Informazioni/Diagnostica** mostra le versioni installate e minime richieste di Core e People e lo stato di compatibilità/disponibilità delle relative API.
 
@@ -135,7 +141,7 @@ Il package registra l'update server Joomla `updates/pkg_decaromembership.xml`. I
 
 ## Test di integrazione
 
-La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.9.13 copre:
+La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.9.14 copre:
 
 - installazione pulita con Core 2.0.1 e People 1.2.15 pubblicati e fissati per SHA-256;
 - collegamento socio ↔ persona People e risoluzione batch dell'identità;

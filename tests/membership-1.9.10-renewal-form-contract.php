@@ -21,7 +21,6 @@ $update = (string) file_get_contents($root . '/component/admin/sql/updates/mysql
 
 foreach ([
     "'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_RENEWAL_STATUS','type'=>'select','required'=>true,'default'=>'due'",
-    "'payment_status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PAYMENT_STATUS','type'=>'select','required'=>true,'default'=>'unpaid'",
     "'published'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PUBLISHED','type'=>'published','default'=>1]",
 ] as $marker) {
     $expect(str_contains($config, $marker), "Renewal config marker missing {$marker}.");
@@ -46,7 +45,6 @@ $expect(!str_contains(
 foreach ([
     'Unpublished member disappeared from administrator relation options.',
     'Renewal did not default to due.',
-    'Renewal did not default to unpaid payment status.',
 ] as $marker) {
     $expect(str_contains($runtime, $marker), "Runtime renewal regression missing {$marker}.");
 }

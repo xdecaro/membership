@@ -35,6 +35,9 @@ final class RecordValidator
         if ($entity === 'relations' && (int) ($data['member_id'] ?? 0) > 0 && (int) ($data['member_id'] ?? 0) === (int) ($data['related_member_id'] ?? 0)) {
             throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_SELF_RELATION'));
         }
+        if ($entity === 'payments' && (float) ($data['amount'] ?? 0) <= 0) {
+            throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_PAYMENT_AMOUNT_POSITIVE'));
+        }
     }
 
     private function filterValue(mixed $raw, array $field): mixed

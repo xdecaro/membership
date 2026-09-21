@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.9.14 - 2026-09-22
+- Made payment status explicit and mandatory, defaulting to `pending` / `In attesa`.
+- Labeled payment publication explicitly as `Pubblicato`.
+- Added validation that a linked Quote belongs to the selected Socio and that payment amount is positive.
+- Added automatic Quote recalculation from published payments in `paid` status after create/update/trash operations.
+- Quote `paid_amount` and status now move automatically between unpaid, partial and paid according to linked completed payments; waived dues remain waived.
+- Removed duplicated amount/payment-status fields from the Rinnovi administrator form/list so Quote/Pagamenti remain the financial source of truth.
+- Added runtime coverage for partial payment, full payment, trash reversal and member/due mismatch rejection.
+- No schema or existing-data rewrite is performed.
+
 ## 1.9.13 - 2026-09-21
 - Fixed Quote saving when `Importo pagato` is left blank.
 - Blank due `paid_amount` is normalized to `0.00` before persistence, matching the database non-null/default semantics.

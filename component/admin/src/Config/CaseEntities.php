@@ -26,14 +26,12 @@ final class CaseEntities
                 'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
                 'published'=>['label'=>'JSTATUS','type'=>'published','default'=>1],
             ]],
-            'renewals'=>['table'=>'#__decaromembership_renewals','label'=>'COM_DECAROMEMBERSHIP_RENEWALS','singular'=>'COM_DECAROMEMBERSHIP_RENEWAL','title_field'=>'association_year','search'=>['association_year','status'],'list'=>['member_id','association_year','status','renewal_date','expiry_date','amount','payment_status'],'fields'=>[
+            'renewals'=>['table'=>'#__decaromembership_renewals','label'=>'COM_DECAROMEMBERSHIP_RENEWALS','singular'=>'COM_DECAROMEMBERSHIP_RENEWAL','title_field'=>'association_year','search'=>['association_year','status'],'list'=>['member_id','association_year','status','renewal_date','expiry_date'],'fields'=>[
                 'member_id'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_MEMBER','type'=>'relation','relation'=>'members','required'=>true],
                 'association_year'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_ASSOCIATION_YEAR','type'=>'text','required'=>true],
                 'renewal_date'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_RENEWAL_DATE','type'=>'date'],
                 'expiry_date'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_EXPIRY_DATE','type'=>'date'],
                 'status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_RENEWAL_STATUS','type'=>'select','required'=>true,'default'=>'due','options'=>['due'=>'COM_DECAROMEMBERSHIP_RENEWAL_DUE','in_progress'=>'COM_DECAROMEMBERSHIP_RENEWAL_IN_PROGRESS','completed'=>'COM_DECAROMEMBERSHIP_RENEWAL_COMPLETED','late'=>'COM_DECAROMEMBERSHIP_RENEWAL_LATE','cancelled'=>'COM_DECAROMEMBERSHIP_RENEWAL_CANCELLED']],
-                'amount'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_AMOUNT','type'=>'money'],
-                'payment_status'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PAYMENT_STATUS','type'=>'select','required'=>true,'default'=>'unpaid','options'=>['unpaid'=>'COM_DECAROMEMBERSHIP_PAYMENT_UNPAID','partial'=>'COM_DECAROMEMBERSHIP_PAYMENT_PARTIAL','paid'=>'COM_DECAROMEMBERSHIP_PAYMENT_PAID','refunded'=>'COM_DECAROMEMBERSHIP_PAYMENT_REFUNDED']],
                 'notes'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_NOTES','type'=>'textarea'],
                 'published'=>['label'=>'COM_DECAROMEMBERSHIP_FIELD_PUBLISHED','type'=>'published','default'=>1],
             ]],
