@@ -16,6 +16,55 @@ $renderField=function(string $name,array $field,mixed $value) use($esc){
         case 'date': ?><input type="date" id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" value="<?= $esc($value) ?>"<?= $required ?>><?php break;
         case 'number': case 'money': ?><input type="number" step="<?= ($field['type']??'')==='money'?'0.01':'1' ?>" id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" value="<?= $esc($value) ?>"<?= $required ?>><?php break;
         case 'email': ?><input type="email" id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" value="<?= $esc($value) ?>"<?= $required ?>><?php break;
+        case 'organization':
+            if($this->organizationsAvailable):
+                $searchId='membership_organization_search_'.$name;
+                ?>
+                <div class="dm-organization-picker" data-membership-organization-picker>
+                  <label class="visually-hidden" for="<?= $esc($searchId) ?>"><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_SEARCH') ?></label>
+                  <input
+                    type="search"
+                    id="<?= $esc($searchId) ?>"
+                    data-membership-organization-search
+                    autocomplete="off"
+                    placeholder="<?= $esc(Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_SEARCH_PLACEHOLDER')) ?>"
+                    aria-controls="jform_<?= $esc($name) ?>"
+                  >
+                  <select id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" data-membership-organization-select<?= $required ?>>
+                    <option value="" data-search=""><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_NONE') ?></option>
+                    <?php foreach($this->organizationOptions as $organization):
+                        $uuid=strtolower(trim((string)($organization['uuid']??'')));
+                        if($uuid==='') continue;
+                        $orgName=trim((string)($organization['name']??''));
+                        $pathText=trim((string)($organization['path']??$orgName));
+                        $type=trim((string)($organization['type']??''));
+                        $key=sprintf('COM_%s_%s','DECAROMEMBERSHIP','ORGANIZATION_TYPE_'.strtoupper(preg_replace('/[^a-z0-9]+/i','_',$type)));
+                        $typeLabel=$type===''?'':Text::_($key);
+                        if($typeLabel===$key) $typeLabel=$type;
+                        $depth=max(0,min(12,(int)($organization['depth']??0)));
+                        $prefix=$depth>0 ? str_repeat(' ',$depth).'↳ ' : '';
+                        $label=$prefix.$orgName;
+                        if($typeLabel!=='') $label.=' · '.$typeLabel;
+                        $searchText=trim($pathText.' '.$orgName.' '.$typeLabel);
+                    ?>
+                      <option
+                        value="<?= $esc($uuid) ?>"
+                        data-search="<?= $esc($searchText) ?>"
+                        data-path="<?= $esc($pathText) ?>"
+                        <?= strtolower(trim((string)$value))===$uuid?' selected':'' ?>
+                      ><?= $esc($label) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                  <small class="dm-muted" data-membership-organization-path></small>
+                  <small class="dm-muted" data-membership-organization-empty hidden><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_SEARCH_EMPTY') ?></small>
+                </div>
+            <?php else: ?>
+                <?php if(trim((string)$value)!==''): ?>
+                  <input type="hidden" id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" value="<?= $esc($value) ?>">
+                <?php endif; ?>
+                <div class="alert alert-warning mb-0"><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATIONS_UNAVAILABLE') ?></div>
+            <?php endif;
+            break;
         default: ?><input type="text" id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" value="<?= $esc($value) ?>"<?= $required ?>><?php endswitch; ?></div>
     <?php return (string)ob_get_clean();
 };
