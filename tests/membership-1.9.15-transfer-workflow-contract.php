@@ -53,7 +53,7 @@ foreach ([
 }
 
 foreach ([
-    "($field['type'] ?? '') === 'organization'",
+    '(\$field[\'type\'] ?? \'\') === \'organization\'',
     "data-membership-organization-picker",
     "case 'organization':",
 ] as $marker) {
