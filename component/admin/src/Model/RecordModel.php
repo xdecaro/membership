@@ -106,6 +106,7 @@ final class RecordModel extends BaseDatabaseModel
                     $db->quoteName('first_name'),
                     $db->quoteName('last_name'),
                     $db->quoteName('member_number'),
+                    $db->quoteName('organization_uuid'),
                 ])
                 ->from($db->quoteName($config['table']));
 
@@ -184,10 +185,11 @@ final class RecordModel extends BaseDatabaseModel
                 $input['completed_at'] = $today;
             }
 
-            if (trim((string) ($input['from_organization_uuid'] ?? '')) === '' && (int) ($input['member_id'] ?? 0) > 0) {
+            if ($id < 1 && (int) ($input['member_id'] ?? 0) > 0) {
                 $member = $repository->load('#__decaromembership_members', (int) $input['member_id']);
                 $memberOrganization = strtolower(trim((string) ($member->organization_uuid ?? '')));
                 if ($memberOrganization !== '') {
+                    // The member's current organization is authoritative for a new transfer.
                     $input['from_organization_uuid'] = $memberOrganization;
                 }
             }
