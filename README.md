@@ -6,7 +6,7 @@ Membership è il componente Joomla 6 per la gestione del dominio associativo: so
 
 - Componente: `com_decaromembership`
 - Pacchetto: `pkg_decaromembership`
-- Versione corrente: **1.9.16**
+- Versione corrente: **1.9.17**
 - Joomla: `6.*`
 - PHP: `8.3+`
 - Core richiesto: **2.0.1+**
@@ -21,7 +21,7 @@ Membership mantiene il proprio `member_id` come chiave stabile per rinnovi, tess
 
 L'upgrade 1.4.0 → 1.6.0 è non distruttivo: i campi anagrafici legacy restano nel database e i soci esistenti possono rimanere temporaneamente non collegati. Il backfill automatico collega soltanto corrispondenze deterministiche basate su un `user_id` People univoco. Il normale salvataggio non può cambiare un collegamento People già esistente; la correzione passa da un'azione esplicita con ACL dedicata e audit UUID-only.
 
-Le liste soci risolvono le identità People in batch per evitare N+1. Se People o una persona collegata non è temporaneamente disponibile, Membership mantiene accessibile il record associativo e mostra uno stato controllato invece di interrogare direttamente i dati People.
+Le liste soci risolvono le identità People in batch per evitare N+1. Da Membership 1.9.17, se una versione compatibile di People restituisce un batch incompleto, Membership conserva il batch come percorso veloce e recupera solo gli UUID mancanti tramite il provider pubblico `getPerson()`. Non vengono eseguite query dirette alle tabelle People. Se People o una persona collegata non è temporaneamente disponibile, Membership mantiene accessibile il record associativo e mostra uno stato controllato.
 
 ## Organizations opzionale
 
@@ -119,9 +119,13 @@ Lo **Stato trasferimento** è obbligatorio e parte da **Richiesto**; il campo Jo
 
 In **1.9.16**, quando si seleziona il socio in un nuovo trasferimento, **Sede di provenienza** viene valorizzata immediatamente nell'interfaccia con l'organizzazione attuale del socio. In salvataggio, la stessa organizzazione corrente del socio resta la fonte autorevole per la provenienza del nuovo trasferimento.
 
+### Correzione People batch 1.9.17
+
+Membership 1.9.17 corregge il caso reale in cui la lista Soci riceve da People solo una parte delle identità richieste in un lookup multiplo e mostra quindi **Persona People non disponibile** per persone che sono in realtà collegate correttamente tramite UUID. Il componente mantiene il lookup batch per prestazioni e usa il provider pubblico People singolo soltanto per gli UUID mancanti. Nessun dato Membership o People viene riscritto e non viene introdotto accesso diretto alle tabelle People.
+
 ## Xdecaro Core
 
-Membership 1.9.16 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
+Membership 1.9.17 richiede **Core by xdecaro 2.0.1+**. Core fornisce i contratti condivisi dell'ecosistema e rimane separato dalle regole Membership: non contiene soci, pratiche, rinnovi, tessere, quote, pagamenti o trasferimenti.
 
 La pagina **Informazioni/Diagnostica** mostra le versioni installate e minime richieste di Core e People e lo stato di compatibilità/disponibilità delle relative API.
 
@@ -149,7 +153,7 @@ Il package registra l'update server Joomla `updates/pkg_decaromembership.xml`. I
 
 ## Test di integrazione
 
-La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.9.16 copre:
+La CI verifica sintassi PHP, manifest/XML, build deterministica, confini tra componenti e runtime reale su Joomla 6.1.3. Per Membership 1.9.17 copre:
 
 - installazione pulita con Core 2.0.1 e People 1.2.15 pubblicati e fissati per SHA-256;
 - collegamento socio ↔ persona People e risoluzione batch dell'identità;

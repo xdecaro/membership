@@ -608,7 +608,7 @@ def validate_transfer_source_autofill():
 
 
 def validate():
-    if VERSION != '1.9.16':
+    if VERSION != '1.9.17':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -674,6 +674,15 @@ def validate():
     validate_payment_sync()
     validate_transfer_workflow()
     validate_transfer_source_autofill()
+    require(
+        'tests/membership-1.9.17-people-batch-fallback-contract.php',
+        'Membership 1.9.17 People batch fallback contract OK',
+    )
+    batch_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.17.sql'
+    if not batch_marker.is_file():
+        fail('Membership 1.9.17 schema marker missing')
+    if re.search(r'\\b(?:DROP\\s+TABLE|TRUNCATE\\s+TABLE|DROP\\s+COLUMN)\\b', batch_marker.read_text(), re.I):
+        fail('Membership 1.9.17 schema marker must be non-destructive')
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',
