@@ -77,11 +77,79 @@ final class PeopleIntegrationService
 
     public function getPeopleByUuids(array $uuids): array
     {
-        try {
-            return (array) $this->provider()->getPeopleByUuids($uuids, false);
-        } catch (Throwable $e) {
-            throw new RuntimeException('People batch lookup is unavailable: ' . $e->getMessage(), (int) $e->getCode(), $e);
+        $normalized = [];
+        foreach ($uuids as $uuid) {
+            $uuid = strtolower(trim((string) $uuid));
+            if ($uuid !== '') {
+                $normalized[$uuid] = $uuid;
+            }
         }
+
+        if ($normalized === []) {
+            return [];
+        }
+
+        $provider = $this->provider();
+        $resolved = [];
+        $batchException = null;
+
+        try {
+            $batch = (array) $provider->getPeopleByUuids(array_values($normalized), false);
+
+            foreach ($batch as $key => $person) {
+                if (!is_array($person)) {
+                    continue;
+                }
+
+                $uuid = strtolower(trim((string) ($person['uuid'] ?? (is_string($key) ? $key : ''))));
+                if ($uuid !== '' && isset($normalized[$uuid])) {
+                    $resolved[$uuid] = $person;
+                }
+            }
+        } catch (Throwable $e) {
+            $batchException = $e;
+        }
+
+        // Some compatible People versions can return an incomplete batch when
+        // several UUIDs are bound in a single query. Preserve the batch fast
+        // path, then resolve only the missing UUIDs through the public provider.
+        foreach ($normalized as $uuid) {
+            if (isset($resolved[$uuid])) {
+                continue;
+            }
+
+            try {
+                $person = $provider->getPerson($uuid, false);
+            } catch (Throwable) {
+                continue;
+            }
+
+            if (!is_array($person)) {
+                continue;
+            }
+
+            $resolvedUuid = strtolower(trim((string) ($person['uuid'] ?? '')));
+            if ($resolvedUuid === $uuid) {
+                $resolved[$uuid] = $person;
+            }
+        }
+
+        if ($resolved === [] && $batchException instanceof Throwable) {
+            throw new RuntimeException(
+                'People batch lookup is unavailable: ' . $batchException->getMessage(),
+                (int) $batchException->getCode(),
+                $batchException
+            );
+        }
+
+        $result = [];
+        foreach ($normalized as $uuid) {
+            if (isset($resolved[$uuid])) {
+                $result[$uuid] = $resolved[$uuid];
+            }
+        }
+
+        return $result;
     }
 
     public function findByUserIdUnique(int $userId): ?array
