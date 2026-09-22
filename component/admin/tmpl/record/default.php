@@ -318,7 +318,7 @@ $organizationTypeLabel=static function(string $type): string {
   <?php foreach($this->config['fields'] as $name=>$field):
       $value=$this->item->$name??($field['default']??'');
       if(($field['type']??'')==='relation'): ?>
-        <div class="dm-field"><label for="jform_<?= $esc($name) ?>"><?= Text::_($field['label']) ?><?= ($field['required']??false)?' *':'' ?></label><select id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]"<?= ($field['required']??false)?' required':'' ?>><option value="">-</option><?php foreach($this->relations[$name]??[] as $opt): ?><option value="<?= (int)$opt->id ?>"<?= (int)$value===(int)$opt->id?' selected':'' ?>><?= $esc($opt->title) ?></option><?php endforeach; ?></select></div>
+        <div class="dm-field"><label for="jform_<?= $esc($name) ?>"><?= Text::_($field['label']) ?><?= ($field['required']??false)?' *':'' ?></label><select id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]"<?= ($field['required']??false)?' required':'' ?>><option value="">-</option><?php foreach($this->relations[$name]??[] as $opt): ?><option value="<?= (int)$opt->id ?>"<?php if(isset($opt->organization_uuid)): ?> data-organization-uuid="<?= $esc(strtolower(trim((string)$opt->organization_uuid))) ?>"<?php endif; ?><?= (int)$value===(int)$opt->id?' selected':'' ?>><?= $esc($opt->title) ?></option><?php endforeach; ?></select></div>
       <?php else: echo $renderField($name,$field,$value); endif; ?>
   <?php endforeach; ?>
   </div>
