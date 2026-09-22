@@ -86,6 +86,39 @@ if ($mode === 'clean') {
         $fail('Membership cannot resolve the seeded People person.');
     }
 
+    $batchSeeds = [
+        '550e8400-e29b-41d4-a716-446655440002' => ['CI Batch Alpha', 'Batch', 'Alpha'],
+        '550e8400-e29b-41d4-a716-446655440003' => ['CI Batch Beta', 'Batch', 'Beta'],
+    ];
+    foreach ($batchSeeds as $batchUuid => [$displayName, $firstName, $lastName]) {
+        $row = (object) [
+            'uuid' => $batchUuid,
+            'display_name' => $displayName,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => strtolower(str_replace(' ', '-', $displayName)) . '@example.invalid',
+            'person_status' => 'active',
+            'state' => 1,
+            'access' => 1,
+            'created' => '2026-09-15 18:00:30',
+            'created_by' => (int) $admin->id,
+            'modified_by' => 0,
+        ];
+        $db->insertObject('#__xdecaropeople_people', $row);
+    }
+
+    $batch = $people->getPeopleByUuids(array_merge([$uuid], array_keys($batchSeeds)));
+    $expectedBatchNames = [
+        $uuid => 'CI People Person',
+        '550e8400-e29b-41d4-a716-446655440002' => 'CI Batch Alpha',
+        '550e8400-e29b-41d4-a716-446655440003' => 'CI Batch Beta',
+    ];
+    foreach ($expectedBatchNames as $batchUuid => $displayName) {
+        if (($batch[$batchUuid]['display_name'] ?? '') !== $displayName) {
+            $fail('Membership People batch fallback did not resolve all requested identities.');
+        }
+    }
+
     $repository = new \Xdecaro\Component\Decaromembership\Administrator\Service\RecordRepository($db);
     $audit = new \Xdecaro\Component\Decaromembership\Administrator\Service\AuditService($db);
     $linker = new \Xdecaro\Component\Decaromembership\Administrator\Service\MemberPeopleLinkService($repository, $people, $audit);
