@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+  <changelog version="1.9.16" date="2026-09-22">
+    <change type="fix">Sede di provenienza now auto-fills from the selected member current organization in Trasferimenti.</change>
+    <change type="fix">New transfer saves enforce the member current organization as the source.</change>
+  </changelog>
+
   <changelog version="1.9.15" date="2026-09-22">
     <change type="feature">Transfers now use Organizations-based source and destination pickers.</change>
     <change type="feature">Completed transfers update the member organization and record history.</change>

@@ -52,6 +52,7 @@ jobs:
           php tests/membership-1.9.13-due-paid-amount-contract.php
           php tests/membership-1.9.14-payment-sync-contract.php
           php tests/membership-1.9.15-transfer-workflow-contract.php
+          php tests/membership-1.9.16-transfer-source-autofill-contract.php
       - run: python3 build/build.py && python3 build/validate.py --dist
       - run: python3 build/update_feed_checksum.py
       - name: Verify updater metadata
@@ -65,7 +66,7 @@ jobs:
         env: {GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          gh release create "v${VERSION}" dist/*_${VERSION}.zip dist/SHA256SUMS.txt --title "Membership by xdecaro ${VERSION}" --notes "Membership ${VERSION}: modernizes Trasferimenti with Organizations-based source/destination, explicit Stato trasferimento and Pubblicato labels, delegation/sticker/card/arrears completion checks, automatic request/completion dates, and automatic member-organization update on completion. Joomla 6 only."
+          gh release create "v${VERSION}" dist/*_${VERSION}.zip dist/SHA256SUMS.txt --title "Membership by xdecaro ${VERSION}" --notes "Membership ${VERSION}: auto-fills Sede di provenienza in Trasferimenti from the selected member's current Organizations link, and enforces that source on new transfer saves. Joomla 6 only."
       - name: Publish checksum
         run: |
           VERSION="${{ steps.version.outputs.version }}"; git config user.name github-actions[bot]; git config user.email 41898282+github-actions[bot]@users.noreply.github.com; git add updates/pkg_decaromembership.xml; if git diff --cached --quiet; then exit 0; fi; git commit -m "Publish SHA-256 for Membership ${VERSION}"; git pull --rebase origin main; git push origin HEAD:main

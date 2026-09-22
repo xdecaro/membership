@@ -582,8 +582,33 @@ def validate_transfer_workflow():
         fail('Membership 1.9.15 schema update must be non-destructive')
 
 
+def validate_transfer_source_autofill():
+    require(
+        'component/admin/src/Model/RecordModel.php',
+        "$db->quoteName('organization_uuid')",
+        "if ($id < 1 && (int) ($input['member_id'] ?? 0) > 0)",
+        "$input['from_organization_uuid'] = $memberOrganization",
+    )
+    require(
+        'component/admin/tmpl/record/default.php',
+        'data-organization-uuid=',
+    )
+    require(
+        'component/media/js/admin.js',
+        'const initTransferSourceOrganization = () => {',
+        "document.getElementById('jform_member_id')",
+        "document.getElementById('jform_from_organization_uuid')",
+        'option?.dataset?.organizationUuid',
+        'initTransferSourceOrganization();',
+    )
+    require(
+        'tests/membership-1.9.16-transfer-source-autofill-contract.php',
+        'transfer source autofill contract',
+    )
+
+
 def validate():
-    if VERSION != '1.9.15':
+    if VERSION != '1.9.16':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [
@@ -648,6 +673,7 @@ def validate():
     validate_due_paid_amount()
     validate_payment_sync()
     validate_transfer_workflow()
+    validate_transfer_source_autofill()
 
     require(
         'component/admin/src/Service/CoreIntegrationService.php',

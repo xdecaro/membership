@@ -168,6 +168,33 @@
     updatePath();
   };
 
+  const initTransferSourceOrganization = () => {
+    const form = document.getElementById('adminForm');
+    const member = document.getElementById('jform_member_id');
+    const source = document.getElementById('jform_from_organization_uuid');
+
+    if (!form || !member || !source || form.querySelector('input[name="entity"]')?.value !== 'transfers') return;
+
+    const applyMemberOrganization = () => {
+      const option = member.options[member.selectedIndex];
+      const organizationUuid = String(option?.dataset?.organizationUuid || '').trim().toLowerCase();
+
+      if (organizationUuid === '') {
+        source.value = '';
+      } else {
+        source.value = organizationUuid;
+      }
+
+      source.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+
+    member.addEventListener('change', applyMemberOrganization);
+
+    if (member.value !== '' && source.value === '') {
+      applyMemberOrganization();
+    }
+  };
+
   const initPeopleRelink = () => {
     document.querySelectorAll('[data-membership-person-relink]').forEach((toggle) => {
       toggle.addEventListener('click', () => {
@@ -226,6 +253,7 @@
 
     document.querySelectorAll('[data-membership-people-picker]').forEach(membershipPeopleSearch);
     document.querySelectorAll('[data-membership-organization-picker]').forEach(initOrganizationPicker);
+    initTransferSourceOrganization();
     initPeopleRelink();
   });
 })();

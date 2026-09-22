@@ -11,7 +11,7 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
 };
 
 $version = trim((string) file_get_contents($root . '/VERSION'));
-$expect($version === '1.9.15', 'VERSION must be 1.9.15.');
+$expect(version_compare($version, '1.9.15', '>='), 'VERSION must be 1.9.15 or newer.');
 
 $config = (string) file_get_contents($root . '/component/admin/src/Config/OperationsEntities.php');
 $model = (string) file_get_contents($root . '/component/admin/src/Model/RecordModel.php');
@@ -34,7 +34,7 @@ foreach ([
 }
 
 foreach ([
-    "trim((string) (\$input['from_organization_uuid'] ?? '')) === ''",
+    "if (\$id < 1 && (int) (\$input['member_id'] ?? 0) > 0)",
     "\$input['requested_at'] = \$today",
     "\$input['completed_at'] = \$today",
     'validateOptionalUuid',
