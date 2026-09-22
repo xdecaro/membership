@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.16 - 2026-09-22
+- Auto-fills `Sede di provenienza` in Trasferimenti immediately when a member with an Organizations link is selected.
+- Exposes the current member organization in relation options for the transfer UI.
+- Enforces the member's current organization as the authoritative source organization when creating a new transfer.
+- Adds regression coverage; no schema or existing-data changes.
+
 ## 1.9.15 - 2026-09-22
 - Modernized Trasferimenti to use Organizations UUIDs for source and destination while preserving legacy location columns.
 - Added reusable Organizations pickers to generic Membership record forms.
