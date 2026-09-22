@@ -193,7 +193,7 @@ jobs:
           php cli/joomla.php extension:install --path="$GITHUB_WORKSPACE/dist/pkg_decaromembership_${VERSION}.zip" -vvv
           MYSQL=(mysql --protocol=TCP -h127.0.0.1 -uroot --batch --skip-column-names joomla)
           membership_schema="$("${MYSQL[@]}" -e "SELECT s.version_id FROM mem_schemas s JOIN mem_extensions e ON e.extension_id=s.extension_id WHERE e.type='component' AND e.element='com_decaromembership' LIMIT 1;")"
-          test "$membership_schema" = '1.9.16'
+          test "$membership_schema" = '1.9.17'
           test "$("${MYSQL[@]}" -e "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema='joomla' AND table_name='mem_decaromembership_categories' AND column_name='code';")" = '1'
           test "$("${MYSQL[@]}" -e "SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema='joomla' AND table_name='mem_decaromembership_categories' AND index_name='uq_category_code';")" = '1'
           test "$("${MYSQL[@]}" -e "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema='joomla' AND table_name='mem_decaromembership_members' AND column_name='organization_uuid';")" = '1'
