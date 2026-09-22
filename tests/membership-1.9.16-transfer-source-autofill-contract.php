@@ -19,9 +19,9 @@ $js = (string) file_get_contents($root . '/component/media/js/admin.js');
 $update = (string) file_get_contents($root . '/component/admin/sql/updates/mysql/1.9.16.sql');
 
 foreach ([
-    "$db->quoteName('organization_uuid')",
-    "if ($id < 1 && (int) ($input['member_id'] ?? 0) > 0)",
-    "$input['from_organization_uuid'] = $memberOrganization",
+    '$db->quoteName(\'organization_uuid\')',
+    'if ($id < 1 && (int) ($input[\'member_id\'] ?? 0) > 0)',
+    '$input[\'from_organization_uuid\'] = $memberOrganization',
 ] as $marker) {
     $expect(str_contains($model, $marker), "Transfer source backend marker missing {$marker}.");
 }
