@@ -34,7 +34,7 @@ foreach ([
 }
 
 foreach ([
-    "trim((string) (\$input['from_organization_uuid'] ?? '')) === ''",
+    "if (\$id < 1 && (int) (\$input['member_id'] ?? 0) > 0)",
     "\$input['requested_at'] = \$today",
     "\$input['completed_at'] = \$today",
     'validateOptionalUuid',
