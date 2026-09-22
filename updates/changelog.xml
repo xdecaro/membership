@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelogs>
+  <changelog version="1.9.17" date="2026-09-22">
+    <change type="fix">Membership member lists recover People identities missing from an incomplete multi-UUID batch response.</change>
+    <change type="fix">Only missing UUIDs fall back to the public People getPerson contract; no private People table access is introduced.</change>
+    <change type="test">Added Joomla 6.1.3 runtime coverage for multiple People identities in one Membership list lookup.</change>
+  </changelog>
+
   <changelog version="1.9.16" date="2026-09-22">
     <change type="fix">Sede di provenienza now auto-fills from the selected member current organization in Trasferimenti.</change>
     <change type="fix">New transfer saves enforce the member current organization as the source.</change>
