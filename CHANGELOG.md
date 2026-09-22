@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.9.17 - 2026-09-22
+- Fixes incomplete People multi-UUID batch resolution in Membership member lists.
+- Keeps the batch provider as the fast path and resolves only missing UUIDs through the public People `getPerson()` contract.
+- Prevents false `Persona People non disponibile` labels for correctly linked members.
+- Adds multi-person Joomla 6.1.3 runtime regression coverage and a non-destructive schema marker; no Membership or People data is rewritten.
+
 ## 1.9.16 - 2026-09-22
 - Auto-fills `Sede di provenienza` in Trasferimenti immediately when a member with an Organizations link is selected.
 - Exposes the current member organization in relation options for the transfer UI.
