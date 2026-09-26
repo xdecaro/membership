@@ -249,7 +249,7 @@ def validate_transfer_source_autofill():
 
 
 def validate():
-    if VERSION != '1.9.18':
+    if VERSION != '1.9.19':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [ROOT / 'component/decaromembership.xml',ROOT / 'package/pkg_decaromembership.xml',ROOT / 'plugins/xdecaroanalytics/decaromembership/decaromembership.xml',ROOT / 'plugins/task/decaromembership/decaromembership.xml']
