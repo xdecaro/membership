@@ -6,6 +6,7 @@ use Joomla\CMS\Router\Route;
 $app=\Joomla\CMS\Factory::getApplication();
 $search=$app->input->getString('filter_search','');
 $peopleLink=$this->entity==='members'?$app->input->getCmd('people_link','all'):'all';
+$published=$this->entity==='members'?$app->input->getString('published','') : '';
 $order=$app->input->getCmd('order',$this->entity==='members'?'member_number':'id');
 $dir=strtoupper($app->input->getCmd('dir',$this->entity==='members'?'ASC':'DESC'))==='ASC'?'ASC':'DESC';
 $nextDir=fn($col)=>$order===$col&&$dir==='ASC'?'DESC':'ASC';
@@ -26,6 +27,13 @@ $base='index.php?option=com_decaromembership&view=records&entity='.$this->entity
           <option value="linked"<?= $peopleLink==='linked'?' selected':'' ?>><?= Text::_('COM_DECAROMEMBERSHIP_PEOPLE_LINK_LINKED') ?></option>
           <option value="unlinked"<?= $peopleLink==='unlinked'?' selected':'' ?>><?= Text::_('COM_DECAROMEMBERSHIP_PEOPLE_LINK_UNLINKED') ?></option>
         </select>
+        <label class="visually-hidden" for="published"><?= Text::_('JSTATUS') ?></label>
+        <select id="published" name="published" class="form-select">
+          <option value=""<?= $published===''?' selected':'' ?>><?= Text::_('JOPTION_SELECT_PUBLISHED') ?></option>
+          <option value="1"<?= $published==='1'?' selected':'' ?>><?= Text::_('JPUBLISHED') ?></option>
+          <option value="0"<?= $published==='0'?' selected':'' ?>><?= Text::_('JUNPUBLISHED') ?></option>
+          <option value="-2"<?= $published==='-2'?' selected':'' ?>><?= Text::_('JTRASHED') ?></option>
+        </select>
       <?php endif; ?>
       <button type="submit" class="btn btn-primary"><?= Text::_('JSEARCH_FILTER_SUBMIT') ?></button>
       <a class="btn btn-outline-secondary" href="<?= Route::_($base) ?>"><?= Text::_('JSEARCH_FILTER_CLEAR') ?></a>
@@ -37,7 +45,7 @@ $base='index.php?option=com_decaromembership&view=records&entity='.$this->entity
       <?php foreach($this->config['list'] as $column):
           $field=$this->config['fields'][$column]??['label'=>$column];
           $canSort=!($this->entity==='members'&&in_array($column,['first_name','last_name','email'],true));
-          $sortUrl=$base.'&filter_search='.rawurlencode($search).'&people_link='.rawurlencode($peopleLink).'&order='.$column.'&dir='.$nextDir($column);
+          $sortUrl=$base.'&filter_search='.rawurlencode($search).'&people_link='.rawurlencode($peopleLink).'&published='.rawurlencode($published).'&order='.$column.'&dir='.$nextDir($column);
       ?>
         <th><?php if($canSort): ?><a href="<?= Route::_($sortUrl) ?>"><?= Text::_($field['label']) ?></a><?php else: ?><?= Text::_($field['label']) ?><?php endif; ?></th>
       <?php endforeach; ?><th class="text-end">ID</th></tr></thead>
