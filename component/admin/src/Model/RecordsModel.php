@@ -33,9 +33,13 @@ final class RecordsModel extends ListModel
         $dir = strtoupper($app->input->getCmd('dir', $defaultDirection)) === 'ASC' ? 'ASC' : 'DESC';
         $peopleLink = strtolower($app->input->getCmd('people_link', 'all'));
         if (!in_array($peopleLink, ['all', 'linked', 'unlinked'], true)) { $peopleLink = 'all'; }
+        $publishedInput = $app->input->getString('published', '');
+        $published = $publishedInput === '' ? null : $app->input->getInt('published');
+        if ($published !== null && !in_array($published, [1, 0, -2], true)) { $published = null; }
         $this->setState('filter.entity', $entity);
         $this->setState('filter.search', trim($app->input->getString('filter_search', '')));
         $this->setState('filter.people_link', $entity === 'members' ? $peopleLink : 'all');
+        $this->setState('filter.published', $entity === 'members' ? $published : null);
         parent::populateState($order, $dir);
     }
 
@@ -44,6 +48,7 @@ final class RecordsModel extends ListModel
         $id .= ':' . $this->getState('filter.entity');
         $id .= ':' . $this->getState('filter.search');
         $id .= ':' . $this->getState('filter.people_link');
+        $id .= ':' . (string) $this->getState('filter.published', '');
         return parent::getStoreId($id);
     }
 
@@ -54,7 +59,16 @@ final class RecordsModel extends ListModel
         $config = EntityRegistry::get($entity);
         $query = $db->getQuery(true)->select('a.*')->from($db->quoteName($config['table'], 'a'));
         $search = (string) $this->getState('filter.search');
-        if (isset($config['fields']['published'])) { $query->where($db->quoteName('a.published') . ' >= 0'); }
+
+        if (isset($config['fields']['published'])) {
+            $published = $entity === 'members' ? $this->getState('filter.published') : null;
+            if ($published !== null && in_array((int) $published, [1, 0, -2], true)) {
+                $published = (int) $published;
+                $query->where($db->quoteName('a.published') . ' = :published')->bind(':published', $published);
+            } else {
+                $query->where($db->quoteName('a.published') . ' >= 0');
+            }
+        }
 
         if ($entity === 'members') {
             $peopleLink = (string) $this->getState('filter.people_link', 'all');
