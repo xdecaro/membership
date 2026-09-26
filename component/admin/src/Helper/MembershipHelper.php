@@ -18,7 +18,7 @@ final class MembershipHelper
             'com_decaroforms' => 'Forms by xdecaro',
             'com_decarodocuments' => 'Documents by xdecaro',
             'com_decarocourses' => 'Courses by xdecaro',
-            'com_decarodcl' => 'Competitions by xdecaro',
+            'com_xdecarocompetitions' => 'Competitions by xdecaro',
             'com_decaropayments' => 'Payments by xdecaro',
             'com_decarocertificates' => 'Certificates by xdecaro',
         ];
