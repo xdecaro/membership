@@ -249,7 +249,7 @@ def validate_transfer_source_autofill():
 
 
 def validate():
-    if VERSION != '1.9.19':
+    if VERSION != '1.9.20':
         fail(f'unexpected VERSION {VERSION!r}')
 
     manifests = [ROOT / 'component/decaromembership.xml',ROOT / 'package/pkg_decaromembership.xml',ROOT / 'plugins/xdecaroanalytics/decaromembership/decaromembership.xml',ROOT / 'plugins/task/decaromembership/decaromembership.xml']
@@ -279,6 +279,9 @@ def validate():
     batch_marker = ROOT / 'component/admin/sql/updates/mysql/1.9.17.sql'
     if not batch_marker.is_file(): fail('Membership 1.9.17 schema marker missing')
     if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE|DROP\s+COLUMN)\b', batch_marker.read_text(), re.I): fail('Membership 1.9.17 schema marker must be non-destructive')
+
+    integrations = require('component/admin/src/Helper/MembershipHelper.php', "'com_xdecarocompetitions' => 'Competitions by xdecaro'")
+    if "'com_decarodcl' => 'Competitions by xdecaro'" in integrations: fail('legacy Competitions component option remains')
 
     require('component/admin/src/Service/CoreIntegrationService.php', "COMPONENT='com_decaromembership'", 'CapabilityRegistry', 'membership.analytics.provider', 'membership.notifications.bridge', 'membership.tasks.bridge', 'membership.reminders.process')
     bridge = require('component/admin/src/Service/CrossProductIntegrationService.php', 'com_xdecaronotifications','getNotificationService','com_xdecarotasks','getTaskService','source_component')
