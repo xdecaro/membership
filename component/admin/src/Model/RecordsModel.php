@@ -39,7 +39,7 @@ final class RecordsModel extends ListModel
         $this->setState('filter.entity', $entity);
         $this->setState('filter.search', trim($app->input->getString('filter_search', '')));
         $this->setState('filter.people_link', $entity === 'members' ? $peopleLink : 'all');
-        $this->setState('filter.published', $entity === 'members' ? $published : null);
+        $this->setState('filter.published', isset($config['fields']['published']) ? $published : null);
         parent::populateState($order, $dir);
     }
 
@@ -61,7 +61,7 @@ final class RecordsModel extends ListModel
         $search = (string) $this->getState('filter.search');
 
         if (isset($config['fields']['published'])) {
-            $published = $entity === 'members' ? $this->getState('filter.published') : null;
+            $published = $this->getState('filter.published');
             if ($published !== null && in_array((int) $published, [1, 0, -2], true)) {
                 $published = (int) $published;
                 $query->where($db->quoteName('a.published') . ' = :published')->bind(':published', $published);
@@ -88,46 +88,20 @@ final class RecordsModel extends ListModel
                     $legacyConditions[] = $db->quoteName('a.' . $column) . ' LIKE ' . $placeholder;
                     $query->bind($placeholder, '%' . $search . '%');
                 }
-
                 $searchConditions = [];
-                if ($legacyConditions !== []) {
-                    $searchConditions[] = '(' . $db->quoteName('a.person_uuid') . ' IS NULL AND (' . implode(' OR ', $legacyConditions) . '))';
-                }
-
-                try {
-                    $peopleMatches = $this->people()->searchPeople($search, 200);
-                } catch (Throwable $e) {
-                    $peopleMatches = [];
-                }
-
+                if ($legacyConditions !== []) { $searchConditions[] = '(' . $db->quoteName('a.person_uuid') . ' IS NULL AND (' . implode(' OR ', $legacyConditions) . '))'; }
+                try { $peopleMatches = $this->people()->searchPeople($search, 200); } catch (Throwable $e) { $peopleMatches = []; }
                 $uuids = [];
-                foreach ($peopleMatches as $person) {
-                    $uuid = strtolower(trim((string) ($person['uuid'] ?? '')));
-                    if ($uuid !== '') { $uuids[$uuid] = $uuid; }
-                }
-
+                foreach ($peopleMatches as $person) { $uuid = strtolower(trim((string) ($person['uuid'] ?? ''))); if ($uuid !== '') { $uuids[$uuid] = $uuid; } }
                 if ($uuids !== []) {
                     $placeholders = [];
-                    foreach (array_values($uuids) as $i => $uuid) {
-                        $placeholder = ':person_uuid_' . $i;
-                        $placeholders[] = $placeholder;
-                        $query->bind($placeholder, $uuid);
-                    }
+                    foreach (array_values($uuids) as $i => $uuid) { $placeholder = ':person_uuid_' . $i; $placeholders[] = $placeholder; $query->bind($placeholder, $uuid); }
                     $searchConditions[] = $db->quoteName('a.person_uuid') . ' IN (' . implode(',', $placeholders) . ')';
                 }
-
-                if ($searchConditions !== []) {
-                    $query->where('(' . implode(' OR ', $searchConditions) . ')');
-                } else {
-                    $query->where('1 = 0');
-                }
+                if ($searchConditions !== []) { $query->where('(' . implode(' OR ', $searchConditions) . ')'); } else { $query->where('1 = 0'); }
             } else {
                 $conditions = [];
-                foreach ($config['search'] as $i => $column) {
-                    $placeholder = ':search' . $i;
-                    $conditions[] = $db->quoteName('a.' . $column) . ' LIKE ' . $placeholder;
-                    $query->bind($placeholder, '%' . $search . '%');
-                }
+                foreach ($config['search'] as $i => $column) { $placeholder = ':search' . $i; $conditions[] = $db->quoteName('a.' . $column) . ' LIKE ' . $placeholder; $query->bind($placeholder, '%' . $search . '%'); }
                 if ($conditions) { $query->where('(' . implode(' OR ', $conditions) . ')'); }
             }
         }
@@ -136,7 +110,6 @@ final class RecordsModel extends ListModel
         $dir = strtoupper((string) $this->getState('list.direction', $entity === 'members' ? 'ASC' : 'DESC')) === 'ASC' ? 'ASC' : 'DESC';
         $allowed = array_values(array_unique(array_merge(['id'], $config['list'])));
         if (!in_array($order, $allowed, true)) { $order = $entity === 'members' ? 'member_number' : 'id'; }
-
         if ($entity === 'members' && $order === 'member_number') {
             $query->order('CASE WHEN ' . $db->quoteName('a.member_number') . " IS NULL OR " . $db->quoteName('a.member_number') . " = '' THEN 1 ELSE 0 END ASC");
             $query->order($db->quoteName('a.member_number') . ' ' . $dir);
@@ -145,25 +118,15 @@ final class RecordsModel extends ListModel
             $query->order($db->quoteName('a.' . $order) . ' ' . $dir);
             if ($order !== 'id') { $query->order($db->quoteName('a.id') . ' ASC'); }
         }
-
         return $query;
     }
 
     public function resolvePeopleForItems(array $items): array
     {
         $uuids = [];
-        foreach ($items as $item) {
-            $uuid = strtolower(trim((string) ($item->person_uuid ?? '')));
-            if ($uuid !== '') { $uuids[$uuid] = $uuid; }
-        }
-
+        foreach ($items as $item) { $uuid = strtolower(trim((string) ($item->person_uuid ?? ''))); if ($uuid !== '') { $uuids[$uuid] = $uuid; } }
         if ($uuids === []) { return []; }
-
-        try {
-            return $this->people()->getPeopleByUuids(array_values($uuids));
-        } catch (Throwable $e) {
-            return [];
-        }
+        try { return $this->people()->getPeopleByUuids(array_values($uuids)); } catch (Throwable $e) { return []; }
     }
 
     public function getRelationMaps(): array
@@ -174,46 +137,17 @@ final class RecordsModel extends ListModel
             if (!$field || ($field['type'] ?? '') !== 'relation' || !EntityRegistry::has($field['relation'])) { continue; }
             $rel = EntityRegistry::get($field['relation']);
             if ($field['relation'] === 'members') {
-                $query = $db->getQuery(true)
-                    ->select([
-                        $db->quoteName('id'),
-                        $db->quoteName('person_uuid'),
-                        $db->quoteName('first_name'),
-                        $db->quoteName('last_name'),
-                        $db->quoteName('member_number'),
-                    ])
-                    ->from($db->quoteName($rel['table']));
-                $rows = $db->setQuery($query)->loadObjectList();
-
-                $uuids = [];
-                foreach ($rows as $row) {
-                    $uuid = strtolower(trim((string) ($row->person_uuid ?? '')));
-                    if ($uuid !== '') { $uuids[$uuid] = $uuid; }
-                }
-
+                $query = $db->getQuery(true)->select([$db->quoteName('id'),$db->quoteName('person_uuid'),$db->quoteName('first_name'),$db->quoteName('last_name'),$db->quoteName('member_number')])->from($db->quoteName($rel['table']));
+                $rows = $db->setQuery($query)->loadObjectList(); $uuids = [];
+                foreach ($rows as $row) { $uuid = strtolower(trim((string) ($row->person_uuid ?? ''))); if ($uuid !== '') { $uuids[$uuid] = $uuid; } }
                 $people = [];
-                if ($uuids !== []) {
-                    try {
-                        $people = $this->people()->getPeopleByUuids(array_values($uuids));
-                    } catch (Throwable) {
-                        $people = [];
-                    }
-                }
-
+                if ($uuids !== []) { try { $people = $this->people()->getPeopleByUuids(array_values($uuids)); } catch (Throwable) { $people = []; } }
                 foreach ($rows as $row) {
-                    $uuid = strtolower(trim((string) ($row->person_uuid ?? '')));
-                    $person = $uuid !== '' ? ($people[$uuid] ?? null) : null;
+                    $uuid = strtolower(trim((string) ($row->person_uuid ?? ''))); $person = $uuid !== '' ? ($people[$uuid] ?? null) : null;
                     $title = trim((string) ($person['display_name'] ?? ''));
-                    if ($title === '' && is_array($person)) {
-                        $title = trim((string) (($person['first_name'] ?? '') . ' ' . ($person['last_name'] ?? '')));
-                    }
-                    if ($title === '') {
-                        $title = trim((string) (($row->last_name ?? '') . ' ' . ($row->first_name ?? '')));
-                    }
-                    if ($title === '') {
-                        $memberNumber = trim((string) ($row->member_number ?? ''));
-                        $title = $memberNumber !== '' ? $memberNumber : '#' . (int) $row->id;
-                    }
+                    if ($title === '' && is_array($person)) { $title = trim((string) (($person['first_name'] ?? '') . ' ' . ($person['last_name'] ?? ''))); }
+                    if ($title === '') { $title = trim((string) (($row->last_name ?? '') . ' ' . ($row->first_name ?? ''))); }
+                    if ($title === '') { $memberNumber = trim((string) ($row->member_number ?? '')); $title = $memberNumber !== '' ? $memberNumber : '#' . (int) $row->id; }
                     $maps[$column][(int) $row->id] = $title;
                 }
             } else {
