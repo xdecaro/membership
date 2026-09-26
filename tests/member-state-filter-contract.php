@@ -17,9 +17,11 @@ $expect = static function (bool $condition, string $message) use (&$failures): v
 
 $expect(str_contains($model, "filter.published"), 'RecordsModel must keep a published-state filter.');
 $expect(str_contains($model, "getInt('published'"), 'RecordsModel must read the published-state filter from input.');
+$expect(!str_contains($model, "$entity === 'members' ? $published : null"), 'Published-state filtering must not be restricted to members.');
 $expect(str_contains($model, "a.published") && str_contains($model, "= :published"), 'RecordsModel must filter by the requested published state.');
-$expect(str_contains($template, 'name="published"'), 'Members list must render a published-state selector.');
-$expect(str_contains($template, "JTRASHED"), 'Members list must offer the trashed state.');
+$expect(str_contains($template, 'name="published"'), 'Publishable lists must render a published-state selector.');
+$expect(!str_contains($template, "$this->entity==='members'?$app->input->getString('published','') : ''"), 'Published-state selector must not be restricted to members.');
+$expect(str_contains($template, "JTRASHED"), 'Publishable lists must offer the trashed state.');
 $expect(str_contains($dashboard, "published") && str_contains($dashboard, ">= 0"), 'Dashboard counts must exclude trashed records for entities with published state.');
 
 if ($failures !== []) {
@@ -27,4 +29,4 @@ if ($failures !== []) {
     exit(1);
 }
 
-echo "Member state filter contract OK\n";
+echo "All entity state filter contract OK\n";
