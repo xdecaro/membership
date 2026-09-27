@@ -50,7 +50,8 @@ final class PeopleController extends BaseController
 
         try {
             $q = trim($this->input->getString('q', ''));
-            $rows = $this->people()->searchPeople($q, 20);
+            $limit = max(1, min(500, $this->input->getInt('limit', 20)));
+            $rows = $this->people()->searchPeople($q, $limit);
             $result = [];
             foreach ($rows as $row) {
                 $result[] = [

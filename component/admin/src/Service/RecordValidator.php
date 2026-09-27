@@ -53,6 +53,42 @@ final class RecordValidator
         if ($entity === 'payments' && (float) ($data['amount'] ?? 0) <= 0) {
             throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_PAYMENT_AMOUNT_POSITIVE'));
         }
+        if ($entity === 'cards') {
+            $scope = strtolower(trim((string) ($data['scope'] ?? 'association')));
+            $personUuid = strtolower(trim((string) ($data['person_uuid'] ?? '')));
+            $issuerUuid = strtolower(trim((string) ($data['issuer_organization_uuid'] ?? '')));
+            $status = strtolower(trim((string) ($data['status'] ?? 'pending')));
+            $cardNumber = trim((string) ($data['card_number'] ?? ''));
+
+            if ($personUuid !== '' && !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $personUuid)) {
+                throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_CARD_PERSON_INVALID'));
+            }
+            if ($issuerUuid !== '' && !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $issuerUuid)) {
+                throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_CARD_ISSUER_INVALID'));
+            }
+
+            if ($scope === 'competition') {
+                if ($personUuid === '') {
+                    throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_CARD_PERSON_REQUIRED'));
+                }
+                if ($issuerUuid === '') {
+                    throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_CARD_ISSUER_REQUIRED'));
+                }
+                if (empty($data['valid_from']) || empty($data['expires_at'])) {
+                    throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_DCL_VALIDITY_REQUIRED'));
+                }
+            }
+
+            if ($status === 'active' && $cardNumber === '') {
+                throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_CARD_NUMBER_ACTIVE_REQUIRED'));
+            }
+
+            $validFrom = trim((string) ($data['valid_from'] ?? ''));
+            $expiresAt = trim((string) ($data['expires_at'] ?? ''));
+            if ($validFrom !== '' && $expiresAt !== '' && $validFrom > $expiresAt) {
+                throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_DCL_VALIDITY_RANGE'));
+            }
+        }
     }
 
     private function filterValue(mixed $raw, array $field): mixed

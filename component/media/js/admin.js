@@ -32,6 +32,7 @@
 
     let timer = 0;
     let request = null;
+    let selectedLabel = input.value.trim();
 
     const clearResults = () => results.replaceChildren();
 
@@ -45,6 +46,7 @@
       if (relinkSubmit) relinkSubmit.disabled = target.value === '';
       clearResults();
       input.value = person.display_name || '';
+      selectedLabel = input.value.trim();
     };
 
     const render = (rows) => {
@@ -98,6 +100,107 @@
     };
 
     input.addEventListener('input', () => {
+      if (target.value && input.value.trim() !== selectedLabel) {
+        target.value = '';
+        target.dispatchEvent(new Event('change', { bubbles: true }));
+        if (summary) summary.hidden = true;
+      }
+      window.clearTimeout(timer);
+      timer = window.setTimeout(search, 250);
+    });
+  };
+
+  const initIssuerOrganizationPicker = (picker) => {
+    const input = picker.querySelector('[data-membership-issuer-search]');
+    const results = picker.querySelector('[data-membership-issuer-results]');
+    const target = picker.querySelector('[data-membership-issuer-target]');
+    const summary = picker.querySelector('[data-membership-issuer-summary]');
+    if (!input || !results || !target) return;
+
+    let timer = 0;
+    let request = null;
+    let selectedLabel = String(input.dataset.selectedLabel || input.value || '').trim();
+
+    const clearResults = () => results.replaceChildren();
+    const rowLabel = (row) => {
+      const name = String(row?.name || row?.short_name || row?.uuid || '').trim();
+      const meta = [row?.short_name && row.short_name !== name ? row.short_name : '', row?.type, row?.country]
+        .filter(Boolean)
+        .join(' · ');
+      return meta ? `${name} — ${meta}` : name;
+    };
+
+    const selectOrganization = (row) => {
+      const uuid = String(row?.uuid || '').trim().toLowerCase();
+      if (!uuid) return;
+      const label = rowLabel(row);
+      target.value = uuid;
+      target.dispatchEvent(new Event('change', { bubbles: true }));
+      input.value = label;
+      selectedLabel = label;
+      input.dataset.selectedLabel = label;
+      if (summary) {
+        summary.textContent = label;
+        summary.hidden = false;
+      }
+      clearResults();
+    };
+
+    const render = (rows) => {
+      clearResults();
+      if (!Array.isArray(rows) || rows.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'dm-people-empty';
+        empty.textContent = input.dataset.emptyLabel || 'Nessuna organizzazione trovata.';
+        results.appendChild(empty);
+        return;
+      }
+
+      rows.forEach((row) => {
+        if (!row?.uuid) return;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'dm-people-result';
+        button.textContent = rowLabel(row);
+        button.addEventListener('click', () => selectOrganization(row));
+        results.appendChild(button);
+      });
+    };
+
+    const search = async () => {
+      const q = input.value.trim();
+      if (q.length < 2 || q === selectedLabel) {
+        clearResults();
+        return;
+      }
+
+      if (request) request.abort();
+      request = new AbortController();
+      const url = new URL(endpoint('organizations.search'), window.location.href);
+      url.searchParams.set('q', q);
+      const token = tokenName();
+      if (token) url.searchParams.set(token, '1');
+
+      try {
+        const response = await fetch(url.toString(), {
+          headers: { Accept: 'application/json' },
+          signal: request.signal,
+        });
+        const payload = await response.json();
+        if (!response.ok || payload?.success === false) {
+          throw new Error(payload?.message || `HTTP ${response.status}`);
+        }
+        render(payload?.data || []);
+      } catch (error) {
+        if (error?.name !== 'AbortError') showError(error?.message);
+      }
+    };
+
+    input.addEventListener('input', () => {
+      if (input.value.trim() !== selectedLabel) {
+        target.value = '';
+        if (summary) summary.hidden = true;
+      }
       window.clearTimeout(timer);
       timer = window.setTimeout(search, 250);
     });
@@ -195,6 +298,190 @@
     }
   };
 
+  const initDclCardForm = () => {
+    const form = document.getElementById('adminForm');
+    if (!form || form.querySelector('input[name="entity"]')?.value !== 'cards') return;
+
+    const scope = form.querySelector('[data-membership-card-scope]');
+    const seasonSelect = form.querySelector('[data-membership-dcl-season]');
+    const seasonValue = form.querySelector('[data-membership-dcl-season-value]');
+    const validFrom = document.getElementById('jform_valid_from');
+    const expiry = document.getElementById('jform_expires_at');
+    const issuerSearch = form.querySelector('[data-membership-issuer-search]');
+    const issuerTarget = form.querySelector('[data-membership-issuer-target]');
+    const issuerAssociation = form.querySelector('[data-membership-issuer-association]');
+    const issuerCompetition = form.querySelector('[data-membership-issuer-competition]');
+    const issuerCompetitionLabel = form.querySelector('[data-membership-issuer-competition-label]');
+    const numberField = form.querySelector('[data-membership-card-number-field]');
+    const manualNumber = form.querySelector('[data-membership-card-number-manual]');
+    const automaticNumber = form.querySelector('[data-membership-card-number-auto]');
+    const automaticNumberHelp = form.querySelector('[data-membership-card-number-auto-help]');
+    let numberingRequest = null;
+
+    const selectedSeason = () => seasonSelect?.options?.[seasonSelect.selectedIndex] || null;
+
+    const applyNumberingPolicy = (policy = {}) => {
+      if (!numberField) return;
+      const mode = String(policy.numbering_mode || 'manual').trim().toLowerCase();
+      const manualEdit = Number(policy.manual_edit || 0) === 1;
+      const source = String(policy.source || '').trim();
+      const editable = mode === 'manual' || (mode === 'external' && manualEdit);
+
+      numberField.dataset.numberingMode = mode;
+      numberField.dataset.numberingManualEdit = manualEdit ? '1' : '0';
+      numberField.dataset.numberingSource = source;
+
+      if (manualNumber) {
+        manualNumber.hidden = !editable;
+        manualNumber.disabled = !editable;
+      }
+      if (automaticNumber) {
+        automaticNumber.hidden = editable;
+        automaticNumber.placeholder = mode === 'external'
+          ? (numberField.dataset.externalPlaceholder || '')
+          : (numberField.dataset.automaticPlaceholder || '');
+      }
+      if (automaticNumberHelp) {
+        automaticNumberHelp.hidden = editable;
+        if (!editable) {
+          if (mode === 'external') {
+            const template = String(numberField.dataset.externalHelpTemplate || '%s');
+            const generic = String(numberField.dataset.externalSourceGeneric || '').trim();
+            automaticNumberHelp.textContent = template.replace('%s', source || generic);
+          } else {
+            automaticNumberHelp.textContent = numberField.dataset.automaticHelp || '';
+          }
+        }
+      }
+    };
+
+    const syncNumberingPolicy = async () => {
+      const currentScope = scope?.value === 'competition' ? 'competition' : 'association';
+      const issuerUuid = String(issuerTarget?.value || '').trim().toLowerCase();
+
+      if (!issuerUuid) {
+        applyNumberingPolicy({
+          numbering_mode: currentScope === 'competition' ? 'automatic' : 'manual',
+          manual_edit: currentScope === 'association' ? 1 : 0,
+          source: '',
+        });
+        return;
+      }
+
+      if (numberingRequest) numberingRequest.abort();
+      numberingRequest = new AbortController();
+      const url = new URL(endpoint('numbering.policy'), window.location.href);
+      url.searchParams.set('issuer_uuid', issuerUuid);
+      url.searchParams.set('scope', currentScope);
+      const token = tokenName();
+      if (token) url.searchParams.set(token, '1');
+
+      try {
+        const response = await fetch(url.toString(), {
+          headers: { Accept: 'application/json' },
+          signal: numberingRequest.signal,
+        });
+        const payload = await response.json();
+        if (!response.ok || payload?.success === false) {
+          throw new Error(payload?.message || `HTTP ${response.status}`);
+        }
+        applyNumberingPolicy(payload?.data || {});
+      } catch (error) {
+        if (error?.name !== 'AbortError') showError(error?.message);
+      }
+    };
+
+    const syncIssuerFromSeason = () => {
+      if (scope?.value !== 'competition') return;
+      const option = selectedSeason();
+      const uuid = String(option?.dataset?.issuerUuid || '').trim().toLowerCase();
+      const label = String(option?.dataset?.issuerLabel || '').trim();
+      if (!issuerTarget) return;
+
+      issuerTarget.value = uuid;
+      issuerTarget.dispatchEvent(new Event('change', { bubbles: true }));
+      if (issuerSearch) {
+        issuerSearch.value = label;
+        issuerSearch.dataset.selectedLabel = label;
+      }
+      if (issuerCompetitionLabel) {
+        const emptyLabel = String(issuerCompetitionLabel.dataset.emptyLabel || '').trim();
+        issuerCompetitionLabel.textContent = label || emptyLabel;
+      }
+    };
+
+    const updateVisibility = () => {
+      const isCompetition = scope?.value === 'competition';
+      form.querySelectorAll('[data-membership-dcl-only]').forEach((field) => {
+        field.hidden = !isCompetition;
+      });
+      if (seasonSelect) seasonSelect.required = isCompetition;
+
+      if (issuerAssociation) issuerAssociation.hidden = isCompetition;
+      if (issuerCompetition) issuerCompetition.hidden = !isCompetition;
+
+      if (isCompetition) syncIssuerFromSeason();
+    };
+
+    const syncSeason = () => {
+      if (!seasonSelect || !seasonValue) return;
+      const option = selectedSeason();
+      seasonValue.value = option?.dataset?.season || '';
+      if (validFrom && validFrom.value === '' && option?.dataset?.start) {
+        validFrom.value = option.dataset.start;
+      }
+      if (expiry && expiry.value === '' && option?.dataset?.end) {
+        expiry.value = option.dataset.end;
+      }
+      syncIssuerFromSeason();
+      updateVisibility();
+    };
+
+    scope?.addEventListener('change', () => {
+      updateVisibility();
+      syncNumberingPolicy();
+    });
+    issuerTarget?.addEventListener('change', syncNumberingPolicy);
+    seasonSelect?.addEventListener('change', syncSeason);
+    updateVisibility();
+    if (seasonSelect?.value) {
+      syncSeason();
+    } else {
+      syncNumberingPolicy();
+    }
+  };
+
+
+  const initNumberingRuleForm = () => {
+    const form = document.getElementById('adminForm');
+    if (!form || form.querySelector('input[name="entity"]')?.value !== 'card_numbering_rules') return;
+
+    const mode = document.getElementById('jform_numbering_mode');
+    const source = document.getElementById('jform_source');
+    const manualEdit = document.getElementById('jform_manual_edit');
+    const padding = document.getElementById('jform_sequence_padding');
+    if (!mode) return;
+
+    const field = (element) => element?.closest('.dm-field') || null;
+    const sourceField = field(source);
+    const manualEditField = field(manualEdit);
+    const paddingField = field(padding);
+
+    const update = () => {
+      const value = String(mode.value || 'manual');
+      const automatic = value === 'automatic';
+      const external = value === 'external';
+
+      if (sourceField) sourceField.hidden = !external;
+      if (source) source.required = external;
+      if (manualEditField) manualEditField.hidden = !external;
+      if (paddingField) paddingField.hidden = !automatic;
+    };
+
+    mode.addEventListener('change', update);
+    update();
+  };
+
   const initPeopleRelink = () => {
     document.querySelectorAll('[data-membership-person-relink]').forEach((toggle) => {
       toggle.addEventListener('click', () => {
@@ -252,8 +539,11 @@
     });
 
     document.querySelectorAll('[data-membership-people-picker]').forEach(membershipPeopleSearch);
+    document.querySelectorAll('[data-membership-issuer-picker]').forEach(initIssuerOrganizationPicker);
     document.querySelectorAll('[data-membership-organization-picker]').forEach(initOrganizationPicker);
     initTransferSourceOrganization();
+    initDclCardForm();
+    initNumberingRuleForm();
     initPeopleRelink();
   });
 })();

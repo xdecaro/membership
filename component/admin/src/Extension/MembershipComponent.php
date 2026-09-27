@@ -8,6 +8,8 @@ use RuntimeException;
 use Xdecaro\Component\Decaromembership\Administrator\Service\AnalyticsSourceService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\CoreIntegrationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\CrossProductIntegrationService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\CompetitionsIntegrationService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\DclCardService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\PeopleIntegrationService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\ReminderService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\PersonMembershipService;
@@ -18,6 +20,8 @@ final class MembershipComponent extends MVCComponent
 {
     private ?CoreIntegrationService $coreIntegration = null;
     private ?CrossProductIntegrationService $crossProduct = null;
+    private ?CompetitionsIntegrationService $competitionsIntegration = null;
+    private ?DclCardService $dclCards = null;
     private ?PeopleIntegrationService $peopleIntegration = null;
     private ?AnalyticsSourceService $analytics = null;
     private ?ReminderService $reminders = null;
@@ -27,6 +31,8 @@ final class MembershipComponent extends MVCComponent
 
     public function setCoreIntegrationService(CoreIntegrationService $service): void { $this->coreIntegration = $service; }
     public function setCrossProductIntegrationService(CrossProductIntegrationService $service): void { $this->crossProduct = $service; }
+    public function setCompetitionsIntegrationService(CompetitionsIntegrationService $service): void { $this->competitionsIntegration = $service; }
+    public function setDclCardService(DclCardService $service): void { $this->dclCards = $service; }
     public function setPeopleIntegrationService(PeopleIntegrationService $service): void { $this->peopleIntegration = $service; }
     public function setAnalyticsSourceService(AnalyticsSourceService $service): void { $this->analytics = $service; }
     public function setReminderService(ReminderService $service): void { $this->reminders = $service; }
@@ -44,6 +50,18 @@ final class MembershipComponent extends MVCComponent
     {
         if ($this->crossProduct === null) { throw new RuntimeException('Membership cross-product integration service is unavailable.'); }
         return $this->crossProduct;
+    }
+
+    public function getCompetitionsIntegrationService(): CompetitionsIntegrationService
+    {
+        if ($this->competitionsIntegration === null) { throw new RuntimeException('Membership Competitions integration service is unavailable.'); }
+        return $this->competitionsIntegration;
+    }
+
+    public function getDclCardService(): DclCardService
+    {
+        if ($this->dclCards === null) { throw new RuntimeException('Membership DCL card service is unavailable.'); }
+        return $this->dclCards;
     }
 
     public function getPeopleIntegrationService(): PeopleIntegrationService

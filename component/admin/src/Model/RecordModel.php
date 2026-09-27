@@ -7,6 +7,11 @@ use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use RuntimeException;
 use Xdecaro\Component\Decaromembership\Administrator\Helper\EntityRegistry;
 use Xdecaro\Component\Decaromembership\Administrator\Service\AuditService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\CompetitionsIntegrationService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\CompetitionCardNumberService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\CardNumberingPolicyService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\DclCardService;
+use Xdecaro\Component\Decaromembership\Administrator\Service\DclCardStatusPolicy;
 use Xdecaro\Component\Decaromembership\Administrator\Service\MemberPeopleLinkService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\MembershipHistoryService;
 use Xdecaro\Component\Decaromembership\Administrator\Service\MemberLifecycleService;
@@ -41,6 +46,31 @@ final class RecordModel extends BaseDatabaseModel
     public function getCurrentMemberCard(int $memberId): ?object
     {
         return $this->repository()->loadCurrentMemberCard($memberId);
+    }
+
+    public function isCompetitionsAvailable(): bool
+    {
+        return (new CompetitionsIntegrationService())->isAvailable();
+    }
+
+    public function getDclSeasonOptions(): array
+    {
+        return (new CompetitionsIntegrationService())->listDclSeasons();
+    }
+
+    public function getDclSeason(int $seasonId): ?array
+    {
+        return (new CompetitionsIntegrationService())->getDclSeason($seasonId);
+    }
+
+    public function getCardNumberingPolicy(string $issuerOrganizationUuid, string $scope): array
+    {
+        return (new CardNumberingPolicyService($this->getDatabase()))->resolve($issuerOrganizationUuid, $scope);
+    }
+
+    public function getLinkedCompetitionSeasonId(int $cardId): int
+    {
+        return (new DclCardService($this->getDatabase()))->getLinkedCompetitionSeasonId($cardId);
     }
 
     private function recalculatePaymentDues(
@@ -198,6 +228,18 @@ final class RecordModel extends BaseDatabaseModel
         $validator = new RecordValidator();
         $data = $validator->filter($config, $input);
 
+        if ($entity === 'cards' && $old !== null) {
+            // These fields are intentionally hidden from the simplified card form.
+            // Preserve their stored values instead of treating an omitted field as
+            // an instruction to clear/regenerate it.
+            $technicalFields = ['issued_at', 'activated_at', 'annual_mark', 'qr_token'];
+            foreach ($technicalFields as $technicalField) {
+                if (!array_key_exists($technicalField, $input)) {
+                    $data[$technicalField] = $old->{$technicalField} ?? null;
+                }
+            }
+        }
+
         if ($entity === 'transfers') {
             $organizations = new OrganizationsIntegrationService();
 
@@ -218,7 +260,248 @@ final class RecordModel extends BaseDatabaseModel
             }
         }
 
-        $validator->validateBusinessRules($entity, $data);
+        if ($entity === 'card_numbering_rules') {
+            $issuerUuid = strtolower(trim((string) ($data['issuer_organization_uuid'] ?? '')));
+            $organizations = new OrganizationsIntegrationService();
+            if (!$organizations->isAvailable()) {
+                throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ORGANIZATIONS_UNAVAILABLE'));
+            }
+            $data['issuer_organization_uuid'] = $organizations->validateOptionalUuid($issuerUuid);
+
+            $policyService = new CardNumberingPolicyService($this->getDatabase());
+            $normalizedRule = $policyService->normalize($data);
+            $data['scope'] = $normalizedRule['scope'];
+            $data['numbering_mode'] = $normalizedRule['numbering_mode'];
+            $data['manual_edit'] = $normalizedRule['manual_edit'];
+            $data['sequence_padding'] = $normalizedRule['sequence_padding'];
+
+            if ($data['numbering_mode'] === CardNumberingPolicyService::MODE_EXTERNAL && trim((string) ($data['source'] ?? '')) === '') {
+                throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_NUMBER_SOURCE_REQUIRED'));
+            }
+            if ($policyService->duplicateExists((string) $data['issuer_organization_uuid'], (string) $data['scope'], $id)) {
+                throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_NUMBERING_RULE_DUPLICATE'));
+            }
+        }
+
+        if ($entity !== 'cards') {
+            $validator->validateBusinessRules($entity, $data);
+        }
+
+        $competitionSeasonId = max(0, (int) ($input['competition_season_id'] ?? 0));
+        $competitionSeasonSubmitted = array_key_exists('competition_season_id', $input);
+        $competitionSeason = null;
+        $numberingPolicy = null;
+
+        if ($entity === 'cards') {
+            $scope = strtolower(trim((string) ($data['scope'] ?? 'association')));
+            $scope = in_array($scope, ['association', 'competition'], true) ? $scope : 'association';
+            $data['scope'] = $scope;
+
+            $oldScope = strtolower(trim((string) ($old->scope ?? '')));
+            $oldCardNumber = trim((string) ($old->card_number ?? ''));
+            if ($old !== null && $oldScope === 'competition' && $oldCardNumber !== '' && $scope !== 'competition') {
+                throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_CARD_NUMBER_CONTEXT_IMMUTABLE'));
+            }
+
+            $memberId = (int) ($data['member_id'] ?? 0);
+            $personUuid = strtolower(trim((string) ($data['person_uuid'] ?? '')));
+            if ($personUuid === '' && $memberId > 0) {
+                $member = $repository->load('#__decaromembership_members', $memberId);
+                $personUuid = strtolower(trim((string) ($member->person_uuid ?? '')));
+            }
+            if ($personUuid !== '') {
+                $people = new PeopleIntegrationService($this->getDatabase());
+                if ($people->getPerson($personUuid, false) === null) {
+                    throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_CARD_PERSON_INVALID'));
+                }
+                $data['person_uuid'] = $personUuid;
+                $linkedMemberId = $repository->findMemberIdByPersonUuid($personUuid);
+                $data['member_id'] = $linkedMemberId ?: null;
+            } else {
+                $data['person_uuid'] = null;
+                $data['member_id'] = $memberId > 0 ? $memberId : null;
+            }
+
+            $issuerUuid = strtolower(trim((string) ($data['issuer_organization_uuid'] ?? '')));
+            if ($issuerUuid !== '') {
+                $organizations = new OrganizationsIntegrationService();
+                if (!$organizations->isAvailable()) {
+                    $oldIssuer = strtolower(trim((string) ($old->issuer_organization_uuid ?? '')));
+                    if ($oldIssuer === '' || $oldIssuer !== $issuerUuid) {
+                        throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ORGANIZATIONS_UNAVAILABLE'));
+                    }
+                } else {
+                    $data['issuer_organization_uuid'] = $organizations->validateOptionalUuid($issuerUuid);
+                }
+            } else {
+                $data['issuer_organization_uuid'] = null;
+            }
+
+            if ($scope === 'competition') {
+                $data['program'] = trim((string) ($old->program ?? '')) ?: 'standard';
+                $competitions = new CompetitionsIntegrationService();
+                if ($competitions->isAvailable()) {
+                    if ($competitionSeasonId < 1) {
+                        throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_DCL_COMPETITION_SEASON_REQUIRED'));
+                    }
+                    $competitionSeason = $competitions->getDclSeason($competitionSeasonId);
+                    if ($competitionSeason === null) {
+                        throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_DCL_COMPETITION_SEASON_INVALID'));
+                    }
+
+                    $rightsHolderUuid = strtolower(trim((string) ($competitionSeason['rights_holder_organization_uuid'] ?? '')));
+                    if ($rightsHolderUuid !== '') {
+                        $organizations = new OrganizationsIntegrationService();
+                        if (!$organizations->isAvailable()) {
+                            $oldIssuer = strtolower(trim((string) ($old->issuer_organization_uuid ?? '')));
+                            if ($oldIssuer === '' || $oldIssuer !== $rightsHolderUuid) {
+                                throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ORGANIZATIONS_UNAVAILABLE'));
+                            }
+                            $data['issuer_organization_uuid'] = $oldIssuer;
+                        } else {
+                            $data['issuer_organization_uuid'] = $organizations->validateOptionalUuid($rightsHolderUuid);
+                        }
+                    }
+
+                    $oldCompetitionSeasonId = $id > 0 ? $this->getLinkedCompetitionSeasonId($id) : 0;
+                    if ($oldCardNumber !== '' && $oldScope === 'competition') {
+                        if ($oldCompetitionSeasonId > 0 && $competitionSeasonId !== $oldCompetitionSeasonId) {
+                            throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_CARD_NUMBER_CONTEXT_IMMUTABLE'));
+                        }
+                        $oldIssuer = strtolower(trim((string) ($old->issuer_organization_uuid ?? '')));
+                        $currentIssuer = strtolower(trim((string) ($data['issuer_organization_uuid'] ?? '')));
+                        if ($oldIssuer !== '' && $currentIssuer !== '' && $oldIssuer !== $currentIssuer) {
+                            throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_CARD_NUMBER_CONTEXT_IMMUTABLE'));
+                        }
+                        if ($oldIssuer !== '') {
+                            $data['issuer_organization_uuid'] = $oldIssuer;
+                        }
+                        $data['card_number'] = $oldCardNumber;
+                    }
+
+                    $seasonValue = trim((string) ($competitionSeason['season_year'] ?? ''));
+                    if ($seasonValue === '') {
+                        $seasonValue = trim((string) ($competitionSeason['name'] ?? ''));
+                    }
+                    if ($seasonValue !== '') {
+                        $data['season'] = $seasonValue;
+                    }
+
+                    $seasonStart = trim((string) ($competitionSeason['start_date'] ?? ''));
+                    $seasonEnd = trim((string) ($competitionSeason['end_date'] ?? ''));
+                    if (trim((string) ($data['valid_from'] ?? '')) === '' && $seasonStart !== '') {
+                        $data['valid_from'] = $seasonStart;
+                    }
+                    if (trim((string) ($data['expires_at'] ?? '')) === '' && $seasonEnd !== '') {
+                        $data['expires_at'] = $seasonEnd;
+                    }
+                    $validFrom = trim((string) ($data['valid_from'] ?? ''));
+                    $expiresAt = trim((string) ($data['expires_at'] ?? ''));
+                    if ($seasonStart !== '' && $validFrom !== '' && $validFrom > $seasonStart) {
+                        throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_DCL_VALID_FROM_SEASON'));
+                    }
+                    if ($seasonEnd !== '' && $expiresAt !== '' && $expiresAt < $seasonEnd) {
+                        throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_DCL_EXPIRY_SEASON'));
+                    }
+                } elseif ($id < 1 || $this->getLinkedCompetitionSeasonId($id) < 1) {
+                    throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_COMPETITIONS_UNAVAILABLE'));
+                }
+
+                if (trim((string) ($data['season'] ?? '')) === '') {
+                    throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_DCL_SEASON_REQUIRED'));
+                }
+            } else {
+                $data['program'] = 'standard';
+                $data['season'] = null;
+                $competitionSeasonId = 0;
+                $competitionSeasonSubmitted = true;
+            }
+
+            $policyService = new CardNumberingPolicyService($this->getDatabase());
+            $numberingPolicy = $policyService->resolve(
+                (string) ($data['issuer_organization_uuid'] ?? ''),
+                $scope
+            );
+            $numberingMode = (string) ($numberingPolicy['numbering_mode'] ?? CardNumberingPolicyService::MODE_MANUAL);
+            $manualEdit = !empty($numberingPolicy['manual_edit']);
+
+            if ($oldCardNumber !== '' && $oldScope === 'competition') {
+                $data['card_number'] = $oldCardNumber;
+            } elseif ($numberingMode === CardNumberingPolicyService::MODE_AUTOMATIC) {
+                // Automatic policies never trust a manually submitted number and never renumber an existing card.
+                $data['card_number'] = $oldCardNumber !== '' ? $oldCardNumber : null;
+            } elseif ($numberingMode === CardNumberingPolicyService::MODE_EXTERNAL && !$manualEdit) {
+                // External/imported numbers are authoritative outside the normal form.
+                $data['card_number'] = $old !== null ? ($old->card_number ?? null) : null;
+            }
+
+            $today = Factory::getDate()->format('Y-m-d');
+            if ($id < 1 && trim((string) ($data['issued_at'] ?? '')) === '') {
+                $data['issued_at'] = $today;
+            }
+            if (($data['status'] ?? 'pending') === 'active' && trim((string) ($data['activated_at'] ?? '')) === '') {
+                $data['activated_at'] = $today;
+            }
+            if (trim((string) ($data['qr_token'] ?? '')) === '') {
+                $data['qr_token'] = bin2hex(random_bytes(16));
+            }
+            $data['published'] = 1;
+
+            if ($scope === 'competition' && $competitionSeasonId > 0) {
+                $dclCards = new DclCardService($this->getDatabase());
+                if ($dclCards->duplicateCompetitionCredentialExists(
+                    (string) ($data['person_uuid'] ?? ''),
+                    (string) ($data['issuer_organization_uuid'] ?? ''),
+                    $competitionSeasonId,
+                    $id
+                )) {
+                    throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_CARD_DUPLICATE_COMPETITION'));
+                }
+            }
+        }
+
+        if ($entity === 'cards') {
+            $scope = strtolower(trim((string) ($data['scope'] ?? 'association')));
+            $numberingPolicy ??= (new CardNumberingPolicyService($this->getDatabase()))->resolve(
+                (string) ($data['issuer_organization_uuid'] ?? ''),
+                $scope
+            );
+            $numberingMode = (string) ($numberingPolicy['numbering_mode'] ?? CardNumberingPolicyService::MODE_MANUAL);
+
+            if ($numberingMode === CardNumberingPolicyService::MODE_AUTOMATIC && trim((string) ($data['card_number'] ?? '')) === '') {
+                $organizations = new OrganizationsIntegrationService();
+                if (!$organizations->isAvailable()) {
+                    throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ORGANIZATIONS_UNAVAILABLE'));
+                }
+                $numberService = new CompetitionCardNumberService($this->getDatabase(), $organizations);
+                $padding = max(1, min(12, (int) ($numberingPolicy['sequence_padding'] ?? 7)));
+
+                if ($scope === 'competition') {
+                    if (!is_array($competitionSeason)) {
+                        throw new RuntimeException(Text::_('COM_DECAROMEMBERSHIP_ERROR_CARD_NUMBER_COMPETITION_CONTEXT'));
+                    }
+                    $data['card_number'] = $numberService->allocate(
+                        (string) ($data['issuer_organization_uuid'] ?? ''),
+                        $competitionSeason,
+                        Factory::getDate()->toSql(),
+                        $padding
+                    );
+                } else {
+                    $data['card_number'] = $numberService->allocateAssociation(
+                        (string) ($data['issuer_organization_uuid'] ?? ''),
+                        (int) Factory::getDate()->format('Y'),
+                        Factory::getDate()->toSql(),
+                        $padding
+                    );
+                }
+            }
+
+            $validator->validateBusinessRules($entity, $data);
+            $data['status'] = DclCardStatusPolicy::normalizeLifecycleStatus(
+                $data,
+                Factory::getDate()->format('Y-m-d')
+            );
+        }
 
         if ($entity === 'dues' && ($data['paid_amount'] ?? null) === null) {
             $data['paid_amount'] = 0.0;
@@ -296,6 +579,28 @@ final class RecordModel extends BaseDatabaseModel
             $data['created_by'] = $userId;
         }
         $id = $repository->save($config['table'], $id, $data);
+
+        if ($entity === 'cards') {
+            $dclCards = new DclCardService($this->getDatabase());
+            $scope = strtolower(trim((string) ($data['scope'] ?? 'association')));
+            if ($scope === 'competition' && $competitionSeasonId > 0) {
+                $dclCards->linkCompetitionSeason(
+                    $id,
+                    (int) ($data['member_id'] ?? 0),
+                    $competitionSeasonId,
+                    [
+                        'season' => (string) ($data['season'] ?? ''),
+                        'valid_from' => $data['valid_from'] ?? null,
+                        'expires_at' => $data['expires_at'] ?? null,
+                        'season_name' => is_array($competitionSeason) ? ($competitionSeason['name'] ?? null) : null,
+                    ],
+                    $userId,
+                    $now
+                );
+            } elseif ($scope !== 'competition' || $competitionSeasonSubmitted) {
+                $dclCards->unlinkCompetitionSeason($id);
+            }
+        }
 
         if ($entity === 'members') {
             $lifecycle = new MemberLifecycleService();

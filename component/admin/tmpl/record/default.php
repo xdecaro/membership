@@ -4,20 +4,106 @@ use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Router\Route;
 $esc=fn($v)=>htmlspecialchars((string)$v,ENT_QUOTES,'UTF-8');
+$seasonDisplayLabel=static function(array $season): string {
+    $tournament=trim((string)($season['tournament_name']??''));
+    $year=trim((string)($season['season_year']??''));
+    $hostCity=trim((string)($season['host_city']??''));
+    $hostCountry=trim((string)($season['host_country_code']??''));
+
+    $primary=$tournament;
+    if($year!=='' && ($primary==='' || !preg_match('/(?:^|\D)'.preg_quote($year,'/').'(?:\D|$)/',$primary))){
+        $primary=trim($primary.' '.$year);
+    }
+
+    $host=trim(implode(', ',array_filter([$hostCity,$hostCountry],static fn($value)=>$value!=='')));
+    $label=$primary;
+    if($host!=='') $label=trim($label.($label!==''?' — ':'').$host);
+
+    if($label==='') $label=trim((string)($season['label']??($season['name']??'')));
+    return $label;
+};
 $peopleOwnedFields=['person_uuid','first_name','last_name','birth_date','birth_place','tax_code','address','city','province','postal_code','country','email','phone','user_id'];
-$renderField=function(string $name,array $field,mixed $value) use($esc){
+$renderField=function(string $name,array $field,mixed $value) use($esc,$seasonDisplayLabel){
     $required=($field['required']??false)?' required':'';
     ob_start(); ?>
-    <div class="dm-field <?= ($field['type']??'')==='textarea'?'dm-field-wide':'' ?>"><label for="jform_<?= $esc($name) ?>"><?= Text::_($field['label']) ?><?= ($field['required']??false)?' *':'' ?></label>
+    <div class="dm-field <?= ($field['type']??'')==='textarea'?'dm-field-wide':'' ?>"<?= ($field['type']??'')==='dcl_season'?' data-membership-dcl-only':'' ?>><label for="jform_<?= $esc($name) ?>"><?= Text::_($field['label']) ?><?= ($field['required']??false)?' *':'' ?></label>
     <?php switch($field['type']??'text'):
         case 'textarea': ?><textarea id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" rows="4"<?= $required ?>><?= $esc($value) ?></textarea><?php break;
         case 'select': ?><select id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]"<?= $required ?>><option value="">-</option><?php foreach($field['options'] as $k=>$label): ?><option value="<?= $esc($k) ?>"<?= (string)$value===(string)$k?' selected':'' ?>><?= Text::_($label) ?></option><?php endforeach; ?></select><?php break;
         case 'boolean': case 'published': ?><select id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]"><option value="1"<?= (int)$value===1?' selected':'' ?>><?= Text::_('JYES') ?></option><option value="0"<?= (int)$value===0?' selected':'' ?>><?= Text::_('JNO') ?></option></select><?php break;
         case 'date': ?><input type="date" id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" value="<?= $esc($value) ?>"<?= $required ?>><?php break;
+        case 'dcl_season':
+            if($this->competitionsAvailable): ?>
+              <?php if($this->competitionSeasonOptions): ?>
+                <select id="jform_competition_season_id" name="jform[competition_season_id]" data-membership-dcl-season>
+                  <option value=""><?= Text::_('COM_DECAROMEMBERSHIP_DCL_SEASON_SELECT') ?></option>
+                  <?php foreach($this->competitionSeasonOptions as $season):
+                      $seasonId=(int)($season['id']??0);
+                      if($seasonId<1) continue;
+                      $seasonValue=trim((string)($season['season_year']??''));
+                      if($seasonValue==='') $seasonValue=trim((string)($season['name']??''));
+                  ?>
+                    <?php
+                      $rightsHolderName=trim((string)($season['rights_holder_name']??''));
+                      $rightsHolderShort=trim((string)($season['rights_holder_short_name']??''));
+                      $rightsHolderLabel=$rightsHolderName;
+                      if($rightsHolderLabel!=='' && $rightsHolderShort!=='' && strcasecmp($rightsHolderLabel,$rightsHolderShort)!==0) $rightsHolderLabel.=' ('.$rightsHolderShort.')';
+                    ?>
+                    <option
+                      value="<?= $seasonId ?>"
+                      data-season="<?= $esc($seasonValue) ?>"
+                      data-start="<?= $esc($season['start_date']??'') ?>"
+                      data-end="<?= $esc($season['end_date']??'') ?>"
+                      data-tournament-code="<?= $esc($season['tournament_code']??'') ?>"
+                      data-issuer-uuid="<?= $esc(strtolower(trim((string)($season['rights_holder_organization_uuid']??'')))) ?>"
+                      data-issuer-label="<?= $esc($rightsHolderLabel) ?>"
+                      <?= $this->selectedCompetitionSeasonId===$seasonId?' selected':'' ?>
+                    ><?= $esc($seasonDisplayLabel($season) ?: '#'.$seasonId) ?></option>
+                  <?php endforeach; ?>
+                </select>
+                <input type="hidden" id="jform_season" name="jform[season]" value="<?= $esc($value) ?>" data-membership-dcl-season-value>
+                <small class="dm-muted"><?= Text::_('COM_DECAROMEMBERSHIP_DCL_SEASON_LINK_HELP') ?></small>
+              <?php else: ?>
+                <div class="alert alert-warning mb-0"><?= Text::_('COM_DECAROMEMBERSHIP_DCL_SEASON_NONE') ?></div>
+                <input type="hidden" id="jform_season" name="jform[season]" value="<?= $esc($value) ?>">
+              <?php endif; ?>
+            <?php else: ?>
+              <?php if($this->selectedCompetitionSeasonId>0): ?>
+                <input type="hidden" name="jform[competition_season_id]" value="<?= (int)$this->selectedCompetitionSeasonId ?>">
+              <?php endif; ?>
+              <input type="text" id="jform_season" name="jform[season]" value="<?= $esc($value) ?>" placeholder="2026">
+              <small class="dm-muted"><?= Text::_('COM_DECAROMEMBERSHIP_DCL_SEASON_MANUAL_HELP') ?></small>
+            <?php endif;
+            break;
         case 'number': case 'money': ?><input type="number" step="<?= ($field['type']??'')==='money'?'0.01':'1' ?>" id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" value="<?= $esc($value) ?>"<?= $required ?>><?php break;
         case 'email': ?><input type="email" id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" value="<?= $esc($value) ?>"<?= $required ?>><?php break;
         case 'organization':
-            if($this->organizationsAvailable):
+            if($this->entity==='card_numbering_rules' && $name==='issuer_organization_uuid'):
+                $selectedName=trim((string)($this->selectedOrganization['name']??''));
+                $selectedShort=trim((string)($this->selectedOrganization['short_name']??''));
+                $selectedLabel=$selectedName;
+                if($selectedLabel!=='' && $selectedShort!=='' && strcasecmp($selectedLabel,$selectedShort)!==0) $selectedLabel.=' ('.$selectedShort.')';
+                if($this->organizationsAvailable): ?>
+                  <div class="dm-organization-picker" data-membership-issuer-picker>
+                    <input
+                      type="search"
+                      id="membership_numbering_issuer_search"
+                      data-membership-issuer-search
+                      data-selected-label="<?= $esc($selectedLabel) ?>"
+                      autocomplete="off"
+                      value="<?= $esc($selectedLabel) ?>"
+                      placeholder="<?= $esc(Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_SEARCH_PLACEHOLDER')) ?>"
+                      <?= $required ?>
+                    >
+                    <input type="hidden" id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" data-membership-issuer-target value="<?= $esc(strtolower(trim((string)$value))) ?>">
+                    <div class="dm-people-results" data-membership-issuer-results></div>
+                    <small class="dm-muted"><?= Text::_('COM_DECAROMEMBERSHIP_NUMBERING_ISSUER_HELP') ?></small>
+                  </div>
+                <?php else: ?>
+                  <?php if(trim((string)$value)!==''): ?><input type="hidden" id="jform_<?= $esc($name) ?>" name="jform[<?= $esc($name) ?>]" value="<?= $esc($value) ?>"><?php endif; ?>
+                  <div class="alert alert-warning mb-0"><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATIONS_UNAVAILABLE') ?></div>
+                <?php endif;
+            elseif($this->organizationsAvailable):
                 $searchId='membership_organization_search_'.$name;
                 ?>
                 <div class="dm-organization-picker" data-membership-organization-picker>
@@ -70,9 +156,12 @@ $renderField=function(string $name,array $field,mixed $value) use($esc){
 };
 $linkedUuid=strtolower(trim((string)($this->item->person_uuid??'')));
 $isMember=$this->entity==='members';
+$isCard=$this->entity==='cards';
 $cardStatusKey=[
     'pending'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_PENDING',
+    'in_review'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_IN_REVIEW',
     'active'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_ACTIVE',
+    'suspended'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_SUSPENDED',
     'expired'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_EXPIRED',
     'lost'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_LOST',
     'revoked'=>'COM_DECAROMEMBERSHIP_CARD_STATUS_REVOKED',
@@ -94,7 +183,163 @@ $organizationTypeLabel=static function(string $type): string {
 ?>
 
 <form action="<?= Route::_('index.php?option=com_decaromembership&entity='.$this->entity.'&id='.(int)($this->item->id??0)) ?>" method="post" name="adminForm" id="adminForm" class="dm-page">
-<?php if($isMember): ?>
+<?php if($isCard):
+    $personUuid=strtolower(trim((string)($this->item->person_uuid??'')));
+    $personName=$this->person ? trim((string)($this->person['display_name']??'')) : '';
+    if($personName==='' && $this->person) $personName=trim((string)(($this->person['first_name']??'').' '.($this->person['last_name']??'')));
+    $scope=(string)($this->item->scope??(((string)($this->item->program??''))==='dcl'?'competition':'association'));
+    $status=(string)($this->item->status??'pending');
+?>
+  <section class="dm-card" data-membership-card-form>
+    <div class="dm-section-head">
+      <div>
+        <h2><?= Text::_('COM_DECAROMEMBERSHIP_CARD_ESSENTIALS') ?></h2>
+        <p class="dm-muted mb-0"><?= Text::_('COM_DECAROMEMBERSHIP_CARD_ESSENTIALS_DESC') ?></p>
+      </div>
+    </div>
+    <div class="dm-form-grid">
+      <div class="dm-field dm-field-wide" data-membership-people-picker>
+        <label for="membership_card_person_search"><?= Text::_('COM_DECAROMEMBERSHIP_FIELD_HOLDER_PERSON') ?> *</label>
+        <input type="search" id="membership_card_person_search" data-membership-people-search autocomplete="off" value="<?= $esc($personName) ?>" placeholder="<?= $esc(Text::_('COM_DECAROMEMBERSHIP_PEOPLE_SEARCH_PLACEHOLDER')) ?>">
+        <input type="hidden" id="jform_person_uuid" name="jform[person_uuid]" data-membership-person-target value="<?= $esc($personUuid) ?>">
+        <div class="dm-people-results" data-membership-people-results></div>
+      </div>
+
+      <div class="dm-field">
+        <label for="jform_scope"><?= Text::_('COM_DECAROMEMBERSHIP_FIELD_CARD_SCOPE') ?> *</label>
+        <select id="jform_scope" name="jform[scope]" required data-membership-card-scope>
+          <option value="association"<?= $scope==='association'?' selected':'' ?>><?= Text::_('COM_DECAROMEMBERSHIP_CARD_SCOPE_ASSOCIATION') ?></option>
+          <option value="competition"<?= $scope==='competition'?' selected':'' ?>><?= Text::_('COM_DECAROMEMBERSHIP_CARD_SCOPE_COMPETITION') ?></option>
+        </select>
+      </div>
+
+      <?= $renderField('season',$this->config['fields']['season'],$this->item->season??'') ?>
+
+      <?php
+        $issuerUuid=strtolower(trim((string)($this->item->issuer_organization_uuid??'')));
+        $issuerName=trim((string)($this->selectedOrganization['name']??''));
+        $issuerShort=trim((string)($this->selectedOrganization['short_name']??($this->selectedOrganization['code']??'')));
+        $issuerLabel=$issuerName;
+        if($issuerLabel!=='' && $issuerShort!=='' && strcasecmp($issuerLabel,$issuerShort)!==0) $issuerLabel.=' ('.$issuerShort.')';
+
+        if($scope==='competition' && is_array($this->selectedCompetitionSeason)){
+            $seasonIssuerUuid=strtolower(trim((string)($this->selectedCompetitionSeason['rights_holder_organization_uuid']??'')));
+            if($seasonIssuerUuid!=='') $issuerUuid=$seasonIssuerUuid;
+
+            $seasonIssuerName=trim((string)($this->selectedCompetitionSeason['rights_holder_name']??''));
+            $seasonIssuerShort=trim((string)($this->selectedCompetitionSeason['rights_holder_short_name']??''));
+            if($seasonIssuerName!==''){
+                $issuerLabel=$seasonIssuerName;
+                if($seasonIssuerShort!=='' && strcasecmp($issuerLabel,$seasonIssuerShort)!==0) $issuerLabel.=' ('.$seasonIssuerShort.')';
+            }
+        }
+
+        if($issuerLabel==='' && $this->selectedCompetitionSeasonId>0){
+            foreach($this->competitionSeasonOptions as $seasonOption){
+                if((int)($seasonOption['id']??0)!==$this->selectedCompetitionSeasonId) continue;
+                $rightsHolderName=trim((string)($seasonOption['rights_holder_name']??''));
+                $rightsHolderShort=trim((string)($seasonOption['rights_holder_short_name']??''));
+                $issuerLabel=$rightsHolderName;
+                if($issuerLabel!=='' && $rightsHolderShort!=='' && strcasecmp($issuerLabel,$rightsHolderShort)!==0) $issuerLabel.=' ('.$rightsHolderShort.')';
+                break;
+            }
+        }
+      ?>
+      <div class="dm-field dm-field-wide" data-membership-issuer-picker>
+        <label for="membership_card_issuer_search"><?= Text::_('COM_DECAROMEMBERSHIP_FIELD_ISSUER_ORGANIZATION') ?> *</label>
+        <input type="hidden" id="jform_issuer_organization_uuid" name="jform[issuer_organization_uuid]" data-membership-issuer-target value="<?= $esc($issuerUuid) ?>">
+
+        <div data-membership-issuer-association<?= $scope==='competition'?' hidden':'' ?>>
+          <?php if($this->organizationsAvailable): ?>
+            <input
+              type="search"
+              id="membership_card_issuer_search"
+              data-membership-issuer-search
+              data-selected-label="<?= $esc($issuerLabel) ?>"
+              autocomplete="off"
+              value="<?= $esc($issuerLabel) ?>"
+              placeholder="<?= $esc(Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_SEARCH_PLACEHOLDER')) ?>"
+            >
+            <div class="dm-people-results" data-membership-issuer-results></div>
+            <small class="dm-muted"><?= Text::_('COM_DECAROMEMBERSHIP_CARD_ISSUER_ASSOCIATION_HELP') ?></small>
+          <?php elseif($issuerUuid!==''): ?>
+            <div class="alert alert-warning mb-0"><?= Text::_('COM_DECAROMEMBERSHIP_ORGANIZATION_LINK_PRESERVED') ?></div>
+          <?php else: ?>
+            <div class="alert alert-warning mb-0"><?= Text::_('COM_DECAROMEMBERSHIP_CARD_ISSUER_UNAVAILABLE') ?></div>
+          <?php endif; ?>
+        </div>
+
+        <div class="dm-readonly-field" data-membership-issuer-competition<?= $scope==='competition'?'':' hidden' ?>>
+          <strong data-membership-issuer-competition-label data-empty-label="<?= $esc(Text::_('COM_DECAROMEMBERSHIP_CARD_ISSUER_AUTOMATIC_PENDING')) ?>"><?= $esc($issuerLabel!==''?$issuerLabel:Text::_('COM_DECAROMEMBERSHIP_CARD_ISSUER_AUTOMATIC_PENDING')) ?></strong>
+          <small class="dm-muted"><?= Text::_('COM_DECAROMEMBERSHIP_CARD_ISSUER_AUTOMATIC_HELP') ?></small>
+        </div>
+      </div>
+
+      <?php
+        $cardNumber=trim((string)($this->item->card_number??''));
+        $numberingPolicy=$this->cardNumberingPolicy ?: ['numbering_mode'=>($scope==='competition'?'automatic':'manual'),'manual_edit'=>($scope==='association'?1:0),'source'=>'','sequence_padding'=>7];
+        $numberingMode=trim((string)($numberingPolicy['numbering_mode']??'manual'));
+        $numberingManualEdit=!empty($numberingPolicy['manual_edit']);
+        $numberingSource=trim((string)($numberingPolicy['source']??''));
+        $numberingAutomatic=$numberingMode==='automatic';
+        $numberingExternal=$numberingMode==='external';
+        $numberingEditable=$numberingMode==='manual' || ($numberingExternal && $numberingManualEdit);
+      ?>
+      <div
+        class="dm-field dm-field-wide"
+        data-membership-card-number-field
+        data-numbering-mode="<?= $esc($numberingMode) ?>"
+        data-numbering-manual-edit="<?= $numberingManualEdit?'1':'0' ?>"
+        data-numbering-source="<?= $esc($numberingSource) ?>"
+        data-initial-scope="<?= $esc($scope) ?>"
+        data-automatic-placeholder="<?= $esc(Text::_('COM_DECAROMEMBERSHIP_CARD_NUMBER_AUTOMATIC_PLACEHOLDER')) ?>"
+        data-external-placeholder="<?= $esc(Text::_('COM_DECAROMEMBERSHIP_CARD_NUMBER_EXTERNAL_PLACEHOLDER')) ?>"
+        data-automatic-help="<?= $esc(Text::_('COM_DECAROMEMBERSHIP_CARD_NUMBER_AUTOMATIC_HELP')) ?>"
+        data-external-help-template="<?= $esc(Text::_('COM_DECAROMEMBERSHIP_CARD_NUMBER_EXTERNAL_HELP')) ?>"
+        data-external-source-generic="<?= $esc(Text::_('COM_DECAROMEMBERSHIP_NUMBER_SOURCE_EXTERNAL_GENERIC')) ?>"
+      >
+        <label for="jform_card_number"><?= Text::_('COM_DECAROMEMBERSHIP_FIELD_CARD_NUMBER') ?></label>
+        <input
+          type="text"
+          id="jform_card_number"
+          name="jform[card_number]"
+          value="<?= $esc($cardNumber) ?>"
+          data-membership-card-number-manual
+          <?= $numberingEditable?'':' disabled' ?>
+          <?= $numberingEditable?'':' hidden' ?>
+        >
+        <input
+          type="text"
+          id="membership_card_number_auto"
+          value="<?= $esc($cardNumber) ?>"
+          data-membership-card-number-auto
+          placeholder="<?= $esc($numberingExternal ? Text::_('COM_DECAROMEMBERSHIP_CARD_NUMBER_EXTERNAL_PLACEHOLDER') : Text::_('COM_DECAROMEMBERSHIP_CARD_NUMBER_AUTOMATIC_PLACEHOLDER')) ?>"
+          readonly
+          <?= $numberingEditable?' hidden':'' ?>
+        >
+        <small class="dm-muted" data-membership-card-number-auto-help<?= $numberingEditable?' hidden':'' ?>>
+          <?php if($numberingExternal): ?>
+            <?= $esc(Text::sprintf('COM_DECAROMEMBERSHIP_CARD_NUMBER_EXTERNAL_HELP', $numberingSource!==''?$numberingSource:Text::_('COM_DECAROMEMBERSHIP_NUMBER_SOURCE_EXTERNAL_GENERIC'))) ?>
+          <?php else: ?>
+            <?= Text::_('COM_DECAROMEMBERSHIP_CARD_NUMBER_AUTOMATIC_HELP') ?>
+          <?php endif; ?>
+        </small>
+      </div>
+      <?= $renderField('status',$this->config['fields']['status'],$status) ?>
+      <?= $renderField('valid_from',$this->config['fields']['valid_from'],$this->item->valid_from??'') ?>
+      <?= $renderField('expires_at',$this->config['fields']['expires_at'],$this->item->expires_at??'') ?>
+    </div>
+  </section>
+
+  <details class="dm-card dm-member-advanced">
+    <summary><?= Text::_('COM_DECAROMEMBERSHIP_CARD_ADVANCED') ?></summary>
+    <p class="dm-muted"><?= Text::_('COM_DECAROMEMBERSHIP_CARD_ADVANCED_DESC') ?></p>
+    <div class="dm-form-grid">
+      <?= $renderField('type',$this->config['fields']['type'],$this->item->type??'electronic') ?>
+      <?= $renderField('notes',$this->config['fields']['notes'],$this->item->notes??'') ?>
+    </div>
+  </details>
+<?php elseif($isMember): ?>
   <section class="dm-card dm-person-card">
     <div class="dm-section-head"><h2><?= Text::_('COM_DECAROMEMBERSHIP_PEOPLE_IDENTITY') ?></h2><?php if($linkedUuid!==''): ?><span class="dm-badge is-ok"><?= Text::_('COM_DECAROMEMBERSHIP_PEOPLE_LINKED') ?></span><?php endif; ?></div>
     <?php if($linkedUuid!=='' && $this->person): ?>
@@ -313,7 +558,7 @@ $organizationTypeLabel=static function(string $type): string {
     endforeach; ?>
     </div>
   </details>
-<?php else: ?>
+<?php elseif(!$isCard): ?>
   <div class="dm-card dm-form-grid">
   <?php foreach($this->config['fields'] as $name=>$field):
       $value=$this->item->$name??($field['default']??'');

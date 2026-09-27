@@ -9,6 +9,8 @@ DROP TABLE IF EXISTS `#__decaromembership_relations`;
 DROP TABLE IF EXISTS `#__decaromembership_transfers`;
 DROP TABLE IF EXISTS `#__decaromembership_payments`;
 DROP TABLE IF EXISTS `#__decaromembership_dues`;
+DROP TABLE IF EXISTS `#__decaromembership_card_numbering_rules`;
+DROP TABLE IF EXISTS `#__decaromembership_card_sequences`;
 DROP TABLE IF EXISTS `#__decaromembership_cards`;
 DROP TABLE IF EXISTS `#__decaromembership_renewals`;
 DROP TABLE IF EXISTS `#__decaromembership_case_status_history`;

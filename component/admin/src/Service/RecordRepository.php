@@ -170,6 +170,7 @@ final class RecordRepository
             ->from($this->db->quoteName('#__decaromembership_cards'))
             ->where($this->db->quoteName('member_id') . ' = :member_id')
             ->where($this->db->quoteName('published') . ' = 1')
+            ->where($this->db->quoteName('program') . ' = ' . $this->db->quote('standard'))
             ->order(
                 'CASE WHEN ' . $this->db->quoteName('status') . " = 'active' THEN 0 ELSE 1 END ASC"
             )

@@ -28,6 +28,11 @@ final class HtmlView extends BaseHtmlView
     public bool $hasMemberCategories = false;
     public ?object $currentMemberCard = null;
     public string $legacyCardNumber = '';
+    public bool $competitionsAvailable = false;
+    public array $competitionSeasonOptions = [];
+    public int $selectedCompetitionSeasonId = 0;
+    public ?array $selectedCompetitionSeason = null;
+    public array $cardNumberingPolicy = [];
 
     public function display($tpl = null): void
     {
@@ -41,6 +46,69 @@ final class HtmlView extends BaseHtmlView
             $memberId = $app->input->getInt('member_id');
             if ($memberId > 0) {
                 $this->item->member_id = $memberId;
+            }
+            $prefillPersonUuid = strtolower(trim($app->input->getString('person_uuid', '')));
+            if ($prefillPersonUuid !== '') {
+                $this->item->person_uuid = $prefillPersonUuid;
+            }
+            $prefillSeasonId = $app->input->getInt('competition_season_id');
+            if ($prefillSeasonId > 0) {
+                $this->item->competition_season_id = $prefillSeasonId;
+                $this->item->scope = 'competition';
+            }
+            $prefillIssuer = strtolower(trim($app->input->getString('issuer_organization_uuid', '')));
+            if ($prefillIssuer !== '') {
+                $this->item->issuer_organization_uuid = $prefillIssuer;
+            }
+        }
+
+        if ($this->entity === 'cards') {
+            $this->competitionsAvailable = $model->isCompetitionsAvailable();
+            if ($this->competitionsAvailable) {
+                $this->competitionSeasonOptions = $model->getDclSeasonOptions();
+            }
+
+            $submittedSeasonId = (int) ($this->item->competition_season_id ?? 0);
+            if ($submittedSeasonId > 0) {
+                $this->selectedCompetitionSeasonId = $submittedSeasonId;
+            } elseif ((int) ($this->item->id ?? 0) > 0) {
+                $this->selectedCompetitionSeasonId = $model->getLinkedCompetitionSeasonId((int) $this->item->id);
+            }
+
+            if ($this->competitionsAvailable && $this->selectedCompetitionSeasonId > 0) {
+                $this->selectedCompetitionSeason = $model->getDclSeason($this->selectedCompetitionSeasonId);
+
+                if (is_array($this->selectedCompetitionSeason)) {
+                    foreach ($this->competitionSeasonOptions as $index => $seasonOption) {
+                        if ((int) ($seasonOption['id'] ?? 0) !== $this->selectedCompetitionSeasonId) {
+                            continue;
+                        }
+
+                        $this->competitionSeasonOptions[$index] = array_merge($seasonOption, $this->selectedCompetitionSeason);
+                        break;
+                    }
+                }
+            }
+
+            $cardPersonUuid = strtolower(trim((string) ($this->item->person_uuid ?? '')));
+            if ($cardPersonUuid === '' && (int) ($this->item->member_id ?? 0) > 0) {
+                foreach ($model->getRelationOptions('members', (int) $this->item->member_id) as $memberOption) {
+                    if ((int) ($memberOption->id ?? 0) === (int) $this->item->member_id) {
+                        $cardPersonUuid = strtolower(trim((string) ($memberOption->person_uuid ?? '')));
+                        break;
+                    }
+                }
+                if ($cardPersonUuid !== '') {
+                    $this->item->person_uuid = $cardPersonUuid;
+                }
+            }
+            if ($cardPersonUuid !== '') {
+                try {
+                    $people = $app->bootComponent('com_decaromembership')->getPeopleIntegrationService();
+                    $this->person = $people->getPerson($cardPersonUuid, false);
+                } catch (Throwable) {
+                    $this->person = null;
+                }
             }
         }
 
@@ -139,10 +207,12 @@ final class HtmlView extends BaseHtmlView
 
                     if ($this->organizationsAvailable) {
                         $options = [];
-                        foreach ($organizations->searchOrganizations('', 200) as $organization) {
-                            $organizationUuid = strtolower(trim((string) ($organization['uuid'] ?? '')));
-                            if ($organizationUuid !== '') {
-                                $options[$organizationUuid] = $organization;
+                        if (!in_array($this->entity, ['cards', 'card_numbering_rules'], true)) {
+                            foreach ($organizations->searchOrganizations('', 200) as $organization) {
+                                $organizationUuid = strtolower(trim((string) ($organization['uuid'] ?? '')));
+                                if ($organizationUuid !== '') {
+                                    $options[$organizationUuid] = $organization;
+                                }
                             }
                         }
 
@@ -160,6 +230,9 @@ final class HtmlView extends BaseHtmlView
                                 $selectedOrganization = $organizations->getOrganization($selectedUuid);
                                 if ($selectedOrganization !== null) {
                                     $options[$selectedUuid] = $selectedOrganization;
+                                    if (in_array($this->entity, ['cards', 'card_numbering_rules'], true) && $fieldName === 'issuer_organization_uuid') {
+                                        $this->selectedOrganization = $selectedOrganization;
+                                    }
                                 }
                             } catch (Throwable) {
                                 // Keep the stored UUID visible even if lookup fails.
@@ -173,6 +246,19 @@ final class HtmlView extends BaseHtmlView
                     $this->organizationOptions = [];
                 }
             }
+        }
+
+        if ($this->entity === 'cards') {
+            $scope = strtolower(trim((string) ($this->item->scope ?? 'association')));
+            $scope = $scope === 'competition' ? 'competition' : 'association';
+            $issuerUuid = strtolower(trim((string) ($this->item->issuer_organization_uuid ?? '')));
+            if ($scope === 'competition' && is_array($this->selectedCompetitionSeason)) {
+                $seasonIssuer = strtolower(trim((string) ($this->selectedCompetitionSeason['rights_holder_organization_uuid'] ?? '')));
+                if ($seasonIssuer !== '') {
+                    $issuerUuid = $seasonIssuer;
+                }
+            }
+            $this->cardNumberingPolicy = $model->getCardNumberingPolicy($issuerUuid, $scope);
         }
 
         AdminAssetService::useAssets($this->getDocument());
