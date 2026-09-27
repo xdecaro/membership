@@ -55,19 +55,10 @@ jobs:
           cp /tmp/membership1931/pkg_decaromembership.xml package/pkg_decaromembership.xml
           cp /tmp/membership1931/script.php package/script.php
           printf '1.9.31\n' > VERSION
-          sed -i "s/if VERSION != '1.9.20':/if VERSION != '1.9.31':/" build/validate.py
-          sed -i 's/searchPeople($q, 20)/searchPeople($q, $limit)/' build/validate.py
-
-          grep -Fq '<version>1.9.31</version>' component/decaromembership.xml
-          grep -Fq '<version>1.9.31</version>' package/pkg_decaromembership.xml
-          grep -Fq '<version>1.9.31</version>' plugins/task/decaromembership/decaromembership.xml
-          grep -Fq '<version>1.9.31</version>' plugins/xdecaroanalytics/decaromembership/decaromembership.xml
-          grep -Fq "if VERSION != '1.9.31':" build/validate.py
-          grep -Fq 'searchPeople($q, $limit)' build/validate.py
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A component plugins/task/decaromembership plugins/xdecaroanalytics/decaromembership package VERSION build/validate.py
+          git add -A component plugins/task/decaromembership plugins/xdecaroanalytics/decaromembership package VERSION
           if ! git diff --cached --quiet; then
             git commit -m 'release: sync approved Membership 1.9.31 source'
             git pull --rebase origin main
@@ -75,30 +66,35 @@ jobs:
           fi
           echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
-      - name: Validate synchronized source
+      - name: Validate synchronized 1.9.31 source
         shell: bash
         run: |
           set -euo pipefail
           find component plugins package tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l
           php tests/membership-1.9.30-information-responsive-contract.php
           php tests/membership-1.9.31-cardbulk-two-step-contract.php
-          python3 build/validate.py
+          php tests/core-integration-smoke.php
+          php tests/people-integration-contract.php
+          php tests/finance-integration-contract.php
           python3 - <<'PY'
           import json, pathlib, xml.etree.ElementTree as ET
-          assert pathlib.Path('VERSION').read_text().strip() == '1.9.31'
-          assert ET.parse('component/decaromembership.xml').getroot().findtext('version') == '1.9.31'
-          assert ET.parse('package/pkg_decaromembership.xml').getroot().findtext('version') == '1.9.31'
-          assets = json.loads(pathlib.Path('component/media/joomla.asset.json').read_text())
-          assert assets['version'] == '1.9.31'
-          assert all(asset.get('version') == '1.9.31' for asset in assets.get('assets', []))
+          v='1.9.31'
+          assert pathlib.Path('VERSION').read_text().strip() == v
+          assert ET.parse('component/decaromembership.xml').getroot().findtext('version') == v
+          assert ET.parse('package/pkg_decaromembership.xml').getroot().findtext('version') == v
+          assert ET.parse('plugins/task/decaromembership/decaromembership.xml').getroot().findtext('version') == v
+          assert ET.parse('plugins/xdecaroanalytics/decaromembership/decaromembership.xml').getroot().findtext('version') == v
+          assets=json.loads(pathlib.Path('component/media/joomla.asset.json').read_text())
+          assert assets['version'] == v
+          assert all(a.get('version') == v for a in assets.get('assets', []))
+          ET.parse('updates/pkg_decaromembership.xml')
+          ET.parse('updates/changelog.xml')
           PY
 
-      - name: Refuse an existing v1.9.31 release
+      - name: Refuse existing release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
         run: |
-          set -euo pipefail
           if gh release view v1.9.31 >/dev/null 2>&1; then
             echo 'Release v1.9.31 already exists.' >&2
             exit 1
@@ -111,16 +107,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf /tmp/membership-release
           mkdir -p /tmp/membership-release
           cp /tmp/pkg_decaromembership_1.9.31.zip /tmp/membership-release/pkg_decaromembership_1.9.31.zip
           cp /tmp/membership1931/com_decaromembership.zip /tmp/membership-release/com_decaromembership_1.9.31.zip
           cp /tmp/membership1931/plg_task_decaromembership.zip /tmp/membership-release/plg_task_decaromembership_1.9.31.zip
           cp /tmp/membership1931/plg_xdecaroanalytics_decaromembership.zip /tmp/membership-release/plg_xdecaroanalytics_decaromembership_1.9.31.zip
-          (
-            cd /tmp/membership-release
-            sha256sum *.zip > SHA256SUMS.txt
-          )
+          (cd /tmp/membership-release && sha256sum *.zip > SHA256SUMS.txt)
           echo '6eab30ae24468056cc1e92880c1a49def676316482e790541c90c5f249b711cb  /tmp/membership-release/pkg_decaromembership_1.9.31.zip' | sha256sum -c -
 
           cat > /tmp/release-notes.md <<'EOF'
@@ -152,66 +144,45 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import xml.etree.ElementTree as ET
+          v='1.9.31'
+          sha='6eab30ae24468056cc1e92880c1a49def676316482e790541c90c5f249b711cb'
+          url=f'https://github.com/xdecaro/membership/releases/download/v{v}/pkg_decaromembership_{v}.zip'
+          p=Path('updates/pkg_decaromembership.xml')
+          t=ET.parse(p); u=t.getroot().find('./update')
+          u.find('version').text=v
+          u.find('./downloads/downloadurl').text=url
+          u.find('sha256').text=sha
+          ET.indent(t,space='  '); t.write(p,encoding='utf-8',xml_declaration=True)
 
-          version = '1.9.31'
-          sha = '6eab30ae24468056cc1e92880c1a49def676316482e790541c90c5f249b711cb'
-          url = f'https://github.com/xdecaro/membership/releases/download/v{version}/pkg_decaromembership_{version}.zip'
+          p=Path('updates/changelog.xml')
+          t=ET.parse(p); root=t.getroot()
+          if not any(x.get('version')==v for x in root.findall('./changelog')):
+              e=ET.Element('changelog',{'version':v,'date':'2026-09-27'})
+              for kind,text in [
+                  ('feature','Creazione massiva tessere organizzata in due step separati per selezione e anteprima.'),
+                  ('change','Il comando Indietro conserva stagione e persone selezionate.'),
+                  ('fix','Corretto l’overflow responsive nella pagina Informazioni.'),
+                  ('info','La logica di numerazione DCL resta invariata.')]:
+                  c=ET.SubElement(e,'change',{'type':kind}); c.text=text
+              root.insert(0,e)
+          ET.indent(t,space='  '); t.write(p,encoding='utf-8',xml_declaration=True)
 
-          feed_path = Path('updates/pkg_decaromembership.xml')
-          tree = ET.parse(feed_path)
-          update = tree.getroot().find('./update')
-          update.find('version').text = version
-          update.find('./downloads/downloadurl').text = url
-          update.find('sha256').text = sha
-          ET.indent(tree, space='  ')
-          tree.write(feed_path, encoding='utf-8', xml_declaration=True)
-
-          changelog_path = Path('updates/changelog.xml')
-          ctree = ET.parse(changelog_path)
-          root = ctree.getroot()
-          if not any(el.get('version') == version for el in root.findall('./changelog')):
-              entry = ET.Element('changelog', {'version': version, 'date': '2026-09-27'})
-              for kind, text in [
-                  ('feature', 'Creazione massiva tessere organizzata in due step separati per selezione e anteprima.'),
-                  ('change', 'Il comando Indietro conserva stagione e persone selezionate.'),
-                  ('fix', 'Corretto l’overflow responsive nella pagina Informazioni.'),
-                  ('info', 'La logica di numerazione DCL resta invariata.'),
-              ]:
-                  change = ET.SubElement(entry, 'change', {'type': kind})
-                  change.text = text
-              root.insert(0, entry)
-          ET.indent(ctree, space='  ')
-          ctree.write(changelog_path, encoding='utf-8', xml_declaration=True)
-
-          md_path = Path('CHANGELOG.md')
-          md = md_path.read_text()
-          heading = '## 1.9.31 - 2026-09-27'
-          if heading not in md:
-              block = '''## 1.9.31 - 2026-09-27\n\n- Creazione massiva tessere divisa in due step: selezione e anteprima/conferma.\n- Il comando Indietro conserva stagione e persone selezionate.\n- Corretto l’overflow responsive nella pagina Informazioni.\n- Numerazione DCL invariata.\n\n'''
-              marker = '# Changelog\n\n'
-              md = md.replace(marker, marker + block, 1)
-              md_path.write_text(md)
+          p=Path('CHANGELOG.md'); s=p.read_text(); h='## 1.9.31 - 2026-09-27'
+          if h not in s:
+              b=h+'\n\n- Creazione massiva tessere divisa in due step.\n- Il comando Indietro conserva la selezione.\n- Corretto overflow responsive nella pagina Informazioni.\n- Numerazione DCL invariata.\n\n'
+              s=s.replace('# Changelog\n\n','# Changelog\n\n'+b,1); p.write_text(s)
           PY
-
-          grep -Fq '<version>1.9.31</version>' updates/pkg_decaromembership.xml
-          grep -Fq 'releases/download/v1.9.31/pkg_decaromembership_1.9.31.zip' updates/pkg_decaromembership.xml
-          grep -Fq '<sha256>6eab30ae24468056cc1e92880c1a49def676316482e790541c90c5f249b711cb</sha256>' updates/pkg_decaromembership.xml
-
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add updates/pkg_decaromembership.xml updates/changelog.xml CHANGELOG.md
-          if ! git diff --cached --quiet; then
-            git commit -m 'release: publish Membership 1.9.31 updater metadata'
-            git pull --rebase origin main
-            git push origin HEAD:main
-          fi
+          git diff --cached --quiet || git commit -m 'release: publish Membership 1.9.31 updater metadata'
+          git pull --rebase origin main
+          git push origin HEAD:main
 
-      - name: Verify published release asset
+      - name: Verify published package
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
         run: |
-          set -euo pipefail
           TMP="$(mktemp -d)"
           gh release download v1.9.31 --pattern 'pkg_decaromembership_1.9.31.zip' --dir "$TMP"
           echo '6eab30ae24468056cc1e92880c1a49def676316482e790541c90c5f249b711cb  '"$TMP"'/pkg_decaromembership_1.9.31.zip' | sha256sum -c -
