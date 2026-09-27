@@ -60,7 +60,7 @@ def validate_people_boundary():
     require('component/admin/src/Service/MemberPeopleLinkService.php', 'validateForSave', 'linkLegacyMember', 'relinkMember', 'stripPeopleOwnedFields')
     require('component/admin/src/Service/MemberPeopleBackfillService.php', 'loadUnlinkedMembersWithUserId', 'findByUserIdUnique', 'people_backfill')
     require('component/admin/src/Model/RecordsModel.php', 'resolvePeopleForItems', 'searchPeople($search, 200)', 'getPeopleByUuids')
-    require('component/admin/src/Controller/PeopleController.php', 'searchPeople($q, 20)', 'relinkMember', 'JsonResponse')
+    require('component/admin/src/Controller/PeopleController.php', 'searchPeople($q, $limit)', 'relinkMember', 'JsonResponse')
 
 
 def validate_organizations_boundary():
