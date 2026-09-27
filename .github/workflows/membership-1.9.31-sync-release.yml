@@ -55,15 +55,17 @@ jobs:
           cp /tmp/membership1931/pkg_decaromembership.xml package/pkg_decaromembership.xml
           cp /tmp/membership1931/script.php package/script.php
           printf '1.9.31\n' > VERSION
+          sed -i "s/if VERSION != '1.9.20':/if VERSION != '1.9.31':/" build/validate.py
 
           grep -Fq '<version>1.9.31</version>' component/decaromembership.xml
           grep -Fq '<version>1.9.31</version>' package/pkg_decaromembership.xml
           grep -Fq '<version>1.9.31</version>' plugins/task/decaromembership/decaromembership.xml
           grep -Fq '<version>1.9.31</version>' plugins/xdecaroanalytics/decaromembership/decaromembership.xml
+          grep -Fq "if VERSION != '1.9.31':" build/validate.py
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A component plugins/task/decaromembership plugins/xdecaroanalytics/decaromembership package VERSION
+          git add -A component plugins/task/decaromembership plugins/xdecaroanalytics/decaromembership package VERSION build/validate.py
           if ! git diff --cached --quiet; then
             git commit -m 'release: sync approved Membership 1.9.31 source'
             git pull --rebase origin main
@@ -147,7 +149,6 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import re
           import xml.etree.ElementTree as ET
 
           version = '1.9.31'
