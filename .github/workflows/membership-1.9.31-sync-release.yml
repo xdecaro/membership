@@ -56,12 +56,14 @@ jobs:
           cp /tmp/membership1931/script.php package/script.php
           printf '1.9.31\n' > VERSION
           sed -i "s/if VERSION != '1.9.20':/if VERSION != '1.9.31':/" build/validate.py
+          sed -i 's/searchPeople($q, 20)/searchPeople($q, $limit)/' build/validate.py
 
           grep -Fq '<version>1.9.31</version>' component/decaromembership.xml
           grep -Fq '<version>1.9.31</version>' package/pkg_decaromembership.xml
           grep -Fq '<version>1.9.31</version>' plugins/task/decaromembership/decaromembership.xml
           grep -Fq '<version>1.9.31</version>' plugins/xdecaroanalytics/decaromembership/decaromembership.xml
           grep -Fq "if VERSION != '1.9.31':" build/validate.py
+          grep -Fq 'searchPeople($q, $limit)' build/validate.py
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
