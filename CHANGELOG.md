@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.31 - 2026-09-27
+
+- Creazione massiva tessere divisa in due step.
+- Il comando Indietro conserva la selezione.
+- Corretto overflow responsive nella pagina Informazioni.
+- Numerazione DCL invariata.
+
 ## 1.9.17 - 2026-09-22
 - Fixes incomplete People multi-UUID batch resolution in Membership member lists.
 - Keeps the batch provider as the fast path and resolves only missing UUIDs through the public People `getPerson()` contract.

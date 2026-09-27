@@ -1,16 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <changelogs>
+  <changelog version="1.9.31" date="2026-09-27">
+    <change type="feature">Creazione massiva tessere organizzata in due step separati per selezione e anteprima.</change>
+    <change type="change">Il comando Indietro conserva stagione e persone selezionate.</change>
+    <change type="fix">Corretto l’overflow responsive nella pagina Informazioni.</change>
+    <change type="info">La logica di numerazione DCL resta invariata.</change>
+  </changelog>
   <changelog version="1.9.17" date="2026-09-22">
     <change type="fix">Membership member lists recover People identities missing from an incomplete multi-UUID batch response.</change>
     <change type="fix">Only missing UUIDs fall back to the public People getPerson contract; no private People table access is introduced.</change>
     <change type="test">Added Joomla 6.1.3 runtime coverage for multiple People identities in one Membership list lookup.</change>
   </changelog>
-
   <changelog version="1.9.16" date="2026-09-22">
     <change type="fix">Sede di provenienza now auto-fills from the selected member current organization in Trasferimenti.</change>
     <change type="fix">New transfer saves enforce the member current organization as the source.</change>
   </changelog>
-
   <changelog version="1.9.15" date="2026-09-22">
     <change type="feature">Transfers now use Organizations-based source and destination pickers.</change>
     <change type="feature">Completed transfers update the member organization and record history.</change>
@@ -18,114 +22,96 @@
     <change type="feature">Delegation, sticker, card-position, arrears and confirmation checks gate completion.</change>
     <change type="feature">Request and completion dates default automatically when appropriate.</change>
   </changelog>
-
   <changelog version="1.9.14" date="2026-09-22">
     <change type="feature">Paid payments now recalculate the linked Quote paid amount and status automatically.</change>
     <change type="fix">Payment status is mandatory and publication is labeled Pubblicato.</change>
     <change type="fix">A payment cannot be linked to a Quote belonging to a different Socio.</change>
     <change type="change">Rinnovi no longer duplicates financial amount/payment status in its administrator form.</change>
   </changelog>
-
   <changelog version="1.9.13" date="2026-09-21">
     <change type="fix">Quote saving no longer fails when Importo pagato is blank; the value is stored as zero.</change>
     <change type="test">Added runtime coverage for unpaid dues with blank paid amount.</change>
   </changelog>
-
   <changelog version="1.9.12" date="2026-09-21">
     <change type="feature">Quote / Dues is now available directly from the Membership administrator menu.</change>
     <change type="fix">Due amount and due status are mandatory; due status defaults to Non pagato.</change>
     <change type="fix">Due publication is labeled Pubblicato.</change>
   </changelog>
-
   <changelog version="1.9.11" date="2026-09-20">
     <change type="fix">Duplicate renewals now show a clear user-facing message instead of a raw database key error.</change>
     <change type="info">The database uniqueness constraint remains in place.</change>
   </changelog>
-
   <changelog version="1.9.10" date="2026-09-20">
     <change type="fix">Administrator member selectors no longer hide unpublished legacy members.</change>
     <change type="fix">Renewal status is explicit, mandatory and defaults to Da rinnovare.</change>
     <change type="fix">Payment status is mandatory and defaults to Non pagato.</change>
     <change type="fix">Renewal publication is labeled Pubblicato.</change>
   </changelog>
-
   <changelog version="1.9.9" date="2026-09-20">
     <change type="fix">Submitted form values are preserved after validation errors.</change>
     <change type="fix">The preselected member is retained in the Card form after a failed save.</change>
     <change type="fix">Required-field messages identify the missing field by its human label.</change>
   </changelog>
-
   <changelog version="1.9.8" date="2026-09-20">
     <change type="fix">Card type is now mandatory in the form and server-side validation.</change>
     <change type="fix">Card status is now mandatory in the form and server-side validation.</change>
     <change type="test">Runtime coverage rejects card creation when either mandatory field is missing.</change>
     <change type="info">Card dates, annual mark, QR token and notes remain optional.</change>
   </changelog>
-
   <changelog version="1.9.7" date="2026-09-20">
     <change type="fix">Cards now use a dedicated card-status label instead of an ambiguous generic status label.</change>
     <change type="fix">Italian card statuses use Attiva, Scaduta, Smarrita, Revocata and Sostituita.</change>
     <change type="fix">The Joomla publication field is labeled Pubblicato in the card form.</change>
     <change type="fix">Administrator lists localize configured select values instead of exposing raw codes.</change>
   </changelog>
-
   <changelog version="1.9.6" date="2026-09-19">
     <change type="feature">Member profiles can create a new card with the member already selected.</change>
     <change type="fix">Member relation labels resolve through People instead of blank legacy identity fields.</change>
     <change type="fix">Selected unpublished relations remain visible so historical references are preserved.</change>
     <change type="feature">Card lists display People-backed member names.</change>
   </changelog>
-
   <changelog version="1.9.5" date="2026-09-19">
     <change type="fix">Fixed the administrator member page crash caused by an undefined HtmlView getDatabase() call.</change>
     <change type="fix">Current-card lookup now runs through RecordModel while Cards remains the authoritative source.</change>
     <change type="fix">No membership or card data is rewritten by this patch.</change>
   </changelog>
-
   <changelog version="1.9.4" date="2026-09-19">
     <change type="feature">Cards is now the authoritative source for card numbers and card lifecycle data.</change>
     <change type="fix">The member form no longer duplicates an editable card number.</change>
     <change type="feature">Member profiles show the current card in read-only form and link to Cards management.</change>
     <change type="fix">Legacy member card-number data is preserved without destructive migration.</change>
   </changelog>
-
   <changelog version="1.9.3" date="2026-09-19">
     <change type="fix">Legacy members with a blank prior status no longer receive invented lifecycle dates when their current status is first set.</change>
     <change type="fix">New members still receive normal automatic lifecycle dates and member records explicitly default to Published.</change>
     <change type="fix">Existing historical data is preserved without automatic rewriting.</change>
   </changelog>
-
   <changelog version="1.9.2" date="2026-09-19">
     <change type="fix">New publishable Membership records now default to Published.</change>
     <change type="fix">Category creation no longer starts with state 0 by default.</change>
     <change type="fix">Administrator lists display Published/Unpublished labels instead of raw numeric state values.</change>
   </changelog>
-
   <changelog version="1.9.1" date="2026-09-19">
     <change type="fix">Ordered configurable entities now default to ordering 0 instead of saving NULL.</change>
     <change type="fix">Category creation works without manually entering an ordering value.</change>
     <change type="fix">The same safe ordering default applies to case statuses and checklist templates.</change>
   </changelog>
-
   <changelog version="1.9.0" date="2026-09-19">
     <change type="feature">Required configurable member categories with optional stable category code.</change>
     <change type="feature">Configurable default member status and safe manual/optional automatic member numbering.</change>
     <change type="feature">Lifecycle date defaults for admission, activation, status changes and cessation.</change>
     <change type="feature">Categories added to the administrator submenu with missing-category guidance in the member form.</change>
   </changelog>
-
   <changelog version="1.8.0" date="2026-09-19">
     <change type="feature">Organizations picker with parent-child hierarchy and readable indentation.</change>
     <change type="feature">Live search by organization name, hierarchy path and translated type.</change>
     <change type="feature">Organization type translations added for Italian, English and French.</change>
   </changelog>
-
   <changelog version="1.6.0" date="2026-09-18">
     <change type="feature">Membership lifecycle dates, rights and non-destructive history.</change>
     <change type="feature">Public person-memberships and eligibility services for People integration.</change>
     <change type="feature">Transfer effective date with controlled destination update on completion.</change>
   </changelog>
-
   <changelog>
     <element>pkg_decaromembership</element>
     <type>package</type>
