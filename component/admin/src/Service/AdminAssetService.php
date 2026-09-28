@@ -10,7 +10,7 @@ use Throwable;
 
 final class AdminAssetService
 {
-    private const VERSION = '1.9.32';
+    private const VERSION = '1.9.33';
     private const MINIMUM_CORE_UI_VERSION = '1.3.0';
 
     public static function useAssets(HtmlDocument $document, bool $withCoreUi = false): bool

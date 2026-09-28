@@ -55,7 +55,7 @@ final class HtmlView extends BaseHtmlView
 
         AdminAssetService::useAssets($this->getDocument());
         $base = rtrim(Uri::root(true), '/') . '/media/com_decaromembership';
-        $this->getDocument()->addScript($base . '/js/cardbulk.js', ['version' => '1.9.32'], ['defer' => true]);
+        $this->getDocument()->addScript($base . '/js/cardbulk.js', ['version' => '1.9.33'], ['defer' => true]);
 
         ToolbarHelper::title(Text::_('COM_DECAROMEMBERSHIP_CARDBULK_TITLE'), 'copy');
         ToolbarHelper::link('index.php?option=com_decaromembership&view=records&entity=cards', Text::_('JTOOLBAR_CLOSE'), 'arrow-left');

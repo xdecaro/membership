@@ -249,10 +249,10 @@ def validate_transfer_source_autofill():
 
 
 def validate():
-    if VERSION != '1.9.31':
+    if VERSION != '1.9.33':
         fail(f'unexpected VERSION {VERSION!r}')
 
-    manifests = [ROOT / 'component/decaromembership.xml',ROOT / 'package/pkg_decaromembership.xml',ROOT / 'plugins/xdecaroanalytics/decaromembership/decaromembership.xml',ROOT / 'plugins/task/decaromembership/decaromembership.xml']
+    manifests = [ROOT / 'component/decaromembership.xml',ROOT / 'package/pkg_decaromembership.xml',ROOT / 'plugins/system/decaromembership/decaromembership.xml',ROOT / 'plugins/xdecaroanalytics/decaromembership/decaromembership.xml',ROOT / 'plugins/task/decaromembership/decaromembership.xml']
     for path in manifests:
         ET.parse(path)
         if version(path) != VERSION: fail(f'{path.relative_to(ROOT)} version mismatch')
@@ -271,7 +271,7 @@ def validate():
     package_root = ET.parse(manifests[1]).getroot()
     if (package_root.find('targetplatform').get('version') or '') != '6.*': fail('Membership package must target Joomla 6 only')
     children = {(n.get('type', ''), n.get('id', ''), n.get('group', ''), (n.text or '').strip()) for n in package_root.findall('./files/file')}
-    expected = {('component','com_decaromembership','','com_decaromembership.zip'),('plugin','decaromembership','xdecaroanalytics','plg_xdecaroanalytics_decaromembership.zip'),('plugin','decaromembership','task','plg_task_decaromembership.zip')}
+    expected = {('component','com_decaromembership','','com_decaromembership.zip'),('plugin','decaromembership','system','plg_system_decaromembership.zip'),('plugin','decaromembership','xdecaroanalytics','plg_xdecaroanalytics_decaromembership.zip'),('plugin','decaromembership','task','plg_task_decaromembership.zip')}
     if children != expected: fail(f'package children mismatch: {children}')
 
     validate_private_boundaries(); validate_finance_boundary(); validate_people_boundary(); validate_organizations_boundary(); validate_member_lifecycle_basics(); validate_ordering_defaults(); validate_published_defaults(); validate_legacy_lifecycle_safety(); validate_card_source(); validate_member_card_view(); validate_card_member_flow(); validate_card_labels(); validate_card_required_fields(); validate_validation_preservation(); validate_renewal_form(); validate_renewal_duplicate_message(); validate_dues_menu(); validate_due_paid_amount(); validate_payment_sync(); validate_transfer_workflow(); validate_transfer_source_autofill()
@@ -280,8 +280,8 @@ def validate():
     if not batch_marker.is_file(): fail('Membership 1.9.17 schema marker missing')
     if re.search(r'\b(?:DROP\s+TABLE|TRUNCATE\s+TABLE|DROP\s+COLUMN)\b', batch_marker.read_text(), re.I): fail('Membership 1.9.17 schema marker must be non-destructive')
 
-    integrations = require('component/admin/src/Helper/MembershipHelper.php', "'com_xdecarocompetitions' => 'Competitions by xdecaro'")
-    if "'com_decarodcl' => 'Competitions by xdecaro'" in integrations: fail('legacy Competitions component option remains')
+    integrations = require('component/admin/src/Helper/MembershipHelper.php', "'com_competitions' => 'Competitions by xdecaro'")
+    if "'com_xdecarocompetitions' => 'Competitions by xdecaro'" in integrations or "'com_decarodcl' => 'Competitions by xdecaro'" in integrations: fail('legacy Competitions component option remains')
 
     require('component/admin/src/Service/CoreIntegrationService.php', "COMPONENT='com_decaromembership'", 'CapabilityRegistry', 'membership.analytics.provider', 'membership.notifications.bridge', 'membership.tasks.bridge', 'membership.reminders.process')
     bridge = require('component/admin/src/Service/CrossProductIntegrationService.php', 'com_xdecaronotifications','getNotificationService','com_xdecarotasks','getTaskService','source_component')
@@ -353,11 +353,11 @@ def validate():
 
 def validate_dist():
     dist=ROOT/'dist'
-    files=[dist/f'com_decaromembership_{VERSION}.zip',dist/f'plg_xdecaroanalytics_decaromembership_{VERSION}.zip',dist/f'plg_task_decaromembership_{VERSION}.zip',dist/f'pkg_decaromembership_{VERSION}.zip',dist/'SHA256SUMS.txt']
+    files=[dist/f'com_decaromembership_{VERSION}.zip',dist/f'plg_system_decaromembership_{VERSION}.zip',dist/f'plg_xdecaroanalytics_decaromembership_{VERSION}.zip',dist/f'plg_task_decaromembership_{VERSION}.zip',dist/f'pkg_decaromembership_{VERSION}.zip',dist/'SHA256SUMS.txt']
     for path in files:
         if not path.is_file(): fail(f'missing {path.name}')
-    with zipfile.ZipFile(files[3]) as archive:
-        expected={'pkg_decaromembership.xml','script.php','com_decaromembership.zip','plg_xdecaroanalytics_decaromembership.zip','plg_task_decaromembership.zip'}
+    with zipfile.ZipFile(files[4]) as archive:
+        expected={'pkg_decaromembership.xml','script.php','com_decaromembership.zip','plg_system_decaromembership.zip','plg_xdecaroanalytics_decaromembership.zip','plg_task_decaromembership.zip'}
         if set(archive.namelist())!=expected: fail('unexpected package contents')
         component_bytes=archive.read('com_decaromembership.zip')
         import io
@@ -365,7 +365,7 @@ def validate_dist():
             required_component_assets={'media/css/admin.css','media/css/core-bridge.css','media/js/admin.js','media/joomla.asset.json'}
             missing=required_component_assets.difference(component_archive.namelist())
             if missing: fail(f'component package missing media assets: {sorted(missing)}')
-    for path in files[:4]:
+    for path in files[:5]:
         with zipfile.ZipFile(path) as archive:
             if archive.testzip() is not None: fail(f'corrupt {path.name}')
     print(f'Membership {VERSION} dist validation OK')
