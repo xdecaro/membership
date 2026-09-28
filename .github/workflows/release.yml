@@ -1,5 +1,9 @@
 name: Membership Release
 on:
+  push:
+    branches: [main]
+    paths:
+      - VERSION
   workflow_dispatch:
 permissions: {contents: write}
 jobs:
@@ -51,6 +55,7 @@ jobs:
           php tests/membership-1.9.15-transfer-workflow-contract.php
           php tests/membership-1.9.16-transfer-source-autofill-contract.php
           php tests/membership-1.9.17-people-batch-fallback-contract.php
+          php tests/membership-1.9.32-season-date-sync-contract.php
       - run: python3 build/build.py && python3 build/validate.py --dist
       - run: python3 build/update_feed_checksum.py
       - name: Verify updater metadata
@@ -64,7 +69,7 @@ jobs:
         env: {GH_TOKEN: '${{ secrets.GITHUB_TOKEN }}'}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          gh release create "v${VERSION}" dist/*_${VERSION}.zip dist/SHA256SUMS.txt --title "Membership by xdecaro ${VERSION}" --notes "Membership ${VERSION}: fixes Competitions integration detection by using the installed Joomla component option com_xdecarocompetitions. Optional integrations remain optional. Joomla 6 only."
+          gh release create "v${VERSION}" dist/*_${VERSION}.zip dist/SHA256SUMS.txt --title "Membership by xdecaro ${VERSION}" --notes "Membership ${VERSION}: synchronizes competition-card validity dates automatically from Competitions season dates through the Joomla event bridge. Adds the optional system integration plugin without direct table coupling. Joomla 6 only."
       - name: Publish checksum
         run: |
           VERSION="${{ steps.version.outputs.version }}"; git config user.name github-actions[bot]; git config user.email 41898282+github-actions[bot]@users.noreply.github.com; git add updates/pkg_decaromembership.xml; if git diff --cached --quiet; then exit 0; fi; git commit -m "Publish SHA-256 for Membership ${VERSION}"; git pull --rebase origin main; git push origin HEAD:main
