@@ -1,0 +1,186 @@
+--- a/component/admin/src/Model/RecordModel.php
++++ b/component/admin/src/Model/RecordModel.php
+@@ -389,12 +389,9 @@
+ 
+                     $seasonStart = trim((string) ($competitionSeason['start_date'] ?? ''));
+                     $seasonEnd = trim((string) ($competitionSeason['end_date'] ?? ''));
+-                    if (trim((string) ($data['valid_from'] ?? '')) === '' && $seasonStart !== '') {
+-                        $data['valid_from'] = $seasonStart;
+-                    }
+-                    if (trim((string) ($data['expires_at'] ?? '')) === '' && $seasonEnd !== '') {
+-                        $data['expires_at'] = $seasonEnd;
+-                    }
++                    // Competitions is authoritative for validity dates of competition cards.
++                    $data['valid_from'] = $seasonStart !== '' ? $seasonStart : null;
++                    $data['expires_at'] = $seasonEnd !== '' ? $seasonEnd : null;
+                     $validFrom = trim((string) ($data['valid_from'] ?? ''));
+                     $expiresAt = trim((string) ($data['expires_at'] ?? ''));
+                     if ($seasonStart !== '' && $validFrom !== '' && $validFrom > $seasonStart) {
+--- a/component/admin/src/Service/AdminAssetService.php
++++ b/component/admin/src/Service/AdminAssetService.php
+@@ -10,7 +10,7 @@
+ 
+ final class AdminAssetService
+ {
+-    private const VERSION = '1.9.31';
++    private const VERSION = '1.9.32';
+     private const MINIMUM_CORE_UI_VERSION = '1.3.0';
+ 
+     public static function useAssets(HtmlDocument $document, bool $withCoreUi = false): bool
+--- a/component/admin/src/Service/DclCardService.php
++++ b/component/admin/src/Service/DclCardService.php
+@@ -434,6 +434,175 @@
+         return (int) $this->db->setQuery($query)->loadResult() > 0;
+     }
+ 
++    /**
++     * Synchronize validity dates for every competition card linked to a Competitions season.
++     *
++     * Competitions remains the source of truth for season dates. The card number, holder and
++     * workflow status are intentionally left untouched.
++     *
++     * @return array{cards_updated:int,links_updated:int}
++     */
++    public function syncCompetitionSeasonDates(
++        int $competitionSeasonId,
++        ?string $validFrom,
++        ?string $expiresAt,
++        int $actorUserId,
++        string $nowSql
++    ): array {
++        if ($competitionSeasonId < 1) {
++            throw new \InvalidArgumentException('Competition season ID must be positive.');
++        }
++
++        $validFrom = $this->normalizeSyncDate($validFrom, 'valid_from');
++        $expiresAt = $this->normalizeSyncDate($expiresAt, 'expires_at');
++        if ($validFrom !== null && $expiresAt !== null && $validFrom > $expiresAt) {
++            throw new \InvalidArgumentException('Competition season start date cannot be after its end date.');
++        }
++
++        $actorUserId = max(0, $actorUserId);
++        $nowSql = trim($nowSql);
++        if ($nowSql === '') {
++            $nowSql = Factory::getDate()->toSql();
++        }
++
++        $query = $this->db->getQuery(true)
++            ->select([
++                $this->db->quoteName('c.id'),
++                $this->db->quoteName('c.valid_from'),
++                $this->db->quoteName('c.expires_at'),
++                $this->db->quoteName('l.id', 'link_id'),
++                $this->db->quoteName('l.metadata'),
++            ])
++            ->from($this->db->quoteName('#__decaromembership_cards', 'c'))
++            ->innerJoin(
++                $this->db->quoteName('#__decaromembership_entity_links', 'l')
++                . ' ON ' . $this->db->quoteName('l.local_entity_type') . ' = ' . $this->db->quote('cards')
++                . ' AND ' . $this->db->quoteName('l.local_entity_id') . ' = ' . $this->db->quoteName('c.id')
++                . ' AND ' . $this->db->quoteName('l.component') . ' = ' . $this->db->quote(self::COMPONENT)
++                . ' AND ' . $this->db->quoteName('l.external_entity_type') . ' = ' . $this->db->quote(self::EXTERNAL_ENTITY)
++                . ' AND ' . $this->relationCondition('l')
++            )
++            ->where($this->db->quoteName('l.external_entity_id') . ' = :season_id')
++            ->where('(' . $this->db->quoteName('c.scope') . ' = ' . $this->db->quote('competition')
++                . ' OR ' . $this->db->quoteName('c.program') . ' = ' . $this->db->quote('dcl') . ')')
++            ->where($this->db->quoteName('c.published') . ' <> -2')
++            ->order($this->db->quoteName('c.id') . ' ASC')
++            ->order($this->db->quoteName('l.id') . ' ASC')
++            ->bind(':season_id', $competitionSeasonId, ParameterType::INTEGER);
++
++        $rows = (array) $this->db->setQuery($query)->loadObjectList();
++        if ($rows === []) {
++            return ['cards_updated' => 0, 'links_updated' => 0];
++        }
++
++        $cards = [];
++        foreach ($rows as $row) {
++            $cardId = (int) ($row->id ?? 0);
++            $linkId = (int) ($row->link_id ?? 0);
++            if ($cardId < 1 || $linkId < 1) {
++                continue;
++            }
++
++            if (!isset($cards[$cardId])) {
++                $cards[$cardId] = [
++                    'valid_from' => $row->valid_from !== null ? (string) $row->valid_from : null,
++                    'expires_at' => $row->expires_at !== null ? (string) $row->expires_at : null,
++                    'links' => [],
++                ];
++            }
++            $cards[$cardId]['links'][] = [
++                'id' => $linkId,
++                'metadata' => $row->metadata !== null ? (string) $row->metadata : '',
++            ];
++        }
++
++        if ($cards === []) {
++            return ['cards_updated' => 0, 'links_updated' => 0];
++        }
++
++        $cardsUpdated = 0;
++        $linksUpdated = 0;
++        $audit = new AuditService($this->db);
++        $started = false;
++
++        try {
++            $this->db->transactionStart();
++            $started = true;
++
++            foreach ($cards as $cardId => $card) {
++                $oldValidFrom = $card['valid_from'];
++                $oldExpiresAt = $card['expires_at'];
++                $cardChanged = $oldValidFrom !== $validFrom || $oldExpiresAt !== $expiresAt;
++
++                if ($cardChanged) {
++                    $update = $this->db->getQuery(true)
++                        ->update($this->db->quoteName('#__decaromembership_cards'))
++                        ->set($this->db->quoteName('valid_from') . ' = :valid_from')
++                        ->set($this->db->quoteName('expires_at') . ' = :expires_at')
++                        ->set($this->db->quoteName('modified') . ' = :modified')
++                        ->set($this->db->quoteName('modified_by') . ' = :modified_by')
++                        ->where($this->db->quoteName('id') . ' = :card_id')
++                        ->bind(':valid_from', $validFrom, $validFrom === null ? ParameterType::NULL : ParameterType::STRING)
++                        ->bind(':expires_at', $expiresAt, $expiresAt === null ? ParameterType::NULL : ParameterType::STRING)
++                        ->bind(':modified', $nowSql)
++                        ->bind(':modified_by', $actorUserId, ParameterType::INTEGER)
++                        ->bind(':card_id', $cardId, ParameterType::INTEGER);
++                    $this->db->setQuery($update)->execute();
++
++                    $audit->record(
++                        'cards',
++                        $cardId,
++                        'competition_season_dates_sync',
++                        $actorUserId,
++                        (object) ['valid_from' => $oldValidFrom, 'expires_at' => $oldExpiresAt],
++                        (object) ['valid_from' => $validFrom, 'expires_at' => $expiresAt, 'competition_season_id' => $competitionSeasonId],
++                        $nowSql
++                    );
++                    $cardsUpdated++;
++                }
++
++                foreach ($card['links'] as $link) {
++                    $metadata = json_decode((string) $link['metadata'], true);
++                    if (!is_array($metadata)) {
++                        $metadata = [];
++                    }
++                    $metadata['valid_from'] = $validFrom;
++                    $metadata['expires_at'] = $expiresAt;
++
++                    $metadataJson = json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
++                    if (!is_string($metadataJson)) {
++                        $metadataJson = '{}';
++                    }
++                    if ($metadataJson === (string) $link['metadata']) {
++                        continue;
++                    }
++
++                    $linkUpdate = $this->db->getQuery(true)
++                        ->update($this->db->quoteName('#__decaromembership_entity_links'))
++                        ->set($this->db->quoteName('metadata') . ' = :metadata')
++                        ->where($this->db->quoteName('id') . ' = :link_id')
++                        ->bind(':metadata', $metadataJson)
++                        ->bind(':link_id', $link['id'], ParameterType::INTEGER);
++                    $this->db->setQuery($linkUpdate)->execute();
++
