@@ -13,11 +13,11 @@ def main():
  DIST.mkdir(exist_ok=True)
  for p in DIST.glob('*'):
   if p.is_file():p.unlink()
- component=DIST/f'com_decaromembership_{VERSION}.zip'; analytics=DIST/f'plg_xdecaroanalytics_decaromembership_{VERSION}.zip'; task=DIST/f'plg_task_decaromembership_{VERSION}.zip'; package=DIST/f'pkg_decaromembership_{VERSION}.zip'
- write_zip(component,tree(ROOT/'component'));write_zip(analytics,tree(ROOT/'plugins/xdecaroanalytics/decaromembership'));write_zip(task,tree(ROOT/'plugins/task/decaromembership'))
+ component=DIST/f'com_decaromembership_{VERSION}.zip'; system=DIST/f'plg_system_decaromembership_{VERSION}.zip'; analytics=DIST/f'plg_xdecaroanalytics_decaromembership_{VERSION}.zip'; task=DIST/f'plg_task_decaromembership_{VERSION}.zip'; package=DIST/f'pkg_decaromembership_{VERSION}.zip'
+ write_zip(component,tree(ROOT/'component'));write_zip(system,tree(ROOT/'plugins/system/decaromembership'));write_zip(analytics,tree(ROOT/'plugins/xdecaroanalytics/decaromembership'));write_zip(task,tree(ROOT/'plugins/task/decaromembership'))
  nested=[]
- for source,name in [(component,'com_decaromembership.zip'),(analytics,'plg_xdecaroanalytics_decaromembership.zip'),(task,'plg_task_decaromembership.zip')]:tmp=DIST/name;tmp.write_bytes(source.read_bytes());nested.append((tmp,name))
+ for source,name in [(component,'com_decaromembership.zip'),(system,'plg_system_decaromembership.zip'),(analytics,'plg_xdecaroanalytics_decaromembership.zip'),(task,'plg_task_decaromembership.zip')]:tmp=DIST/name;tmp.write_bytes(source.read_bytes());nested.append((tmp,name))
  write_zip(package,[(ROOT/'package/pkg_decaromembership.xml','pkg_decaromembership.xml'),(ROOT/'package/script.php','script.php')]+nested)
  for p,_ in nested:p.unlink()
- assets=[component,analytics,task,package];(DIST/'SHA256SUMS.txt').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in assets),encoding='utf-8')
+ assets=[component,system,analytics,task,package];(DIST/'SHA256SUMS.txt').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in assets),encoding='utf-8')
 if __name__=='__main__':main()
