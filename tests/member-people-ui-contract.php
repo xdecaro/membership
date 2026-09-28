@@ -94,7 +94,7 @@ foreach ([
     "checkToken('get')",
     'checkToken()',
     "authorise('membership.relink_person', 'com_decaromembership')",
-    'searchPeople($q, 20)',
+    'searchPeople($q, $limit)',
     "'birth_date' => (string) (\$row['birth_date'] ?? '')",
     "'birth_place' => (string) (\$row['birth_place'] ?? '')",
     'relinkMember(',
