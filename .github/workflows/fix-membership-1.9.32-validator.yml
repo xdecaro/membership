@@ -1,0 +1,44 @@
+name: Fix Membership 1.9.32 validator
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-membership-1.9.32-validator.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Update release validator
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('build/validate.py')
+          s = p.read_text()
+          s = s.replace("if VERSION != '1.9.31':", "if VERSION != '1.9.32':")
+          s = s.replace("ROOT / 'plugins/xdecaroanalytics/decaromembership/decaromembership.xml',ROOT / 'plugins/task/decaromembership/decaromembership.xml']", "ROOT / 'plugins/system/decaromembership/decaromembership.xml',ROOT / 'plugins/xdecaroanalytics/decaromembership/decaromembership.xml',ROOT / 'plugins/task/decaromembership/decaromembership.xml']")
+          old = "expected = {('component','com_decaromembership','','com_decaromembership.zip'),('plugin','decaromembership','xdecaroanalytics','plg_xdecaroanalytics_decaromembership.zip'),('plugin','decaromembership','task','plg_task_decaromembership.zip')}"
+          new = "expected = {('component','com_decaromembership','','com_decaromembership.zip'),('plugin','decaromembership','system','plg_system_decaromembership.zip'),('plugin','decaromembership','xdecaroanalytics','plg_xdecaroanalytics_decaromembership.zip'),('plugin','decaromembership','task','plg_task_decaromembership.zip')}"
+          if old not in s:
+              raise SystemExit('expected package children validator marker not found')
+          s = s.replace(old, new)
+          p.write_text(s)
+          PY
+          python3 build/validate.py
+      - name: Commit validator fix
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/fix-membership-1.9.32-validator.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Fix Membership 1.9.32 release validator'
+          git push origin HEAD:main
