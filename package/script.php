@@ -159,20 +159,98 @@ final class pkg_decaromembershipInstallerScript
             }
         }
 
-        if (!in_array($type, ['install', 'discover_install'], true)) {
-            return;
+        try {
+            /** @var DatabaseInterface $db */
+            $db = Factory::getContainer()->get(DatabaseInterface::class);
+            $component = $app->bootComponent('com_decaromembership');
+            $updatedCards = $this->reconcileCompetitionCardDates(
+                $db,
+                $component,
+                $identity ? (int) $identity->id : 0
+            );
+            if ($updatedCards > 0) {
+                $app->enqueueMessage(
+                    'Membership synchronized ' . $updatedCards . ' competition card(s) with current season dates.',
+                    'message'
+                );
+            }
+        } catch (\Throwable $e) {
+            $app->enqueueMessage(
+                'Membership updated, but existing competition-card dates could not be reconciled automatically.',
+                'warning'
+            );
         }
 
         try {
             /** @var DatabaseInterface $db */
             $db = Factory::getContainer()->get(DatabaseInterface::class);
-            foreach ([['xdecaroanalytics','decaromembership'],['task','decaromembership']] as [$folder,$element]) {
+            $plugins = [['system','decaromembership']];
+            if (in_array($type, ['install', 'discover_install'], true)) {
+                $plugins[] = ['xdecaroanalytics','decaromembership'];
+                $plugins[] = ['task','decaromembership'];
+            }
+
+            foreach ($plugins as [$folder,$element]) {
                 $enabled=1; $pluginType='plugin';
                 $query=$db->getQuery(true)->update($db->quoteName('#__extensions'))->set($db->quoteName('enabled').' = :enabled')->where($db->quoteName('type').' = :type')->where($db->quoteName('folder').' = :folder')->where($db->quoteName('element').' = :element')->bind(':enabled',$enabled,ParameterType::INTEGER)->bind(':type',$pluginType)->bind(':folder',$folder)->bind(':element',$element);
                 $db->setQuery($query)->execute();
             }
         } catch (\Throwable $e) {
-            $app->enqueueMessage('Membership installed, but optional integration plugins could not be enabled automatically.','warning');
+            $app->enqueueMessage('Membership installed or updated, but integration plugins could not be enabled automatically.','warning');
         }
     }
+    private function reconcileCompetitionCardDates(DatabaseInterface $db, object $component, int $actorUserId): int
+    {
+        if (!method_exists($component, 'getCompetitionsIntegrationService') || !method_exists($component, 'getDclCardService')) {
+            return 0;
+        }
+
+        $competitions = $component->getCompetitionsIntegrationService();
+        if (!is_object($competitions) || !method_exists($competitions, 'isAvailable') || !$competitions->isAvailable()) {
+            return 0;
+        }
+
+        $query = $db->getQuery(true)
+            ->select('DISTINCT ' . $db->quoteName('external_entity_id'))
+            ->from($db->quoteName('#__decaromembership_entity_links'))
+            ->where($db->quoteName('local_entity_type') . ' = ' . $db->quote('cards'))
+            ->where($db->quoteName('component') . ' = ' . $db->quote('com_competitions'))
+            ->where($db->quoteName('external_entity_type') . ' = ' . $db->quote('season'))
+            ->where($db->quoteName('relation_type') . ' IN ('
+                . $db->quote('card_competition_context') . ', '
+                . $db->quote('dcl_card_season') . ')');
+
+        $seasonIds = array_values(array_unique(array_map('intval', (array) $db->setQuery($query)->loadColumn())));
+        $seasonIds = array_values(array_filter($seasonIds, static fn (int $id): bool => $id > 0));
+        if ($seasonIds === []) {
+            return 0;
+        }
+
+        $updated = 0;
+        $nowSql = Factory::getDate()->toSql();
+        $cardService = $component->getDclCardService();
+
+        foreach ($seasonIds as $seasonId) {
+            try {
+                $season = $competitions->getDclSeason($seasonId);
+                if (!is_array($season)) {
+                    continue;
+                }
+
+                $result = $cardService->syncCompetitionSeasonDates(
+                    $seasonId,
+                    isset($season['start_date']) ? (string) $season['start_date'] : null,
+                    isset($season['end_date']) ? (string) $season['end_date'] : null,
+                    max(0, $actorUserId),
+                    $nowSql
+                );
+                $updated += (int) ($result['cards_updated'] ?? 0);
+            } catch (\Throwable) {
+                // One optional external season must not block the package upgrade or other seasons.
+            }
+        }
+
+        return $updated;
+    }
+
 }

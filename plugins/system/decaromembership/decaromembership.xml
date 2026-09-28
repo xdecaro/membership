@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="system" method="upgrade">
+  <name>PLG_SYSTEM_DECAROMEMBERSHIP</name>
+  <author>Luca De Caro</author>
+  <creationDate>2026-09</creationDate>
+  <copyright>Copyright (C) 2026 Luca De Caro. All rights reserved.</copyright>
+  <license>GNU General Public License version 2 or later</license>
+  <authorUrl>https://github.com/xdecaro/membership</authorUrl>
+  <version>1.9.32</version>
+  <description>PLG_SYSTEM_DECAROMEMBERSHIP_XML_DESCRIPTION</description>
+  <targetplatform name="joomla" version="6.*" />
+  <namespace path="src">Xdecaro\Plugin\System\Decaromembership</namespace>
+  <files>
+    <folder plugin="decaromembership">services</folder>
+    <folder>src</folder>
+    <folder>language</folder>
+  </files>
+  <languages folder="language">
+    <language tag="en-GB">en-GB/plg_system_decaromembership.ini</language>
+    <language tag="en-GB">en-GB/plg_system_decaromembership.sys.ini</language>
+    <language tag="it-IT">it-IT/plg_system_decaromembership.ini</language>
+    <language tag="it-IT">it-IT/plg_system_decaromembership.sys.ini</language>
+  </languages>
+</extension>

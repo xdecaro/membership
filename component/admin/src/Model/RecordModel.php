@@ -389,12 +389,9 @@ final class RecordModel extends BaseDatabaseModel
 
                     $seasonStart = trim((string) ($competitionSeason['start_date'] ?? ''));
                     $seasonEnd = trim((string) ($competitionSeason['end_date'] ?? ''));
-                    if (trim((string) ($data['valid_from'] ?? '')) === '' && $seasonStart !== '') {
-                        $data['valid_from'] = $seasonStart;
-                    }
-                    if (trim((string) ($data['expires_at'] ?? '')) === '' && $seasonEnd !== '') {
-                        $data['expires_at'] = $seasonEnd;
-                    }
+                    // Competitions is authoritative for validity dates of competition cards.
+                    $data['valid_from'] = $seasonStart !== '' ? $seasonStart : null;
+                    $data['expires_at'] = $seasonEnd !== '' ? $seasonEnd : null;
                     $validFrom = trim((string) ($data['valid_from'] ?? ''));
                     $expiresAt = trim((string) ($data['expires_at'] ?? ''));
                     if ($seasonStart !== '' && $validFrom !== '' && $validFrom > $seasonStart) {
