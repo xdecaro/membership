@@ -21,7 +21,9 @@ jobs:
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          files = [
+          import re
+
+          for p in [
               Path('VERSION'),
               Path('component/decaromembership.xml'),
               Path('component/media/joomla.asset.json'),
@@ -31,24 +33,20 @@ jobs:
               Path('plugins/system/decaromembership/decaromembership.xml'),
               Path('plugins/xdecaroanalytics/decaromembership/decaromembership.xml'),
               Path('plugins/task/decaromembership/decaromembership.xml'),
-              Path('build/validate.py'),
-          ]
-          for p in files:
-              s = p.read_text()
-              if '1.9.32' not in s:
-                  raise SystemExit(f'expected 1.9.32 marker missing in {p}')
-              p.write_text(s.replace('1.9.32', '1.9.33'))
+          ]:
+              s=p.read_text()
+              if '1.9.32' not in s: raise SystemExit(f'expected 1.9.32 marker missing in {p}')
+              p.write_text(s.replace('1.9.32','1.9.33'))
 
-          p = Path('build/validate.py')
-          s = p.read_text()
-          old_manifests = "ROOT / 'plugins/xdecaroanalytics/decaromembership/decaromembership.xml',ROOT / 'plugins/task/decaromembership/decaromembership.xml']"
-          new_manifests = "ROOT / 'plugins/system/decaromembership/decaromembership.xml',ROOT / 'plugins/xdecaroanalytics/decaromembership/decaromembership.xml',ROOT / 'plugins/task/decaromembership/decaromembership.xml']"
-          if old_manifests in s:
-              s = s.replace(old_manifests, new_manifests)
-          old_children = "expected = {('component','com_decaromembership','','com_decaromembership.zip'),('plugin','decaromembership','xdecaroanalytics','plg_xdecaroanalytics_decaromembership.zip'),('plugin','decaromembership','task','plg_task_decaromembership.zip')}"
-          new_children = "expected = {('component','com_decaromembership','','com_decaromembership.zip'),('plugin','decaromembership','system','plg_system_decaromembership.zip'),('plugin','decaromembership','xdecaroanalytics','plg_xdecaroanalytics_decaromembership.zip'),('plugin','decaromembership','task','plg_task_decaromembership.zip')}"
-          if old_children in s:
-              s = s.replace(old_children, new_children)
+          p=Path('build/validate.py'); s=p.read_text()
+          s,n=re.subn(r"if VERSION != '\d+\.\d+\.\d+':", "if VERSION != '1.9.33':", s, count=1)
+          if n!=1: raise SystemExit('validator VERSION check not found')
+          old="ROOT / 'plugins/xdecaroanalytics/decaromembership/decaromembership.xml',ROOT / 'plugins/task/decaromembership/decaromembership.xml']"
+          new="ROOT / 'plugins/system/decaromembership/decaromembership.xml',ROOT / 'plugins/xdecaroanalytics/decaromembership/decaromembership.xml',ROOT / 'plugins/task/decaromembership/decaromembership.xml']"
+          if old in s: s=s.replace(old,new)
+          old="expected = {('component','com_decaromembership','','com_decaromembership.zip'),('plugin','decaromembership','xdecaroanalytics','plg_xdecaroanalytics_decaromembership.zip'),('plugin','decaromembership','task','plg_task_decaromembership.zip')}"
+          new="expected = {('component','com_decaromembership','','com_decaromembership.zip'),('plugin','decaromembership','system','plg_system_decaromembership.zip'),('plugin','decaromembership','xdecaroanalytics','plg_xdecaroanalytics_decaromembership.zip'),('plugin','decaromembership','task','plg_task_decaromembership.zip')}"
+          if old in s: s=s.replace(old,new)
           p.write_text(s)
           PY
           find component plugins package tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null
