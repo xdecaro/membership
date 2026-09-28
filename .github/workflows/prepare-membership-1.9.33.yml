@@ -47,6 +47,8 @@ jobs:
           old="expected = {('component','com_decaromembership','','com_decaromembership.zip'),('plugin','decaromembership','xdecaroanalytics','plg_xdecaroanalytics_decaromembership.zip'),('plugin','decaromembership','task','plg_task_decaromembership.zip')}"
           new="expected = {('component','com_decaromembership','','com_decaromembership.zip'),('plugin','decaromembership','system','plg_system_decaromembership.zip'),('plugin','decaromembership','xdecaroanalytics','plg_xdecaroanalytics_decaromembership.zip'),('plugin','decaromembership','task','plg_task_decaromembership.zip')}"
           if old in s: s=s.replace(old,new)
+          s=s.replace("integrations = require('component/admin/src/Helper/MembershipHelper.php', \"'com_xdecarocompetitions' => 'Competitions by xdecaro'\")", "integrations = require('component/admin/src/Helper/MembershipHelper.php', \"'com_competitions' => 'Competitions by xdecaro'\")")
+          s=s.replace("if \"'com_decarodcl' => 'Competitions by xdecaro'\" in integrations: fail('legacy Competitions component option remains')", "if \"'com_xdecarocompetitions' => 'Competitions by xdecaro'\" in integrations or \"'com_decarodcl' => 'Competitions by xdecaro'\" in integrations: fail('legacy Competitions component option remains')")
           p.write_text(s)
           PY
           find component plugins package tests -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null
