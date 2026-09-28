@@ -1,6 +1,8 @@
+diff --git a/component/admin/src/Model/RecordModel.php b/component/admin/src/Model/RecordModel.php
+index b05c76f..0dcfffe 100644
 --- a/component/admin/src/Model/RecordModel.php
 +++ b/component/admin/src/Model/RecordModel.php
-@@ -389,12 +389,9 @@
+@@ -389,12 +389,9 @@ final class RecordModel extends BaseDatabaseModel
  
                      $seasonStart = trim((string) ($competitionSeason['start_date'] ?? ''));
                      $seasonEnd = trim((string) ($competitionSeason['end_date'] ?? ''));
@@ -16,9 +18,11 @@
                      $validFrom = trim((string) ($data['valid_from'] ?? ''));
                      $expiresAt = trim((string) ($data['expires_at'] ?? ''));
                      if ($seasonStart !== '' && $validFrom !== '' && $validFrom > $seasonStart) {
+diff --git a/component/admin/src/Service/AdminAssetService.php b/component/admin/src/Service/AdminAssetService.php
+index 8213d2a..2bdbe88 100644
 --- a/component/admin/src/Service/AdminAssetService.php
 +++ b/component/admin/src/Service/AdminAssetService.php
-@@ -10,7 +10,7 @@
+@@ -10,7 +10,7 @@ use Throwable;
  
  final class AdminAssetService
  {
@@ -27,9 +31,11 @@
      private const MINIMUM_CORE_UI_VERSION = '1.3.0';
  
      public static function useAssets(HtmlDocument $document, bool $withCoreUi = false): bool
+diff --git a/component/admin/src/Service/DclCardService.php b/component/admin/src/Service/DclCardService.php
+index b20c77c..e09d232 100644
 --- a/component/admin/src/Service/DclCardService.php
 +++ b/component/admin/src/Service/DclCardService.php
-@@ -434,6 +434,175 @@
+@@ -434,6 +434,175 @@ final class DclCardService
          return (int) $this->db->setQuery($query)->loadResult() > 0;
      }
  
@@ -183,4 +189,48 @@
 +                        ->bind(':metadata', $metadataJson)
 +                        ->bind(':link_id', $link['id'], ParameterType::INTEGER);
 +                    $this->db->setQuery($linkUpdate)->execute();
++                    $linksUpdated++;
++                }
++            }
 +
++            $this->db->transactionCommit();
++            $started = false;
++        } catch (Throwable $e) {
++            if ($started) {
++                try {
++                    $this->db->transactionRollback();
++                } catch (Throwable) {
++                }
++            }
++            throw $e;
++        }
++
++        return ['cards_updated' => $cardsUpdated, 'links_updated' => $linksUpdated];
++    }
++
+     public function getLinkedCompetitionSeasonId(int $cardId): int
+     {
+         if ($cardId < 1) {
+@@ -521,6 +690,22 @@ final class DclCardService
+         $this->db->setQuery($query)->execute();
+     }
+ 
++    private function normalizeSyncDate(?string $value, string $field): ?string
++    {
++        $value = $value !== null ? trim($value) : '';
++        if ($value === '') {
++            return null;
++        }
++
++        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
++        $errors = \DateTimeImmutable::getLastErrors();
++        if (!$date || ($errors !== false && (($errors['warning_count'] ?? 0) > 0 || ($errors['error_count'] ?? 0) > 0)) || $date->format('Y-m-d') !== $value) {
++            throw new \InvalidArgumentException('Invalid competition season date for ' . $field . '.');
++        }
++
++        return $value;
++    }
++
+     private function relationCondition(string $alias = ''): string
+     {
+         $column = $alias !== '' ? $alias . '.relation_type' : 'relation_type';
